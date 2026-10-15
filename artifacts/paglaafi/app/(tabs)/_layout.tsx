@@ -7,6 +7,7 @@ import { isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Tabs } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { SymbolView } from 'expo-symbols';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function NativeTabLayout() {
   return (
@@ -45,6 +46,7 @@ function NativeTabLayout() {
 
 function ClassicTabLayout() {
   const colors = useColors();
+  const safeAreaInsets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const isIOS = Platform.OS === 'ios';
@@ -57,7 +59,6 @@ function ClassicTabLayout() {
         tabBarInactiveTintColor: colors.mutedForeground,
         headerShown: false,
         tabBarStyle: {
-          position: 'absolute',
           backgroundColor: isIOS ? 'transparent' : colors.background,
           borderTopWidth: 1,
           borderTopColor: colors.border,

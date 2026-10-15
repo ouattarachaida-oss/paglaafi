@@ -1,8 +1,11 @@
-# [Project name]
+# PagLaafi
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Application mobile francophone d’information, d’orientation et de soutien autour du cancer du sein, destinée d’abord au Burkina Faso, puis à d’autres pays africains si le projet réussit.
 
 ## Run & Operate
+
+- `pnpm --filter @workspace/paglaafi run dev` — lancer l’application Expo
+- `pnpm --filter @workspace/paglaafi run typecheck` — vérifier l’application mobile
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
 - `pnpm run typecheck` — full typecheck across all packages
@@ -22,23 +25,27 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/paglaafi` — application mobile Expo
+- `artifacts/mockup-sandbox` — prototype visuel de référence
+- `artifacts/paglaafi/data/content.ts` — articles sourcés et annuaire des structures
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Première version sans compte ni serveur spécifique : les favoris sont conservés sur l’appareil pour limiter la collecte de données.
+- Ne jamais inventer de centres, contacts, tarifs, horaires ou dates de campagne. Les informations locales doivent être validées avec des partenaires de santé avant publication.
+- L’assistant IA médical est différé : il exige des sources fiables, une validation clinique et une gestion explicite des limites et urgences.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Quatre espaces dans le MVP : Accueil, Centres, Comprendre et Soutien. Les campagnes sont accessibles depuis l’accueil. Les contenus éducatifs citent l’OMS et ne remplacent pas une consultation. Les recommandations de dépistage locales doivent être validées au Burkina Faso.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+Identité rose et blanche, navigation simple en bas de l’écran et priorité au public burkinabè.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+Les sections Centres et Événements affichent un état vide explicite tant qu’aucune donnée locale vérifiée n’est disponible. Ne pas présenter la démonstration comme un service de soins opérationnel.
 
 ## Pointers
 

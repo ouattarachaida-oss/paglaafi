@@ -192,7 +192,7 @@ export function EmptyState({
   );
 }
 
-export const pageStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   page: {
     flexGrow: 1,
     paddingBottom: 34,
