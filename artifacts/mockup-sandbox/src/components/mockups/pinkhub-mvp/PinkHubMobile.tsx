@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   ArrowRight,
   AudioLines,
-  Bell,
   BookOpen,
   Calendar,
   Check,
@@ -15,7 +14,8 @@ import {
   Clock,
   CreditCard,
   Edit3,
-  Flame,
+  Eye,
+  EyeOff,
   Gift,
   Headphones,
   Heart,
@@ -27,7 +27,6 @@ import {
   Menu,
   MessageCircle,
   Mic,
-  MicOff,
   Pause,
   Phone,
   Play,
@@ -36,10 +35,11 @@ import {
   Search,
   Send,
   Share2,
+  Shield,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Stethoscope,
-  Tag,
   User,
   UserCheck,
   UserPlus,
@@ -59,10 +59,34 @@ type Section =
   | "Accueil"
   | "Centres"
   | "Comprendre"
-  | "Accompagnant"
-  | "Annonces"
   | "RoseIA"
-  | "Soutien";
+  | "FaireUnDon"
+  | "Accompagnant"
+  | "Annonces";
+
+// Rôles utilisateurs
+type UserRole = "user" | "admin" | "superadmin";
+
+interface UserProfile {
+  nom: string;
+  prenom: string;
+  telephone: string;
+  role: UserRole;
+  roleLabel: string;
+  structureName?: string;
+}
+
+// Inscription en attente pour le Superadmin
+interface PendingRegistration {
+  id: number;
+  structure: string;
+  responsable: string;
+  telephone: string;
+  type: "Association" | "Centre de Santé" | "Professionnel";
+  ville: string;
+  date: string;
+  status: "pending" | "approved" | "rejected";
+}
 
 // Statuts en direct de la Carte Vivante
 type CenterStatus = "available" | "busy" | "maintenance" | "outdated";
@@ -92,6 +116,7 @@ interface HealthCenter {
   exams: ExamPrice[];
   audioMessageFr: string;
   audioMessageMoore: string;
+  audioMessageDioula: string;
   confirmedVisitsToday: number;
   phone: string;
   address: string;
@@ -149,7 +174,8 @@ const initialCenters: HealthCenter[] = [
     ],
     audioMessageFr: "Bonjour, ici la sage-femme responsable de Schiphra. Notre mammographe fonctionne parfaitement aujourd'hui. L'attente est faible ce matin, vous serez reçue en moins de 20 minutes.",
     audioMessageMoore: "Ne y beogo pagbã fãa, CMA Schiphra tɩɩm zĩiga yaa kaset. Masã masã, mammographie masĩnã tʋmdame tɩ zĩigã pa noom ye. Wa-y laafi.",
-    confirmedVisitsToday: 41,
+    audioMessageDioula: "Aw ni sɔgɔma, CMA Schiphra kɛnɛyaso la masin bɛ baara kɛ kosɛbɛ bi. Mɔgɔ caman t'a la, aw bɛ se ka na sisan.",
+    confirmedVisitsToday: 44,
     phone: "+226 25 36 30 70",
     address: "Tanghin, Secteur 17 (ex-Secteur 30), Ouagadougou",
     lastUpdate: "Aujourd'hui à 08h30 par Mme Sawadogo (Sage-femme chef)",
@@ -178,7 +204,8 @@ const initialCenters: HealthCenter[] = [
     ],
     audioMessageFr: "Au CHU de Bogodogo, les deux appareils fonctionnent mais nous avons une forte affluence ce matin. Si vous êtes pressée, privilégiez le début d'après-midi.",
     audioMessageMoore: "CHU Bogodogo tʋmdame, la neb wʋsg n be kãenkãenga rũnda. Bɩ y bãng tɩ zãama nooma, sã n yaa ne yãmb yaa sõma tɩ y wa zaabre.",
-    confirmedVisitsToday: 68,
+    audioMessageDioula: "CHU Bogodogo masinw bɛ baara kɛ, nka mɔgɔw ka ca bi. Ni aw bɛ fɛ, aw bɛ se ka na wula fɛ.",
+    confirmedVisitsToday: 72,
     phone: "+226 25 37 40 40",
     address: "Boulevard des Tansoba, Arrondissement 5, Ouagadougou",
     lastUpdate: "Aujourd'hui à 09h15 par Dr. Ouedraogo",
@@ -206,7 +233,8 @@ const initialCenters: HealthCenter[] = [
     ],
     audioMessageFr: "Bonjour aux femmes de Bobo. Notre service de dépistage est ouvert en continu jusqu'à 16 heures. L'équipe est au complet et prête à vous orienter avec bienveillance.",
     audioMessageMoore: "Bobo CHU Sourô Sanou pʋgẽ, b sɩngame tɩ b gũusd pagbã ne laafi. Ned baa a yembre pa be n gũud wʋsg ye. Wa-y tɩ b ges yãmba.",
-    confirmedVisitsToday: 45,
+    audioMessageDioula: "I ni sɔgɔma Bobo musow. CHU Sourô Sanou dayɛlɛn bɛ fo ka taga se lere naani wula fɛ. Dɔgɔtɔrɔmusow bɛ yan k'aw bisimila.",
+    confirmedVisitsToday: 49,
     phone: "+226 20 97 00 44",
     address: "Avenue de la République, Bobo-Dioulasso",
     lastUpdate: "Aujourd'hui à 07h50 par Major Traoré",
@@ -233,7 +261,8 @@ const initialCenters: HealthCenter[] = [
     ],
     audioMessageFr: "Attention pour le CHR de Koudougou : notre mammographe est en maintenance pour la journée. Les sages-femmes assurent la palpation manuelle, mais pour la mammographie, prévoyez de revenir demain ou orientez-vous vers Schiphra.",
     audioMessageMoore: "CHR Koudougou: Masĩnã komsame bilfu tɩ b ket n manegda. La pagbã tõe n waame tɩ b ning-b nus n ges b yĩnsa zaalem. Mammographie pa tʋmd rũnda ye.",
-    confirmedVisitsToday: 17,
+    audioMessageDioula: "Koudougou CHR masin tiɲɛna dɔɔni bi. Musow bɛ se ka na dɔgɔtɔrɔmusow bɛ bɔlɔkɔrɔ lajɛ kɛ, nka masin bɛna labɛn sini.",
+    confirmedVisitsToday: 18,
     phone: "+226 25 44 01 24",
     address: "Route de Ouagadougou, Secteur 1, Koudougou",
     lastUpdate: "Aujourd'hui à 08h00 par l'ingénieur biomédical",
@@ -260,6 +289,7 @@ const initialCenters: HealthCenter[] = [
     ],
     audioMessageFr: "Ce centre n'a pas encore validé son rapport de présence ce matin. Nous vous conseillons d'appeler avant de vous déplacer.",
     audioMessageMoore: "Kasetã pa paam kʋdemd sebr rũnda ye. Bɩ y tẽeg n bãng bãmb sã n sɩngame tɩ y yaool n ta.",
+    audioMessageDioula: "Kɛnɛyaso nin ma kuma fɔ bi fɔlɔ. Aw k'u weele telefone fɛ k'a lɔn sani aw ka taga.",
     confirmedVisitsToday: 5,
     phone: "+226 25 35 12 00",
     address: "Tampouy, Arrondissement 3, Ouagadougou",
@@ -283,7 +313,7 @@ const initialAnnouncements: PartnerAnnouncement[] = [
     badgeColor: "bg-emerald-100 text-emerald-800",
     content: "L'ABAC déploie sa clinique mobile sur la place du Marché de Koudougou. Examen clinique gratuit pour toutes les femmes de 25 à 65 ans. Échographies gratuites sur place en cas de doute.",
     contact: "+226 70 20 11 22",
-    likes: 134,
+    likes: 145,
   },
   {
     id: 2,
@@ -294,9 +324,9 @@ const initialAnnouncements: PartnerAnnouncement[] = [
     date: "Vendredi 23 Octobre à 15h00",
     badge: "Rencontre & Débat",
     badgeColor: "bg-purple-100 text-purple-800",
-    content: "Venez échanger avec nos sages-femmes et des patientes guéries. Explications en français et en mooré. Rafraîchissements offerts et apprentissage des gestes d'auto-palpation.",
+    content: "Venez échanger avec nos sages-femmes et des patientes guéries. Explications en français, mooré et dioula. Rafraîchissements offerts et apprentissage des gestes d'auto-palpation.",
     contact: "+226 76 50 33 44",
-    likes: 92,
+    likes: 98,
   },
   {
     id: 3,
@@ -307,27 +337,14 @@ const initialAnnouncements: PartnerAnnouncement[] = [
     date: "Du 15 au 31 Octobre 2026",
     badge: "Tarif Spécial",
     badgeColor: "bg-amber-100 text-amber-900",
-    content: "Grâce au soutien des donateurs de PagLaafi et d'Orange Money, 200 mammographies sont subventionnées à 5 000 FCFA (au lieu de 12 000 FCFA) pour les femmes sans assurance.",
+    content: "Grâce au soutien des donateurs de PagLaafi, 200 mammographies sont subventionnées à 5 000 FCFA (au lieu de 12 000 FCFA) pour les femmes sans assurance.",
     contact: "+226 25 36 30 70",
-    likes: 215,
-  },
-  {
-    id: 4,
-    title: "Permanence d'Écoute Psychologique & Prise en Charge à Bobo",
-    author: "Association Espoir et Vie Bobo",
-    authorType: "Partenaire Santé",
-    city: "Bobo-Dioulasso",
-    date: "Tous les mercredis et samedis",
-    badge: "Soutien Moral",
-    badgeColor: "bg-pink-100 text-pink-800",
-    content: "Un espace confidentiel pour poser vos questions, pleurer sans honte et trouver des compagnes de route pour le traitement. Accueil avec thé et bienveillance.",
-    contact: "+226 78 90 12 34",
-    likes: 88,
+    likes: 228,
   },
 ];
 
 /**
- * Associations partenaires éligibles aux dons Orange Money
+ * Associations partenaires éligibles aux dons
  */
 const partnerAssociations: PartnerAssociation[] = [
   {
@@ -369,7 +386,33 @@ const partnerAssociations: PartnerAssociation[] = [
 ];
 
 /**
- * Leçons pédagogiques avec texte intégral pour la voix
+ * Inscriptions en attente pour validation par le Superadmin
+ */
+const initialPendingRegistrations: PendingRegistration[] = [
+  {
+    id: 101,
+    structure: "Association Espoir Féminin Koudougou",
+    responsable: "Mme Bado Aminata",
+    telephone: "70 45 67 89",
+    type: "Association",
+    ville: "Koudougou",
+    date: "15/10/2026",
+    status: "pending",
+  },
+  {
+    id: 102,
+    structure: "Clinique Maternelle Yennenga",
+    responsable: "Dr. Sanou Ibrahim",
+    telephone: "76 12 34 56",
+    type: "Centre de Santé",
+    ville: "Ouagadougou",
+    date: "14/10/2026",
+    status: "pending",
+  },
+];
+
+/**
+ * Leçons pédagogiques avec audio en Français, Mooré et Dioula
  */
 const lessons = [
   {
@@ -381,7 +424,9 @@ const lessons = [
     fullText:
       "Le cancer du sein commence lorsque des cellules du tissu mammaire se modifient et se multiplient anormalement. Dans la très grande majorité des cas, une petite boule ou un nodule n'est PAS un cancer : il s'agit souvent d'un kyste bénin ou d'un nodule fibreux sans danger. Cependant, seul un professionnel de santé peut faire la différence grâce à un examen indolore. Détecté très tôt, le cancer du sein se guérit dans plus de 9 cas sur 10. C'est pourquoi apprendre à observer sa poitrine chaque mois et réaliser un dépistage régulier peut vous sauver la vie.",
     mooreSummary:
-      "Bãagã sɩngda ne yĩns nimbas n baood n paasd b toorẽ. Pa bũmb fãa n yaa bãaga ye. Sã n yaa ne zĩig n bilfu tɩ y bãng bãagã zĩig ninga, y tõe n paama laafi tɩ loog wʋsg.",
+      "Bãagã sɩngda ne yĩns nimbas n baood n paasd b toorẽ. Pa bũmb fãa n yaa bãaga ye. Sã n yaa ne zĩig n bilfu tɩ y bãng bãagã zĩig ninga, y tõe n paama laafi tɩ loog wʋsg. Da zoe rabeem ye, tɩɩm dãmbã be n na n sõng yãmba.",
+    dioulaSummary:
+      "Bana nin bɛ kɛ tuma min kɛlilicɛlu bɛ yɛlɛma sin na ka caya. Fɛn caman min bɛ kɛ sin na, a tɛ bana juguman ye. Nka kɛnɛyaso dɔgɔtɔrɔmuso dɔrɔn lo bɛ se k'o dɔn. Ni ye a dɔn joona, furakɛli ka nɔgɔn.",
   },
   {
     id: 1,
@@ -393,6 +438,8 @@ const lessons = [
       "Il est recommandé de consulter dès que vous remarquez un changement inhabituel : une boule dans le sein ou sous l'aisselle qui ne disparaît pas après les règles, un écoulement au niveau du mamelon, ou un changement dans l'aspect de la peau comme une fossette ou une rougeur. N'ayez pas peur d'en parler. Les agents de santé des centres de santé du Burkina Faso sont formés pour vous écouter avec respect et discrétion. N'attendez pas d'avoir mal, car au tout début, le nodule ne fait généralement aucun mal.",
     mooreSummary:
       "Sã n yaa tɩ y yã bũmb n lebse y yĩnsa pʋgẽ, wa bõn-kʋdga bɩ kaset zĩiga, bɩ y wa zĩig ning b sẽn gũusd pagbã laafi. Da zoe rabeem ye, tɩɩm dãmbã be n na n sõng yãmba.",
+    dioulaSummary:
+      "Ni i ye bõn-kʋdga dɔ ye i sin kɔrɔ walima sin na, walima ji bɛ bɔ a nɔnɔda la, i kana siran. Taga kɛnɛyaso la jona, dɔgɔtɔrɔmusow bɛ yan k'aw lajɛ ne lafiya.",
   },
   {
     id: 2,
@@ -404,32 +451,34 @@ const lessons = [
       "Accompagner une femme à son dépistage est l'un des plus beaux gestes de solidarité. Souvent, la peur du diagnostic ou le manque d'informations retiennent les femmes à la maison. En proposant de l'accompagner, vous partagez le trajet, vous dédramatisez l'attente et vous lui donnez du courage. Vous n'avez pas besoin d'être médecin : votre simple présence, votre écoute bienveillante et votre soutien logistique font toute la différence. Faire le dépistage à deux, c'est deux fois moins de stress.",
     mooreSummary:
       "Tõnd sã n kẽng pagb laafi zĩiga a yiibu, yaa sõma wʋsg n yɩɩda. Zoe rabeem pa be ye. Y tõe n pʋd n tɩ ges y laafi n paam bas-m-yam.",
+    dioulaSummary:
+      "Ka taga kɛnɛyaso la aw fila, i ni i balimamuso walima i teri, o bɛ siranya bɔ. Aw bɛ sira ta ɲɔgɔn fɛ ka ɲɔgɔn dusu sabali. Dépistage kɛli fila fɛ, o ye kɛnɛya ye.",
   },
 ];
 
 /**
  * Réponses types de l'Assistant Vocal ROSE IA
  */
-const roseIaResponses: Record<string, { fr: string; moore: string }> = {
+const roseIaResponses: Record<string, { fr: string; moore: string; dioula: string }> = {
   mal: {
     fr: "Rassurez-vous, la palpation clinique faite par la sage-femme est totalement indolore et très douce. Pour la mammographie, on ressent une brève pression de quelques secondes sur le sein, qui peut être un peu désagréable mais pas douloureuse. Dites à la manipulatrice d'y aller doucement !",
     moore: "Laafi beame. Ges-m-yĩngã pa namsd ned ye. Masĩnã tõe n mii bilfu la a pa wãbd ned ye. Kasetã sõngdame tɩ b bãng laafi.",
+    dioula: "I kana siran, dɔgɔtɔrɔmuso bɛna a bɔlɔ lajɛ nɔgɔman kɛ. Masin bɛ i sin digi dɔɔni dɔrɔn nka a tɛ mɔgɔ dimi ye.",
   },
   prix: {
-    fr: "Au Burkina Faso, la palpation clinique est GRATUITE (0 FCFA) dans la plupart des centres publics et durant les campagnes Octobre Rose. L'échographie coûte entre 6 000 et 7 500 FCFA, et la mammographie entre 10 000 et 12 000 FCFA (subventionnée à 5 000 FCFA avec nos associations partenaires).",
+    fr: "Au Burkina Faso, la palpation clinique est GRATUITE (0 FCFA) dans la plupart des centres publics et durant les campagnes. L'échographie coûte entre 6 000 et 7 500 FCFA, et la mammographie entre 10 000 et 12 000 FCFA (subventionnée à 5 000 FCFA avec nos associations partenaires).",
     moore: "Nus gesgã yaa zaalem (0 FCFA). Échographie yaa 6 000 n tãag 7 500 FCFA, la mammographie yaa 10 000 n tãag 12 000 FCFA.",
+    dioula: "Bɔlɔ lajɛ sɔngɔ ye Fu ye (0 FCFA). Échographie ye 6 000 fo 7 500 FCFA. Mammographie ye 10 000 fo 12 000 FCFA.",
   },
   boule: {
     fr: "Ne paniquez surtout pas. 8 boules sur 10 au niveau du sein sont totalement bénignes (un kyste d'eau ou un nodule fibreux). Cependant, il faut impérativement la faire examiner par une sage-femme à Schiphra, Bogodogo ou Sourô Sanou pour avoir l'esprit tranquille.",
     moore: "Da zoe rabeem ye. Bõn-kʋdga wʋsg pa bãag ye. La yaa tɩlae tɩ y tɩ wilg tɩɩm dãmbã tɩ b ges n bilg y yam.",
-  },
-  centres: {
-    fr: "Aujourd'hui, le mammographe de Schiphra à Ouagadougou et celui du CHU Sourô Sanou à Bobo sont parfaitement fonctionnels avec peu d'attente. Attention, le CHR de Koudougou est en maintenance ce jour. Consultez l'onglet 'Centres' pour la carte vivante !",
-    moore: "Rũnda Schiphra ne Bobo Sourô Sanou masĩnã tʋmdame tɩ zĩigã yaa sõma. Koudougou n koms bilfu. Ges-y carte wã pʋgẽ.",
+    dioula: "I kana jaasi. Bɔnbɔn caman tɛ bana ye. Nka i ka kan ka taga dɔgɔtɔrɔso la u k'a lajɛ ka i hakili sigi.",
   },
   default: {
     fr: "Je suis Rose IA, votre compagne de santé bienveillante. Je suis là pour vous écouter, vous rassurer et vous orienter vers les structures du Burkina Faso. Posez-moi votre question à la voix ou à l'écrit !",
     moore: "Mam yaa Rose IA. M be n na n sõng yãmba ne laafi kaset. Sok-y maam bũmb ning fãa y sẽn rat n bãngã.",
+    dioula: "Ne ye Rose IA ye. Ne bɛ yan k'aw dɛmɛ kɛnɛya ko la. Aw bɛ se ka nɲininka kuma fɛ walima sɛbɛli fɛ.",
   },
 };
 
@@ -439,27 +488,53 @@ const roseIaResponses: Record<string, { fr: string; moore: string }> = {
  * ============================================================================
  */
 export function PinkHubMobile() {
-  // Navigation & État global
+  // 1. Écran de démarrage (Splash Screen) "Powered by Rose IA"
+  const [showSplash, setShowSplash] = useState(true);
+
+  // 2. Navigation & État global
   const [section, setSection] = useState<Section>("Accueil");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [toast, setToast] = useState<string>("");
 
-  // Authentification / Compte utilisateur
+  // 3. Authentification & 3 Rôles (Utilisatrice, Admin Asso, Superadmin)
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState<"login" | "register">("register");
-  const [currentUser, setCurrentUser] = useState<{
-    nom: string;
-    prenom: string;
-    telephone: string;
-  } | null>(null);
-  const [authForm, setAuthForm] = useState({
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Formulaire d'inscription
+  const [registerForm, setRegisterForm] = useState({
     nom: "Ouedraogo",
     prenom: "Aminata",
     telephone: "70 12 34 56",
     motDePasse: "123456",
+    confirmerMotDePasse: "123456",
+    role: "user" as UserRole,
+    structureName: "",
   });
 
-  // Centres & Carte Vivante
+  // Formulaire de connexion (STRICTEMENT TÉLÉPHONE ET MOT DE PASSE)
+  const [loginForm, setLoginForm] = useState({
+    telephone: "70 12 34 56",
+    motDePasse: "123456",
+  });
+
+  // Utilisateur actuellement connecté
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>({
+    nom: "Ouedraogo",
+    prenom: "Aminata",
+    telephone: "70 12 34 56",
+    role: "user",
+    roleLabel: "Utilisatrice",
+  });
+
+  // Superadmin : liste des inscriptions en attente
+  const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>(
+    initialPendingRegistrations,
+  );
+  const [showSuperadminModal, setShowSuperadminModal] = useState(false);
+
+  // 4. Centres & Carte Vivante
   const [centers, setCenters] = useState<HealthCenter[]>(initialCenters);
   const [selectedCenter, setSelectedCenter] = useState<HealthCenter | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -468,7 +543,30 @@ export function PinkHubMobile() {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [showAgentModal, setShowAgentModal] = useState<HealthCenter | null>(null);
 
-  // Annonces & Événements Partenaires
+  // 5. Audio & 3 Langues (Français, Mooré, Dioula)
+  const [activeLesson, setActiveLesson] = useState<number>(0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [audioProgress, setAudioProgress] = useState<number>(0);
+  const [speechLanguage, setSpeechLanguage] = useState<"fr" | "moore" | "dioula">("fr");
+  const audioIntervalRef = useRef<number | null>(null);
+
+  // 6. Assistant Vocal ROSE IA
+  const [roseMessages, setRoseMessages] = useState<
+    Array<{ sender: "user" | "rose"; text: string; time: string; mooreText?: string; dioulaText?: string }>
+  >([
+    {
+      sender: "rose",
+      text: "Bonjour ! Je suis Rose IA, votre assistante de santé. Une question sur le dépistage, une douleur ou un centre ? Appuyez sur le micro ou écrivez-moi.",
+      mooreText: "Ne y beogo ! Mam yaa Rose IA. Sok-y maam bũmb fãa y sẽn rat n bãngã.",
+      dioulaText: "I ni sɔgɔma ! Ne ye Rose IA ye. Aw bɛ se ka nɲininka bũmb o bũmb la.",
+      time: "Maintenant",
+    },
+  ]);
+  const [roseInput, setRoseInput] = useState("");
+  const [isRecordingVoice, setIsRecordingVoice] = useState(false);
+  const [roseSpeaking, setRoseSpeaking] = useState(false);
+
+  // 7. Annonces
   const [announcements, setAnnouncements] = useState<PartnerAnnouncement[]>(initialAnnouncements);
   const [showNewAnnouncementModal, setShowNewAnnouncementModal] = useState(false);
   const [newAnnouncement, setNewAnnouncement] = useState({
@@ -483,22 +581,7 @@ export function PinkHubMobile() {
     contact: "",
   });
 
-  // Assistant Vocal ROSE IA
-  const [roseMessages, setRoseMessages] = useState<
-    Array<{ sender: "user" | "rose"; text: string; time: string; mooreText?: string }>
-  >([
-    {
-      sender: "rose",
-      text: "Bonjour ! Je suis Rose IA, votre assistante de santé. Une question sur le dépistage, une douleur ou un centre ? Appuyez sur le micro ou écrivez-moi.",
-      mooreText: "Ne y beogo ! Mam yaa Rose IA. Sok-y maam bũmb fãa y sẽn rat n bãngã.",
-      time: "Maintenant",
-    },
-  ]);
-  const [roseInput, setRoseInput] = useState("");
-  const [isRecordingVoice, setIsRecordingVoice] = useState(false);
-  const [roseSpeaking, setRoseSpeaking] = useState(false);
-
-  // Module Don Orange Money Burkina Faso
+  // 8. Faire un Don (Processus Orange Money)
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [selectedAssociation, setSelectedAssociation] = useState<PartnerAssociation>(
     partnerAssociations[0],
@@ -510,33 +593,28 @@ export function PinkHubMobile() {
   const [otpCode, setOtpCode] = useState<string>("");
   const [lastDonationId, setLastDonationId] = useState<string>("");
 
-  // Audio & Synthèse vocale générale
-  const [activeLesson, setActiveLesson] = useState<number>(0);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [audioProgress, setAudioProgress] = useState<number>(0);
-  const [speechLanguage, setSpeechLanguage] = useState<"fr" | "moore">("fr");
-  const audioIntervalRef = useRef<number | null>(null);
-
-  // Module "L'Accompagnant"
-  const [companionName, setCompanionName] = useState("Fatim");
-  const [companionRelation, setCompanionRelation] = useState("Ma sœur");
-  const [companionPhone, setCompanionPhone] = useState("76 89 01 23");
-  const [companionCenterId, setCompanionCenterId] = useState<number>(1);
-  const [companionDate, setCompanionDate] = useState("Samedi 24 Octobre 2026");
-  const [hasInvited, setHasInvited] = useState(false);
-  const [hasConfirmedVisit, setHasConfirmedVisit] = useState(false);
-  const [companionConfirmedVisit, setCompanionConfirmedVisit] = useState(false);
-
-  // Notification Toast Helper
+  // Helper Toast
   const notify = (msg: string) => {
     setToast(msg);
-    window.setTimeout(() => setToast(""), 3400);
+    window.setTimeout(() => setToast(""), 3200);
   };
 
+  // Splash Screen Timer (2.2 secondes)
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setShowSplash(false);
+    }, 2200);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   /**
-   * Moteur de Synthèse Vocale (Web Speech API)
+   * Moteur Audio Multi-langues (Français, Mooré, Dioula)
+   * Utilise Web Speech API pour le français, et synthèse vocale adaptée pour Mooré et Dioula
    */
-  const handlePlayAudio = (textToSpeak: string, language: "fr" | "moore" = "fr") => {
+  const handlePlayAudio = (
+    textToSpeak: string,
+    language: "fr" | "moore" | "dioula" = "fr",
+  ) => {
     if (!("speechSynthesis" in window)) {
       notify("La synthèse vocale n'est pas supportée sur ce navigateur.");
       return;
@@ -555,7 +633,7 @@ export function PinkHubMobile() {
 
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
     utterance.lang = "fr-FR";
-    utterance.rate = language === "moore" ? 0.88 : 0.96;
+    utterance.rate = language === "fr" ? 0.95 : 0.88;
     utterance.pitch = 1.05;
 
     utterance.onstart = () => {
@@ -585,7 +663,7 @@ export function PinkHubMobile() {
     window.speechSynthesis.speak(utterance);
   };
 
-  // Arrêt de l'audio lors du changement de section
+  // Arrêt audio lors du changement d'onglet
   useEffect(() => {
     return () => {
       if ("speechSynthesis" in window) {
@@ -596,54 +674,172 @@ export function PinkHubMobile() {
   }, [section]);
 
   /**
-   * Gestion de la Connexion / Inscription
+   * Gestion Authentification
    */
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authForm.nom || !authForm.prenom || !authForm.telephone || !authForm.motDePasse) {
+    if (!registerForm.nom || !registerForm.prenom || !registerForm.telephone || !registerForm.motDePasse) {
       notify("Veuillez renseigner tous les champs obligatoires.");
       return;
     }
-    setCurrentUser({
-      nom: authForm.nom,
-      prenom: authForm.prenom,
-      telephone: authForm.telephone,
-    });
+    if (registerForm.motDePasse !== registerForm.confirmerMotDePasse) {
+      notify("Les deux mots de passe ne correspondent pas.");
+      return;
+    }
+
+    const roleLabel =
+      registerForm.role === "admin"
+        ? "Admin Association"
+        : registerForm.role === "superadmin"
+          ? "Superadmin National"
+          : "Utilisatrice";
+
+    const newUser: UserProfile = {
+      nom: registerForm.nom,
+      prenom: registerForm.prenom,
+      telephone: registerForm.telephone,
+      role: registerForm.role,
+      roleLabel,
+      structureName: registerForm.structureName,
+    };
+
+    if (registerForm.role === "admin") {
+      // Les comptes associations doivent être validés par le superadmin
+      setPendingRegistrations((prev) => [
+        {
+          id: Date.now(),
+          structure: registerForm.structureName || "Nouvelle Association",
+          responsable: `${registerForm.prenom} ${registerForm.nom}`,
+          telephone: registerForm.telephone,
+          type: "Association",
+          ville: "Ouagadougou",
+          date: "Aujourd'hui",
+          status: "pending",
+        },
+        ...prev,
+      ]);
+      notify("Inscription envoyée ! Votre compte partenaire sera activé après validation par le Superadmin.");
+      setShowAuthModal(false);
+      return;
+    }
+
+    setCurrentUser(newUser);
     setShowAuthModal(false);
-    notify(`Bienvenue, ${authForm.prenom} ${authForm.nom} ! Vous êtes connectée.`);
+    notify(`Bienvenue, ${newUser.prenom} ! Inscription validée.`);
   };
 
-  const handleLogout = () => {
-    setCurrentUser(null);
-    notify("Vous avez été déconnectée.");
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginForm.telephone || !loginForm.motDePasse) {
+      notify("Veuillez renseigner votre numéro de téléphone et votre mot de passe.");
+      return;
+    }
+
+    // Détection rapide de compte de test
+    if (loginForm.telephone === "78 00 00 00") {
+      setCurrentUser({
+        nom: "Kaboré",
+        prenom: "Alimata",
+        telephone: "78 00 00 00",
+        role: "superadmin",
+        roleLabel: "Super-Administrateur National",
+      });
+      notify("Connectée en tant que Superadmin National.");
+    } else if (loginForm.telephone === "76 50 33 44") {
+      setCurrentUser({
+        nom: "Sawadogo",
+        prenom: "Dr. Salif",
+        telephone: "76 50 33 44",
+        role: "admin",
+        roleLabel: "Admin Association (ABAC)",
+        structureName: "ABAC Burkina",
+      });
+      notify("Connecté en tant que Responsable Association (ABAC).");
+    } else {
+      setCurrentUser({
+        nom: "Ouedraogo",
+        prenom: "Aminata",
+        telephone: loginForm.telephone,
+        role: "user",
+        roleLabel: "Utilisatrice",
+      });
+      notify("Connexion réussie ! Bienvenue sur PagLaafi.");
+    }
+    setShowAuthModal(false);
+  };
+
+  // Switch de rôles prédéfinis pour le test
+  const quickLoginAs = (role: UserRole) => {
+    if (role === "superadmin") {
+      setCurrentUser({
+        nom: "Kaboré",
+        prenom: "Alimata",
+        telephone: "78 00 00 00",
+        role: "superadmin",
+        roleLabel: "Super-Administrateur National",
+      });
+      notify("Bascule vers le profil Superadmin (Validation des inscriptions).");
+    } else if (role === "admin") {
+      setCurrentUser({
+        nom: "Sawadogo",
+        prenom: "Dr. Salif",
+        telephone: "76 50 33 44",
+        role: "admin",
+        roleLabel: "Admin Association (ABAC)",
+        structureName: "ABAC Burkina",
+      });
+      notify("Bascule vers le profil Admin Association.");
+    } else {
+      setCurrentUser({
+        nom: "Ouedraogo",
+        prenom: "Aminata",
+        telephone: "70 12 34 56",
+        role: "user",
+        roleLabel: "Utilisatrice",
+      });
+      notify("Bascule vers le profil Utilisatrice standard.");
+    }
+    setShowAuthModal(false);
   };
 
   /**
-   * Filtrage des centres de santé
+   * Validation par le Superadmin
+   */
+  const handleApproveRegistration = (id: number) => {
+    setPendingRegistrations((prev) =>
+      prev.map((reg) => (reg.id === id ? { ...reg, status: "approved" } : reg)),
+    );
+    notify("Inscription partenaire validée avec succès !");
+  };
+
+  const handleRejectRegistration = (id: number) => {
+    setPendingRegistrations((prev) =>
+      prev.map((reg) => (reg.id === id ? { ...reg, status: "rejected" } : reg)),
+    );
+    notify("Inscription rejetée.");
+  };
+
+  /**
+   * Filtrage des centres
    */
   const filteredCenters = useMemo(() => {
     return centers.filter((center) => {
       const matchesSearch =
         searchQuery.trim() === "" ||
-        `${center.name} ${center.place} ${center.city} ${center.apparatus}`
+        `${center.name} ${center.place} ${center.city}`
           .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        center.exams.some((e) => e.name.toLowerCase().includes(searchQuery.toLowerCase()));
-
+          .includes(searchQuery.toLowerCase());
       const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "available" && center.status === "available") ||
-        (statusFilter === "free" && center.exams.some((e) => e.free)) ||
-        (statusFilter === "mammo" && center.isApparatusWorking);
-
+        (statusFilter === "free" && center.exams.some((e) => e.free));
       const matchesCity = cityFilter === "all" || center.city === cityFilter;
-
       return matchesSearch && matchesStatus && matchesCity;
     });
   }, [centers, searchQuery, statusFilter, cityFilter]);
 
   /**
-   * Interaction ROSE IA
+   * Rose IA Chat
    */
   const handleSendRoseMessage = (textOverride?: string) => {
     const textToSend = textOverride || roseInput;
@@ -657,133 +853,55 @@ export function PinkHubMobile() {
     setRoseMessages((prev) => [...prev, userMsg]);
     setRoseInput("");
 
-    // Détection d'intention médicale bienveillante
     const lower = textToSend.toLowerCase();
     let responseKey = "default";
-    if (lower.includes("mal") || lower.includes("douleur") || lower.includes("peur")) {
-      responseKey = "mal";
-    } else if (lower.includes("prix") || lower.includes("coût") || lower.includes("argent") || lower.includes("fcfa")) {
-      responseKey = "prix";
-    } else if (lower.includes("boule") || lower.includes("kyste") || lower.includes("nodule") || lower.includes("bosse")) {
-      responseKey = "boule";
-    } else if (lower.includes("centre") || lower.includes("où") || lower.includes("adresse") || lower.includes("ouaga") || lower.includes("bobo")) {
-      responseKey = "centres";
-    }
+    if (lower.includes("mal") || lower.includes("douleur") || lower.includes("peur")) responseKey = "mal";
+    else if (lower.includes("prix") || lower.includes("coût") || lower.includes("fcfa")) responseKey = "prix";
+    else if (lower.includes("boule") || lower.includes("kyste") || lower.includes("nodule")) responseKey = "boule";
 
     const answer = roseIaResponses[responseKey] || roseIaResponses.default;
 
     window.setTimeout(() => {
-      const roseMsg = {
-        sender: "rose" as const,
-        text: answer.fr,
-        mooreText: answer.moore,
-        time: "À l'instant",
-      };
-      setRoseMessages((prev) => [...prev, roseMsg]);
+      setRoseMessages((prev) => [
+        ...prev,
+        {
+          sender: "rose" as const,
+          text: answer.fr,
+          mooreText: answer.moore,
+          dioulaText: answer.dioula,
+          time: "À l'instant",
+        },
+      ]);
       handlePlayAudio(answer.fr, "fr");
-    }, 700);
-  };
-
-  /**
-   * Reconnaissance vocale (Speech-to-Text) pour Rose IA
-   */
-  const handleToggleVoiceRecording = () => {
-    const SpeechRecognition =
-      (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown })
-        .SpeechRecognition ||
-      (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown })
-        .webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      // Simulation guidée si reconnaissance non supportée
-      notify("Micro activé en simulation. Rose IA écoute votre voix...");
-      setIsRecordingVoice(true);
-      window.setTimeout(() => {
-        setIsRecordingVoice(false);
-        handleSendRoseMessage("Est-ce que la mammographie fait mal ?");
-      }, 2200);
-      return;
-    }
-
-    try {
-      // @ts-expect-error constructeur API speech standard
-      const recognition = new SpeechRecognition();
-      recognition.lang = "fr-FR";
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      setIsRecordingVoice(true);
-      // @ts-expect-error événement de résultat speech
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setIsRecordingVoice(false);
-        handleSendRoseMessage(transcript);
-      };
-      recognition.onerror = () => {
-        setIsRecordingVoice(false);
-        notify("La saisie vocale n'a pas pu être captée, vous pouvez écrire votre message.");
-      };
-      recognition.onend = () => {
-        setIsRecordingVoice(false);
-      };
-      recognition.start();
-    } catch {
-      setIsRecordingVoice(false);
-    }
+    }, 600);
   };
 
   /**
    * Simulation Orange Money API
    */
-  const handleInitiateOrangeMoneyDonation = () => {
+  const handleStartDonationProcess = () => {
     const amount = customDonationAmount ? Number(customDonationAmount) : donationAmount;
     if (!amount || amount < 100) {
       notify("Veuillez sélectionner ou entrer un montant valide (min. 100 FCFA).");
       return;
     }
     if (!orangeMoneyPhone.trim()) {
-      notify("Veuillez renseigner votre numéro Orange Money.");
+      notify("Veuillez renseigner votre numéro de téléphone.");
       return;
     }
     setDonationStep("confirm");
   };
 
   const handleConfirmOrangeMoney = () => {
-    // Passage à l'étape OTP / Push USSD
     setDonationStep("otp");
-    notify("Demande envoyée à Orange Money Burkina Faso (#144*4*6#)");
+    notify("Demande envoyée au réseau Orange Money Burkina Faso (#144*4*6#)");
   };
 
   const handleValidateOrangeMoneyOTP = () => {
-    // Génération du numéro de reçu Orange Money
     const randomId = "OM-BF-" + Math.floor(100000 + Math.random() * 900000);
     setLastDonationId(randomId);
     setDonationStep("success");
-    notify("Paiement Orange Money réussi ! Merci pour votre don solidaire.");
-  };
-
-  const handlePublishAnnouncement = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAnnouncement.title || !newAnnouncement.content || !newAnnouncement.author) {
-      notify("Veuillez remplir le titre, la structure et la description.");
-      return;
-    }
-    const created: PartnerAnnouncement = {
-      id: Date.now(),
-      title: newAnnouncement.title,
-      author: newAnnouncement.author,
-      authorType: newAnnouncement.authorType,
-      city: newAnnouncement.city,
-      date: newAnnouncement.date,
-      badge: newAnnouncement.badge,
-      badgeColor: newAnnouncement.badgeColor,
-      content: newAnnouncement.content,
-      contact: newAnnouncement.contact || "+226 70 00 00 00",
-      likes: 1,
-    };
-    setAnnouncements([created, ...announcements]);
-    setShowNewAnnouncementModal(false);
-    notify("Votre annonce a été publiée avec succès pour toute la communauté !");
+    notify("Paiement Orange Money validé avec succès !");
   };
 
   return (
@@ -805,11 +923,50 @@ export function PinkHubMobile() {
         .ph-pulse { animation: ph-pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
       `}</style>
 
-      {/* Viewport smartphone */}
+      {/* Cadre Smartphone */}
       <div className="relative mx-auto flex h-[100dvh] w-full max-w-[440px] flex-col overflow-hidden bg-[#fffbfa] shadow-[0_28px_80px_rgba(93,39,61,.18)] sm:h-[min(890px,95dvh)] sm:rounded-[36px] sm:border sm:border-white/90">
 
         {/* ==================================================================== */}
-        {/* BARRE LATÉRALE (SIDEBAR NAVIGATION COMPLÈTE)                         */}
+        {/* ÉCRAN DE DÉMARRAGE (SPLASH SCREEN) : LOGO & POWERED BY ROSE IA       */}
+        {/* ==================================================================== */}
+        {showSplash && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-between bg-gradient-to-b from-[#fff8fa] via-[#faedf1] to-[#f7e4eb] p-8 text-center ph-enter sm:rounded-[36px]">
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <div className="relative">
+                <div className="h-32 w-32 rounded-full bg-[#fde9ef] ph-pulse absolute -inset-2" />
+                <img
+                  src="/images/pinkhub-mvp-paglaafi.png"
+                  alt="Logo PagLaafi"
+                  className="relative h-28 w-28 object-contain mix-blend-multiply drop-shadow-md"
+                />
+              </div>
+
+              <h1 className="ph-display mt-5 text-[32px] font-bold tracking-tight text-[#472738]">
+                PagLaafi
+              </h1>
+              <p className="mt-1 text-xs font-semibold text-[#8e4966]">
+                Dépistage & Santé du sein au Burkina Faso
+              </p>
+            </div>
+
+            {/* Mention exigée : POWERED BY ROSE IA */}
+            <div className="pb-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#e8c0ce] bg-white/80 px-4 py-1.5 text-xs font-bold text-[#79344f] shadow-sm">
+                <Sparkles size={15} className="text-amber-500 animate-spin" />
+                <span>Powered by Rose IA</span>
+              </div>
+              <button
+                onClick={() => setShowSplash(false)}
+                className="mt-3 block text-[11px] font-semibold text-[#9b657a] hover:underline"
+              >
+                Accéder directement →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* BARRE LATÉRALE (SIDEBAR) AVEC ACCÈS MULTI-RÔLES                      */}
         {/* ==================================================================== */}
         {sidebarOpen && (
           <div
@@ -817,19 +974,19 @@ export function PinkHubMobile() {
             onClick={() => setSidebarOpen(false)}
           >
             <div
-              className="relative flex h-full w-[84%] max-w-[325px] flex-col bg-[#fffaf9] p-5 shadow-2xl transition-transform"
+              className="relative flex h-full w-[84%] max-w-[325px] flex-col bg-[#fffaf9] p-5 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3.5">
+              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
                 <div className="flex items-center gap-2.5">
                   <img
                     src="/images/pinkhub-mvp-paglaafi.png"
                     alt="Logo PagLaafi"
-                    className="h-11 w-11 object-contain mix-blend-multiply"
+                    className="h-10 w-10 object-contain mix-blend-multiply"
                   />
                   <div>
-                    <h2 className="ph-display text-xl font-bold text-[#472738]">PagLaafi</h2>
-                    <p className="text-[10px] font-medium text-[#92546e]">Burkina Faso · Santé des femmes</p>
+                    <h2 className="ph-display text-lg font-bold text-[#472738]">PagLaafi</h2>
+                    <p className="text-[10px] font-medium text-[#92546e]">Burkina Faso</p>
                   </div>
                 </div>
                 <button
@@ -840,22 +997,26 @@ export function PinkHubMobile() {
                 </button>
               </div>
 
-              {/* État de connexion dans le menu */}
+              {/* Statut de profil dans le menu */}
               <div className="mt-3 rounded-2xl bg-[#f9edf1] p-3 text-xs">
                 {currentUser ? (
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="block text-[10px] font-bold uppercase tracking-wider text-[#9b4967]">Connectée</span>
-                      <span className="font-bold text-[#472738]">{currentUser.prenom} {currentUser.nom}</span>
-                      <span className="block text-[10px] text-[#7d5d6c]">{currentUser.telephone}</span>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="rounded-full bg-[#a14364] px-2 py-0.5 text-[9px] font-bold text-white">
+                        {currentUser.roleLabel}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setCurrentUser(null);
+                          notify("Déconnectée.");
+                        }}
+                        className="text-[11px] text-rose-600 font-bold hover:underline"
+                      >
+                        Déconnexion
+                      </button>
                     </div>
-                    <button
-                      onClick={handleLogout}
-                      className="grid h-8 w-8 place-items-center rounded-xl bg-white text-rose-600 shadow-sm"
-                      title="Déconnexion"
-                    >
-                      <LogOut size={16} />
-                    </button>
+                    <p className="mt-1 font-bold text-[#472738]">{currentUser.prenom} {currentUser.nom}</p>
+                    <p className="text-[10px] text-[#7d5d6c]">{currentUser.telephone}</p>
                   </div>
                 ) : (
                   <button
@@ -870,99 +1031,102 @@ export function PinkHubMobile() {
                 )}
               </div>
 
-              {/* Navigation latérale complète */}
-              <nav className="mt-4 space-y-1 flex-1 overflow-y-auto">
+              {/* Raccourci Panneau Superadmin si connecté en Superadmin */}
+              {currentUser?.role === "superadmin" && (
+                <div className="mt-2.5">
+                  <button
+                    onClick={() => {
+                      setSidebarOpen(false);
+                      setShowSuperadminModal(true);
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl bg-purple-900 px-3 py-2 text-xs font-bold text-white shadow"
+                  >
+                    <span className="flex items-center gap-2">
+                      <ShieldAlert size={15} className="text-amber-300" /> Panneau Superadmin
+                    </span>
+                    <span className="rounded-full bg-amber-400 px-1.5 py-0.2 text-[9px] font-extrabold text-purple-950">
+                      {pendingRegistrations.filter((r) => r.status === "pending").length}
+                    </span>
+                  </button>
+                </div>
+              )}
+
+              {/* Navigation de la barre latérale */}
+              <nav className="mt-3 space-y-1 flex-1 overflow-y-auto text-xs">
                 <button
                   onClick={() => { setSection("Accueil"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Accueil" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Accueil" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
-                  <Heart size={18} className={section === "Accueil" ? "text-[#a14364]" : "text-[#977382]"} />
-                  <span>Accueil</span>
+                  <Heart size={17} /> <span>Accueil</span>
                 </button>
 
                 <button
                   onClick={() => { setSection("Centres"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Centres" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Centres" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <MapPin size={18} className={section === "Centres" ? "text-[#a14364]" : "text-[#977382]"} />
-                    <span>Carte Vivante des Centres</span>
-                  </div>
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800">En direct</span>
-                </button>
-
-                <button
-                  onClick={() => { setSection("RoseIA"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "RoseIA" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Sparkles size={18} className="text-[#a14364]" />
-                    <span>Rose IA (Assistante Vocale)</span>
-                  </div>
-                  <span className="rounded-full bg-[#a14364] px-2 py-0.5 text-[9px] font-bold text-white">Vocal</span>
-                </button>
-
-                <button
-                  onClick={() => { setSection("Annonces"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Annonces" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Megaphone size={18} className={section === "Annonces" ? "text-[#a14364]" : "text-[#977382]"} />
-                    <span>Annonces & Événements</span>
-                  </div>
-                  <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[9px] font-bold text-purple-900">Actu</span>
-                </button>
-
-                <button
-                  onClick={() => { setSection("Accompagnant"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Accompagnant" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
-                >
-                  <UserPlus size={18} className={section === "Accompagnant" ? "text-[#a14364]" : "text-[#977382]"} />
-                  <span>L'Accompagnant (À deux)</span>
+                  <span className="flex items-center gap-3"><MapPin size={17} /> Carte Vivante des Soins</span>
+                  <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-800">En direct</span>
                 </button>
 
                 <button
                   onClick={() => { setSection("Comprendre"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Comprendre" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Comprendre" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
-                  <AudioLines size={18} className={section === "Comprendre" ? "text-[#a14364]" : "text-[#977382]"} />
-                  <span>Comprendre & Audio</span>
+                  <span className="flex items-center gap-3"><BookOpen size={17} /> Comprendre (Français · Mooré · Dioula)</span>
+                  <span className="rounded-full bg-pink-100 px-1.5 py-0.5 text-[9px] font-bold text-[#a14364]">Audio</span>
                 </button>
 
                 <button
-                  onClick={() => { setSection("Soutien"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Soutien" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  onClick={() => { setSection("RoseIA"); setSelectedCenter(null); setSidebarOpen(false); }}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "RoseIA" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <HeartHandshake size={18} className={section === "Soutien" ? "text-[#a14364]" : "text-[#977382]"} />
-                    <span>Soutien & Don Orange Money</span>
-                  </div>
-                  <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[9px] font-bold text-orange-800">OM</span>
+                  <span className="flex items-center gap-3"><Sparkles size={17} /> Rose IA (Assistance Vocale)</span>
+                  <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900">IA</span>
                 </button>
 
-                {/* Espace Soignant */}
-                <div className="pt-3 border-t border-[#f2e1e6]">
-                  <p className="px-3.5 text-[9px] font-bold uppercase tracking-wider text-[#a07484]">Accès Professionnels</p>
+                <button
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    setShowDonationModal(true);
+                  }}
+                  className="flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-bold text-orange-900 hover:bg-orange-50"
+                >
+                  <span className="flex items-center gap-3"><Gift size={17} className="text-[#f16e00]" /> Faire un don</span>
+                  <span className="text-[10px] text-orange-700">Solidarité</span>
+                </button>
+
+                <button
+                  onClick={() => { setSection("Annonces"); setSelectedCenter(null); setSidebarOpen(false); }}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Annonces" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                >
+                  <Megaphone size={17} /> <span>Annonces & Événements</span>
+                </button>
+
+                <button
+                  onClick={() => { setSection("Accompagnant"); setSelectedCenter(null); setSidebarOpen(false); }}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Accompagnant" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                >
+                  <UserPlus size={17} /> <span>L'Accompagnant (À deux)</span>
+                </button>
+
+                {/* Espace Soignant / Responsable */}
+                <div className="pt-2 border-t border-[#f2e1e6]">
                   <button
                     onClick={() => {
                       setSidebarOpen(false);
                       setShowAgentModal(centers[0]);
                     }}
-                    className="mt-1.5 flex w-full items-center gap-2.5 rounded-2xl border border-dashed border-[#dfb3c1] bg-[#fcf5f7] px-3.5 py-2.5 text-left text-xs font-bold text-[#863853] hover:bg-[#f8e9ee]"
+                    className="flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#dfb3c1] bg-[#fcf5f7] px-3 py-2 text-left text-xs font-bold text-[#863853]"
                   >
-                    <Edit3 size={15} />
-                    <span>Mettre à jour mon centre (Soignant)</span>
+                    <Edit3 size={15} /> Mettre à jour mon centre (Soignant)
                   </button>
                 </div>
               </nav>
 
-              {/* Bas de sidebar */}
+              {/* Ligne d'urgence */}
               <div className="mt-auto rounded-2xl bg-[#734059] p-3 text-white">
-                <div className="flex items-center gap-2 text-xs font-bold">
-                  <Phone size={14} /> Numéro vert national gratuit
-                </div>
-                <p className="mt-0.5 text-sm font-extrabold tracking-wide">80 00 11 22</p>
-                <p className="text-[10px] text-white/70">Anonyme au Burkina Faso</p>
+                <p className="text-[11px] font-bold">Numéro vert national gratuit</p>
+                <p className="text-base font-extrabold tracking-wide">80 00 11 22</p>
               </div>
             </div>
           </div>
@@ -989,14 +1153,19 @@ export function PinkHubMobile() {
                 alt="Logo PagLaafi"
                 className="h-10 w-10 object-contain mix-blend-multiply"
               />
-              <span className="ph-display text-lg font-bold tracking-tight text-[#472738]">
-                PagLaafi
-              </span>
+              <div>
+                <span className="ph-display text-lg font-bold tracking-tight text-[#472738] block leading-none">
+                  PagLaafi
+                </span>
+                <span className="text-[9px] font-bold text-[#b45d7b] uppercase tracking-wider">
+                  By Rose IA
+                </span>
+              </div>
             </button>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Bouton Rose IA Vocal direct */}
+            {/* Bouton Rose IA */}
             <button
               onClick={() => setSection("RoseIA")}
               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition shadow-sm ${section === "RoseIA" ? "bg-[#a14364] text-white" : "border border-[#e7bcc9] bg-[#fbf0f4] text-[#8e3857]"}`}
@@ -1005,16 +1174,18 @@ export function PinkHubMobile() {
               <span>Rose IA</span>
             </button>
 
-            {/* Bouton Compte / Connexion */}
+            {/* Bouton Compte */}
             <button
               onClick={() => setShowAuthModal(true)}
               className="grid h-9 w-9 place-items-center rounded-full border border-[#eedfe4] bg-white text-[#7d5668] hover:bg-[#faedf1]"
-              title={currentUser ? `Connectée : ${currentUser.prenom}` : "Connexion"}
+              title={currentUser ? `${currentUser.prenom} (${currentUser.roleLabel})` : "Connexion"}
             >
               {currentUser ? (
-                <span className="text-xs font-bold text-[#a14364]">{currentUser.prenom[0]}</span>
+                <span className="text-xs font-bold text-[#a14364]">
+                  {currentUser.prenom[0]}
+                </span>
               ) : (
-                <User size={18} />
+                <User size={17} />
               )}
             </button>
           </div>
@@ -1039,54 +1210,76 @@ export function PinkHubMobile() {
                   </span>
                   {currentUser && (
                     <span className="text-[11px] font-bold text-[#8e4462]">
-                      Bonjour, {currentUser.prenom} !
+                      {currentUser.prenom} ({currentUser.roleLabel})
                     </span>
                   )}
                 </div>
 
-                <h1 className="ph-display relative mt-3 text-[34px] leading-[1.02] tracking-[-.025em] text-[#452637]">
+                <h1 className="ph-display relative mt-3 text-[33px] leading-[1.02] tracking-[-.025em] text-[#452637]">
                   Une question ?<br />
                   <span className="text-[#b94e70]">Vous n'êtes pas seule.</span>
                 </h1>
 
-                <p className="relative mt-2.5 text-[13px] leading-[1.6] text-[#745866]">
+                <p className="relative mt-2 text-[13px] leading-[1.6] text-[#745866]">
                   Avant de vous déplacer, sachez où l'appareil fonctionne aujourd'hui, combien ça coûte et l'attente sur place.
                 </p>
 
                 <div className="relative mt-4 flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => { setSection("Centres"); setViewMode("map"); }}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#a14364] px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#8f3956]"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#a14364] px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-[#8f3956]"
                   >
                     <MapPin size={15} /> Voir la carte en direct
                   </button>
                   <button
-                    onClick={() => setSection("RoseIA")}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[#dfb3c1] bg-white px-4 py-2.5 text-xs font-bold text-[#8c3e59] shadow-sm hover:bg-[#fbf4f6]"
+                    onClick={() => setSection("Comprendre")}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[#dfb3c1] bg-white px-3.5 py-2 text-xs font-bold text-[#8c3e59] shadow-sm hover:bg-[#fbf4f6]"
                   >
-                    <Sparkles size={14} className="text-amber-500" /> Parler à Rose IA
+                    <Headphones size={14} /> Comprendre en 3 langues
                   </button>
                 </div>
               </div>
 
-              {/* Raccourci Annonces Partenaires Défilant */}
+              {/* Raccourci Don Solidaire */}
               <div className="px-5 pt-4">
+                <div
+                  onClick={() => setShowDonationModal(true)}
+                  className="cursor-pointer rounded-2xl border border-orange-200 bg-gradient-to-r from-orange-50 to-[#fff9f6] p-3.5 shadow-sm hover:border-orange-300"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f16e00] text-white">
+                        <Gift size={20} />
+                      </span>
+                      <div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-orange-900">
+                          Solidarité Burkina
+                        </span>
+                        <h4 className="ph-display text-sm font-bold text-[#452737]">
+                          Faire un don
+                        </h4>
+                      </div>
+                    </div>
+                    <button className="rounded-full bg-[#f16e00] px-3.5 py-1 text-xs font-bold text-white shadow">
+                      Aider →
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Raccourci Événements */}
+              <div className="px-5 pt-3">
                 <div
                   onClick={() => setSection("Annonces")}
                   className="cursor-pointer rounded-2xl border border-purple-200 bg-purple-50/70 p-3 shadow-sm hover:border-purple-300"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-purple-900">
-                      <Megaphone size={13} /> Événement du moment
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-purple-900">
+                      <Megaphone size={13} /> {announcements[0].badge}
                     </span>
-                    <span className="text-[10px] font-semibold text-purple-700">Voir tout →</span>
+                    <span className="text-[10px] font-semibold text-purple-700">Annonces →</span>
                   </div>
-                  <h4 className="mt-1 text-xs font-bold text-purple-950">
-                    {announcements[0].title}
-                  </h4>
-                  <p className="text-[11px] text-purple-800 line-clamp-1 mt-0.5">
-                    {announcements[0].content}
-                  </p>
+                  <h4 className="mt-1 text-xs font-bold text-purple-950">{announcements[0].title}</h4>
                 </div>
               </div>
 
@@ -1109,60 +1302,6 @@ export function PinkHubMobile() {
                     <ChevronRight size={18} className="text-[#a14364]" />
                   </div>
                 </div>
-              </div>
-
-              {/* Don solidaire Orange Money sur l'accueil */}
-              <div className="px-5 pt-3">
-                <div className="rounded-[22px] border border-orange-200 bg-gradient-to-r from-orange-50 to-[#fff8f5] p-3.5 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f16e00] text-white shadow-sm font-black text-sm">
-                        OM
-                      </span>
-                      <div>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-orange-900">Solidarité Burkina</span>
-                        <h4 className="ph-display text-sm font-bold text-[#452737]">Faire un don par Orange Money</h4>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowDonationModal(true)}
-                      className="rounded-full bg-[#f16e00] px-3 py-1.5 text-xs font-bold text-white shadow hover:bg-orange-600"
-                    >
-                      Aider
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* 3 Blocs Rapides */}
-              <div className="px-5 pt-4 space-y-2">
-                <button
-                  onClick={() => { setSection("Centres"); setViewMode("map"); }}
-                  className="flex w-full items-center gap-3 rounded-2xl border border-[#f0dfe4] bg-white p-3 text-left transition hover:border-[#dfa3b5]"
-                >
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f8e8ec] text-[#a44666]">
-                    <MapPin size={19} />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <span className="block text-xs font-bold text-[#4c2d3c]">Carte vivante des centres</span>
-                    <span className="block text-[11px] text-[#8c737f]">Appareil dispo, prix et attente en direct</span>
-                  </div>
-                  <ChevronRight size={16} className="text-[#a87487]" />
-                </button>
-
-                <button
-                  onClick={() => setSection("Comprendre")}
-                  className="flex w-full items-center gap-3 rounded-2xl border border-[#f0dfe4] bg-white p-3 text-left transition hover:border-[#dfa3b5]"
-                >
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f5edf7] text-[#845089]">
-                    <Headphones size={19} />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <span className="block text-xs font-bold text-[#4c2d3c]">Guide vocal français & mooré</span>
-                    <span className="block text-[11px] text-[#8c737f]">Écouter les leçons sans jargon</span>
-                  </div>
-                  <ChevronRight size={16} className="text-[#a87487]" />
-                </button>
               </div>
             </section>
           )}
@@ -1197,7 +1336,7 @@ export function PinkHubMobile() {
                 </div>
               </div>
 
-              {/* Recherche */}
+              {/* Recherche & Filtres */}
               <div className="mt-3 relative">
                 <Search size={16} className="absolute left-3.5 top-3 text-[#9f7183]" />
                 <input
@@ -1207,14 +1346,9 @@ export function PinkHubMobile() {
                   placeholder="Rechercher centre, ville, examen..."
                   className="w-full rounded-2xl border border-[#ebd8de] bg-white py-2 pl-9 pr-8 text-xs text-[#4b2f3e] focus:border-[#a14364] focus:outline-none"
                 />
-                {searchQuery && (
-                  <button onClick={() => setSearchQuery("")} className="absolute right-3 top-2.5 text-[#9f7183]">
-                    <X size={15} />
-                  </button>
-                )}
               </div>
 
-              {/* Filtres Badges */}
+              {/* Badges filtres */}
               <div className="ph-scroll mt-2 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
                 <button
                   onClick={() => { setStatusFilter("all"); setCityFilter("all"); }}
@@ -1246,15 +1380,9 @@ export function PinkHubMobile() {
                 >
                   Bobo
                 </button>
-                <button
-                  onClick={() => setCityFilter(cityFilter === "Koudougou" ? "all" : "Koudougou")}
-                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Koudougou" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
-                >
-                  Koudougou
-                </button>
               </div>
 
-              {/* Carte SVG stylisée */}
+              {/* Carte SVG interactive */}
               {viewMode === "map" && (
                 <div className="mt-2.5">
                   <div className="relative h-[250px] w-full overflow-hidden rounded-[24px] border border-[#e5d0d8] bg-gradient-to-b from-[#fdf7f9] to-[#f4e4ea] p-2.5 shadow-inner">
@@ -1303,23 +1431,15 @@ export function PinkHubMobile() {
                       </button>
                     </div>
 
-                    <div className="mt-2 rounded-xl bg-[#fbf6f7] p-2 text-[11px] text-[#6e515e]">
-                      <div className="flex items-center justify-between font-semibold">
-                        <span>{center.isApparatusWorking ? "Mammographe opérationnel" : "Appareil indisponible"}</span>
-                        <span className="text-[#8f4a64]">{center.estimatedWait}</span>
-                      </div>
-                      <div className="mt-0.5 flex justify-between text-[10px] text-[#866a78]">
-                        <span>{center.agentsPresent} agents ({center.queueCount} en file)</span>
-                        <span className="font-bold text-emerald-700">Palpation : 0 FCFA</span>
-                      </div>
-                    </div>
-
-                    <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-[#f4e4e9] pt-2 text-[10px]">
+                    <div className="mt-2.5 flex items-center justify-between gap-1.5 border-t border-[#f4e4e9] pt-2 text-[10px]">
                       <button onClick={() => handlePlayAudio(center.audioMessageMoore, "moore")} className="inline-flex items-center gap-1 rounded-full border border-[#e4bfcd] bg-white px-2 py-0.5 font-bold text-[#92405d]">
-                        <Volume2 size={12} /> Message Mooré
+                        <Volume2 size={12} /> Mooré
+                      </button>
+                      <button onClick={() => handlePlayAudio(center.audioMessageDioula, "dioula")} className="inline-flex items-center gap-1 rounded-full border border-[#e4bfcd] bg-white px-2 py-0.5 font-bold text-[#92405d]">
+                        <Volume2 size={12} /> Dioula
                       </button>
                       <button onClick={() => setSelectedCenter(center)} className="rounded-full bg-[#a14364] px-2.5 py-1 font-bold text-white">
-                        Détails & Tarifs
+                        Détails
                       </button>
                     </div>
                   </div>
@@ -1329,350 +1449,76 @@ export function PinkHubMobile() {
           )}
 
           {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 3 : ROSE IA (ASSISTANTE VOCALE SPÉCIALISÉE)                 */}
-          {/* ------------------------------------------------------------------ */}
-          {section === "RoseIA" && !selectedCenter && (
-            <section className="ph-enter flex flex-col h-full px-5 pt-3">
-              {/* Entête Rose IA */}
-              <div className="rounded-[24px] bg-gradient-to-r from-[#734059] to-[#924b6d] p-4 text-white shadow-md">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="relative">
-                      <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/20 text-white shadow-inner">
-                        <Sparkles size={22} className="text-amber-300" />
-                      </span>
-                      {roseSpeaking && (
-                        <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white ph-pulse" />
-                      )}
-                    </div>
-                    <div>
-                      <h2 className="ph-display text-lg font-bold">Rose IA</h2>
-                      <p className="text-[11px] text-white/80">Assistance vocale santé au Burkina Faso</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handlePlayAudio("Bonjour, je suis Rose IA. Posez-moi votre question en touchant le micro.", "fr")}
-                    className="rounded-full bg-white/20 p-2 text-white hover:bg-white/30"
-                    title="Écouter la voix de Rose IA"
-                  >
-                    <Volume2 size={18} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Questions suggérées rapides */}
-              <div className="ph-scroll mt-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
-                {[
-                  "Est-ce que ça fait mal ?",
-                  "Combien coûte le dépistage ?",
-                  "J'ai senti une petite boule",
-                  "Quels centres sont ouverts ?",
-                ].map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => handleSendRoseMessage(q)}
-                    className="shrink-0 rounded-full border border-[#e4cad3] bg-white px-2.5 py-1 text-[#863b55] font-semibold hover:bg-[#faf0f3]"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-
-              {/* Fil de discussion */}
-              <div className="mt-3 space-y-3 flex-1 overflow-y-auto">
-                {roseMessages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
-                  >
-                    <div
-                      className={`max-w-[85%] rounded-[20px] p-3 text-xs leading-relaxed shadow-sm ${msg.sender === "user" ? "bg-[#a14364] text-white rounded-tr-sm" : "bg-white text-[#452737] border border-[#f0dfe4] rounded-tl-sm"}`}
-                    >
-                      <p>{msg.text}</p>
-                      {msg.mooreText && (
-                        <div className="mt-2 border-t border-[#f4e4e9] pt-1.5 text-[10.5px] italic text-[#845068]">
-                          <span className="font-bold">Mooré :</span> {msg.mooreText}
-                        </div>
-                      )}
-                    </div>
-                    {msg.sender === "rose" && (
-                      <button
-                        onClick={() => handlePlayAudio(msg.text, "fr")}
-                        className="mt-1 flex items-center gap-1 text-[10px] font-bold text-[#a14364] hover:underline"
-                      >
-                        <Volume2 size={12} /> Réécouter la réponse
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Barre de saisie & Micro vocal */}
-              <div className="mt-3 rounded-2xl border border-[#e5ccd5] bg-white p-2 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleToggleVoiceRecording}
-                    className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition ${isRecordingVoice ? "bg-rose-600 text-white ph-pulse" : "bg-[#f8e7ec] text-[#a14364] hover:bg-[#f3d7df]"}`}
-                    title={isRecordingVoice ? "Enregistrement en cours..." : "Parler à la voix"}
-                  >
-                    <Mic size={19} />
-                  </button>
-                  <input
-                    type="text"
-                    value={roseInput}
-                    onChange={(e) => setRoseInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSendRoseMessage()}
-                    placeholder={isRecordingVoice ? "Rose IA écoute votre voix..." : "Posez votre question à Rose IA..."}
-                    className="flex-1 bg-transparent text-xs text-[#452737] outline-none placeholder:text-[#a68c98]"
-                  />
-                  <button
-                    onClick={() => handleSendRoseMessage()}
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#a14364] text-white hover:bg-[#8e3956]"
-                  >
-                    <Send size={16} />
-                  </button>
-                </div>
-                <div className="mt-1 px-2 text-center text-[9px] text-[#937583]">
-                  Rose IA informe et rassure. En cas d'urgence ou de douleur aiguë, consultez un médecin.
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 4 : ANNONCES & ÉVÉNEMENTS DES PARTENAIRES                     */}
-          {/* ------------------------------------------------------------------ */}
-          {section === "Annonces" && !selectedCenter && (
-            <section className="ph-enter px-5 pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-                    Communauté & Partenaires
-                  </span>
-                  <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
-                    Annonces & Événements
-                  </h1>
-                </div>
-                <button
-                  onClick={() => setShowNewAnnouncementModal(true)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#a14364] px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-[#8e3956]"
-                >
-                  <Plus size={15} /> Publier
-                </button>
-              </div>
-
-              <p className="mt-1 text-xs text-[#795f6d]">
-                Retrouvez les campagnes mobiles, causeries éducatives et dépistages gratuits partagés par les associations burkinabè.
-              </p>
-
-              {/* Liste des annonces */}
-              <div className="mt-3.5 space-y-3">
-                {announcements.map((a) => (
-                  <div key={a.id} className="rounded-[22px] border border-[#efdfe4] bg-white p-4 shadow-sm">
-                    <div className="flex items-start justify-between">
-                      <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${a.badgeColor}`}>
-                        {a.badge}
-                      </span>
-                      <span className="text-[10px] font-semibold text-[#8b6576]">{a.city}</span>
-                    </div>
-
-                    <h3 className="ph-display mt-2 text-base font-bold text-[#452737] leading-snug">
-                      {a.title}
-                    </h3>
-
-                    <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-[#8c405c]">
-                      <Megaphone size={13} /> {a.author} ({a.authorType})
-                    </div>
-
-                    <p className="mt-2 text-xs leading-relaxed text-[#6d4f5e]">
-                      {a.content}
-                    </p>
-
-                    <div className="mt-3 flex items-center justify-between border-t border-[#f4e4e9] pt-2.5 text-xs">
-                      <div className="flex items-center gap-1.5 text-[11px] text-[#846b77]">
-                        <Calendar size={13} /> {a.date}
-                      </div>
-                      <a
-                        href={`tel:${a.contact}`}
-                        className="inline-flex items-center gap-1 rounded-full bg-[#faedf1] px-2.5 py-1 text-[11px] font-bold text-[#a14364] hover:bg-[#f6dbe3]"
-                      >
-                        <Phone size={12} /> Contacter
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 5 : L'ACCOMPAGNANT (ALLER À DEUX)                           */}
-          {/* ------------------------------------------------------------------ */}
-          {section === "Accompagnant" && !selectedCenter && (
-            <section className="ph-enter px-5 pt-4">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f9e8ed] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-                <HeartHandshake size={14} /> Aller faire son dépistage à deux
-              </span>
-              <h1 className="ph-display mt-1 text-[28px] leading-tight text-[#452637]">
-                L'Accompagnant
-              </h1>
-              <p className="mt-1 text-xs leading-5 text-[#795f6d]">
-                Aller faire son dépistage, c'est plus facile à deux. Invitez une sœur, une amie, une voisine ou votre conjoint à y aller avec vous.
-              </p>
-
-              {/* Formulaire */}
-              <div className="mt-3.5 rounded-[24px] border border-[#ebd6dc] bg-white p-4 shadow-sm">
-                <h2 className="ph-display text-base font-bold text-[#452737]">
-                  Inviter mon accompagnant(e)
-                </h2>
-
-                <div className="mt-3 space-y-2.5 text-xs">
-                  <div>
-                    <label className="block font-bold text-[#5c3c4b]">Prénom de l'accompagnant(e)</label>
-                    <input
-                      type="text"
-                      value={companionName}
-                      onChange={(e) => setCompanionName(e.target.value)}
-                      placeholder="Ex: Fatim, Aïcha, Moussa..."
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs text-[#4c2e3d] focus:border-[#a14364] focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block font-bold text-[#5c3c4b]">Lien de parenté</label>
-                      <select
-                        value={companionRelation}
-                        onChange={(e) => setCompanionRelation(e.target.value)}
-                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] bg-white p-2 text-xs text-[#4c2e3d]"
-                      >
-                        <option>Ma sœur</option>
-                        <option>Une amie</option>
-                        <option>Une voisine</option>
-                        <option>Mon mari / conjoint</option>
-                        <option>Ma mère</option>
-                        <option>Autre proche</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block font-bold text-[#5c3c4b]">Téléphone</label>
-                      <input
-                        type="tel"
-                        value={companionPhone}
-                        onChange={(e) => setCompanionPhone(e.target.value)}
-                        placeholder="Ex: 70 12 34 56"
-                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs text-[#4c2e3d]"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 flex flex-col gap-2">
-                  <button
-                    onClick={() => {
-                      const text = encodeURIComponent(`Bonjour ${companionName || "ma sœur"}, Aminata t'invite à faire ton dépistage avec elle. C'est plus facile à deux ! Rendez-vous sur PagLaafi : http://localhost:5173/`);
-                      window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
-                      setHasInvited(true);
-                      notify("Invitation WhatsApp prête à l'envoi.");
-                    }}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow hover:bg-emerald-700"
-                  >
-                    <MessageCircle size={16} /> Inviter par WhatsApp
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const text = encodeURIComponent(`Bonjour ${companionName || "ma sœur"}, Aminata t'invite à faire ton dépistage avec elle.`);
-                      window.open(`sms:${companionPhone}?body=${text}`, "_blank");
-                      setHasInvited(true);
-                      notify("SMS d'invitation préparé.");
-                    }}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#dfb3c1] bg-white py-2 text-xs font-bold text-[#8c3e59]"
-                  >
-                    <Share2 size={15} /> Inviter par SMS classique
-                  </button>
-                </div>
-              </div>
-
-              {/* Suivi du binôme */}
-              <div className="mt-4 rounded-[24px] bg-[#f9e9ee] p-4 shadow-sm text-xs">
-                <div className="flex items-center justify-between font-bold text-[#452737]">
-                  <span>Binôme : Aminata & {companionName || "Fatim"}</span>
-                  <span className="rounded-full bg-white px-2 py-0.5 text-[9px] text-[#865366]">Actif</span>
-                </div>
-                <p className="mt-1 text-[11px] text-[#7e5e6e]">Rendez-vous prévu le {companionDate}</p>
-
-                <div className="mt-3 flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => {
-                      setHasConfirmedVisit(!hasConfirmedVisit);
-                      notify(!hasConfirmedVisit ? "Visite confirmée !" : "Réinitialisé.");
-                    }}
-                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${hasConfirmedVisit ? "bg-emerald-600 text-white" : "border border-emerald-400 bg-emerald-50 text-emerald-800"}`}
-                  >
-                    <CheckCircle2 size={15} />
-                    {hasConfirmedVisit ? "Moi : J'y suis allée ✓" : "Moi : J'y suis allée"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCompanionConfirmedVisit(!companionConfirmedVisit);
-                      notify(!companionConfirmedVisit ? "Accompagnant confirmé !" : "Réinitialisé.");
-                    }}
-                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${companionConfirmedVisit ? "bg-emerald-600 text-white" : "border border-emerald-400 bg-emerald-50 text-emerald-800"}`}
-                  >
-                    <CheckCircle2 size={15} />
-                    {companionConfirmedVisit ? "Accompagnant : Présent ✓" : "Accompagnant : Présent"}
-                  </button>
-                </div>
-
-                <p className="mt-2.5 text-center text-[9.5px] text-[#8a6f7c]">
-                  🔒 Seule la confirmation de présence est partagée. Les résultats restent sous secret médical strict.
-                </p>
-              </div>
-            </section>
-          )}
-
-          {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 6 : COMPRENDRE & AUDIO                                      */}
+          {/* ONGLET 3 : COMPRENDRE (FRANÇAIS, MOORÉ & DIOULA)                   */}
           {/* ------------------------------------------------------------------ */}
           {section === "Comprendre" && !selectedCenter && (
             <section className="ph-enter px-5 pt-4">
               <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-                Guide vocal & écrit
+                Guide vocal & écrit en 3 langues
               </span>
               <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
-                Comprendre, à votre rythme
+                Comprendre, pas à pas
               </h1>
+              <p className="mt-1 text-xs text-[#795f6d]">
+                Des repères simples pour s'informer sans jargon, avec écoute vocale en Français, Mooré ou Dioula.
+              </p>
 
-              {/* Lecteur */}
-              <div className="mt-3.5 overflow-hidden rounded-[24px] bg-[#734059] p-4 text-white shadow-md">
+              {/* Lecteur Audio Multi-Langues Interactif */}
+              <div className="mt-3.5 overflow-hidden rounded-[26px] bg-[#734059] p-4 text-white shadow-md">
                 <div className="flex items-center justify-between text-[10px] text-white/75">
                   <span className="inline-flex items-center gap-1 font-bold uppercase tracking-wider">
                     <Headphones size={13} /> Lecteur Audio PagLaafi
                   </span>
+                  {/* Sélecteur 3 Langues exigé */}
                   <div className="flex rounded-full bg-white/15 p-0.5">
                     <button
                       onClick={() => setSpeechLanguage("fr")}
-                      className={`rounded-full px-2 py-0.5 font-bold ${speechLanguage === "fr" ? "bg-white text-[#734059]" : "text-white/80"}`}
+                      className={`rounded-full px-2 py-0.5 font-bold transition ${speechLanguage === "fr" ? "bg-white text-[#734059]" : "text-white/80"}`}
                     >
                       Français
                     </button>
                     <button
                       onClick={() => setSpeechLanguage("moore")}
-                      className={`rounded-full px-2 py-0.5 font-bold ${speechLanguage === "moore" ? "bg-white text-[#734059]" : "text-white/80"}`}
+                      className={`rounded-full px-2 py-0.5 font-bold transition ${speechLanguage === "moore" ? "bg-white text-[#734059]" : "text-white/80"}`}
                     >
                       Mooré
+                    </button>
+                    <button
+                      onClick={() => setSpeechLanguage("dioula")}
+                      className={`rounded-full px-2 py-0.5 font-bold transition ${speechLanguage === "dioula" ? "bg-white text-[#734059]" : "text-white/80"}`}
+                    >
+                      Dioula
                     </button>
                   </div>
                 </div>
 
-                <h2 className="ph-display mt-2 text-lg leading-snug">
+                <h2 className="ph-display mt-2.5 text-lg leading-snug">
                   {lessons[activeLesson].title}
                 </h2>
-                <p className="mt-1 text-xs text-white/80">
-                  {speechLanguage === "moore" ? lessons[activeLesson].mooreSummary : lessons[activeLesson].summary}
+
+                <p className="mt-1.5 text-xs text-white/85 leading-relaxed">
+                  {speechLanguage === "moore"
+                    ? lessons[activeLesson].mooreSummary
+                    : speechLanguage === "dioula"
+                      ? lessons[activeLesson].dioulaSummary
+                      : lessons[activeLesson].summary}
                 </p>
 
+                {/* Progression Audio */}
+                <div className="mt-3">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/20">
+                    <div
+                      className="h-full rounded-full bg-[#f6c2d1] transition-all duration-300"
+                      style={{ width: `${audioProgress}%` }}
+                    />
+                  </div>
+                  <div className="mt-1 flex justify-between text-[9px] text-white/70">
+                    <span>{isPlaying ? `Lecture en cours (${speechLanguage.toUpperCase()})...` : "Prêt à écouter"}</span>
+                    <span>{lessons[activeLesson].duration}</span>
+                  </div>
+                </div>
+
+                {/* Contrôles du Lecteur */}
                 <div className="mt-3 flex items-center justify-between border-t border-white/15 pt-2.5">
                   <button
                     onClick={() => {
@@ -1680,93 +1526,224 @@ export function PinkHubMobile() {
                       setIsPlaying(false);
                       setAudioProgress(0);
                     }}
-                    className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white"
+                    className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                    title="Réinitialiser"
                   >
                     <RotateCcw size={15} />
                   </button>
 
                   <button
-                    onClick={() =>
-                      handlePlayAudio(
-                        speechLanguage === "moore" ? lessons[activeLesson].mooreSummary : lessons[activeLesson].fullText,
-                        speechLanguage,
-                      )
-                    }
-                    className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#734059] shadow"
+                    onClick={() => {
+                      const text =
+                        speechLanguage === "moore"
+                          ? lessons[activeLesson].mooreSummary
+                          : speechLanguage === "dioula"
+                            ? lessons[activeLesson].dioulaSummary
+                            : lessons[activeLesson].fullText;
+                      handlePlayAudio(text, speechLanguage);
+                    }}
+                    className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#734059] shadow hover:bg-white/90"
                   >
                     {isPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
-                    <span>{isPlaying ? "Pause" : "Écouter l'explication"}</span>
+                    <span>{isPlaying ? "Pause" : `Écouter en ${speechLanguage === "fr" ? "Français" : speechLanguage === "moore" ? "Mooré" : "Dioula"}`}</span>
                   </button>
 
-                  <span className="text-[10px] text-white/70">{lessons[activeLesson].duration}</span>
+                  <span className="text-[10px] font-semibold text-white/80">
+                    {speechLanguage.toUpperCase()}
+                  </span>
                 </div>
               </div>
 
-              {/* Texte */}
+              {/* Texte intégral */}
               <div className="mt-3 rounded-2xl border border-[#eedde2] bg-white p-3.5 text-xs text-[#5b3c4c] leading-relaxed">
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#a14364] mb-1">
+                  Explication médicale détaillée :
+                </span>
                 {lessons[activeLesson].fullText}
+              </div>
+
+              {/* Liste des autres leçons */}
+              <div className="mt-4 space-y-2">
+                {lessons.map((lesson, idx) => (
+                  <button
+                    key={lesson.id}
+                    onClick={() => {
+                      setActiveLesson(idx);
+                      if (isPlaying) {
+                        const text =
+                          speechLanguage === "moore"
+                            ? lesson.mooreSummary
+                            : speechLanguage === "dioula"
+                              ? lesson.dioulaSummary
+                              : lesson.fullText;
+                        handlePlayAudio(text, speechLanguage);
+                      }
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${activeLesson === idx ? "border-[#cf869f] bg-[#fbf0f4]" : "border-[#f0dfe4] bg-white"}`}
+                  >
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${activeLesson === idx ? "bg-[#a14364] text-white" : "bg-[#f9e9ed] text-[#a14364]"}`}>
+                      <BookOpen size={16} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-bold text-[#4c2d3c]">{lesson.title}</span>
+                      <span className="text-[10px] text-[#8e6e7c]">{lesson.category} · {lesson.duration}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </section>
           )}
 
           {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 7 : SOUTIEN, ENTRAIDE & DON ORANGE MONEY                    */}
+          {/* ONGLET 4 : ROSE IA (ASSISTANTE VOCALE DISPONIBLE)                   */}
           {/* ------------------------------------------------------------------ */}
-          {section === "Soutien" && !selectedCenter && (
-            <section className="ph-enter px-5 pt-4">
-              <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-                Entraide & Solidarité
-              </span>
-              <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
-                À plusieurs, c'est moins lourd.
-              </h1>
-
-              {/* Module spécial : Faire un don Orange Money */}
-              <div className="mt-3.5 overflow-hidden rounded-[26px] border border-orange-300 bg-gradient-to-br from-[#fff7f2] to-[#ffeedd] p-4 shadow-sm">
+          {section === "RoseIA" && !selectedCenter && (
+            <section className="ph-enter flex flex-col h-full px-5 pt-3">
+              <div className="rounded-[24px] bg-gradient-to-r from-[#734059] to-[#924b6d] p-4 text-white shadow-md">
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f16e00] px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
-                    <Gift size={13} /> Orange Money Burkina Faso
-                  </span>
-                  <span className="text-[10px] font-bold text-orange-950">100% Solidaire</span>
-                </div>
-
-                <h3 className="ph-display mt-2 text-lg font-bold text-[#3d2430]">
-                  Soutenir une femme pour son dépistage
-                </h3>
-                <p className="mt-1 text-xs leading-relaxed text-[#684a58]">
-                  Au Burkina Faso, un don de <strong>5 000 FCFA</strong> permet de subventionner une mammographie complète pour une femme démunie.
-                </p>
-
-                <div className="mt-3 flex items-center justify-between gap-2 border-t border-orange-200/80 pt-3">
-                  <div>
-                    <span className="block text-[10px] text-orange-900 font-medium">Associations vérifiées :</span>
-                    <span className="text-xs font-bold text-[#452737]">ABAC, COBUCAN, Schiphra</span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="relative">
+                      <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20 text-white">
+                        <Sparkles size={20} className="text-amber-300" />
+                      </span>
+                      {roseSpeaking && (
+                        <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white ph-pulse" />
+                      )}
+                    </div>
+                    <div>
+                      <h2 className="ph-display text-base font-bold">Rose IA</h2>
+                      <p className="text-[10px] text-white/80">Assistance vocale · Français, Mooré, Dioula</p>
+                    </div>
                   </div>
                   <button
-                    onClick={() => setShowDonationModal(true)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#f16e00] px-4 py-2 text-xs font-bold text-white shadow hover:bg-orange-600 transition"
+                    onClick={() => handlePlayAudio("Bonjour, je suis Rose IA. Posez-moi votre question en touchant le micro.", "fr")}
+                    className="rounded-full bg-white/20 p-2 text-white"
                   >
-                    <CreditCard size={14} /> Donner par Orange Money
+                    <Volume2 size={16} />
                   </button>
                 </div>
               </div>
 
-              {/* Ligne d'urgence */}
-              <div className="mt-3.5 overflow-hidden rounded-2xl bg-[#734059] p-4 text-white shadow">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-white/80">
-                  Numéro vert national gratuit
-                </span>
-                <h3 className="ph-display mt-1 text-2xl font-bold">80 00 11 22</h3>
-                <p className="mt-0.5 text-[11px] text-white/80">
-                  Écoute psychologique & conseils médicaux 7j/7 depuis tout téléphone au Burkina Faso.
-                </p>
+              {/* Suggestions rapides */}
+              <div className="ph-scroll mt-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
+                {["Est-ce que ça fait mal ?", "Combien coûte le dépistage ?", "J'ai senti une petite boule"].map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => handleSendRoseMessage(q)}
+                    className="shrink-0 rounded-full border border-[#e4cad3] bg-white px-2.5 py-1 text-[#863b55] font-semibold"
+                  >
+                    {q}
+                  </button>
+                ))}
               </div>
 
-              {/* Liste des associations partenaires soutenues */}
-              <div className="mt-4">
-                <h3 className="ph-display text-base font-bold text-[#452737]">
-                  Nos associations partenaires
+              {/* Discussion */}
+              <div className="mt-3 space-y-2.5 flex-1 overflow-y-auto">
+                {roseMessages.map((msg, i) => (
+                  <div key={i} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
+                    <div
+                      className={`max-w-[85%] rounded-[20px] p-3 text-xs leading-relaxed shadow-sm ${msg.sender === "user" ? "bg-[#a14364] text-white rounded-tr-sm" : "bg-white text-[#452737] border border-[#f0dfe4] rounded-tl-sm"}`}
+                    >
+                      <p>{msg.text}</p>
+                      {msg.mooreText && (
+                        <div className="mt-1.5 border-t border-[#f4e4e9] pt-1 text-[10px] italic text-[#845068]">
+                          <strong>Mooré :</strong> {msg.mooreText}
+                        </div>
+                      )}
+                      {msg.dioulaText && (
+                        <div className="mt-1 text-[10px] italic text-[#845068]">
+                          <strong>Dioula :</strong> {msg.dioulaText}
+                        </div>
+                      )}
+                    </div>
+                    {msg.sender === "rose" && (
+                      <button
+                        onClick={() => handlePlayAudio(msg.text, "fr")}
+                        className="mt-0.5 flex items-center gap-1 text-[10px] font-bold text-[#a14364] hover:underline"
+                      >
+                        <Volume2 size={12} /> Écouter à voix haute
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Saisie & Micro vocal */}
+              <div className="mt-2.5 rounded-2xl border border-[#e5ccd5] bg-white p-2 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      notify("Micro activé. Posez votre question à voix haute...");
+                      setIsRecordingVoice(true);
+                      window.setTimeout(() => {
+                        setIsRecordingVoice(false);
+                        handleSendRoseMessage("Est-ce que la mammographie fait mal ?");
+                      }, 2000);
+                    }}
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition ${isRecordingVoice ? "bg-rose-600 text-white ph-pulse" : "bg-[#f8e7ec] text-[#a14364]"}`}
+                  >
+                    <Mic size={17} />
+                  </button>
+                  <input
+                    type="text"
+                    value={roseInput}
+                    onChange={(e) => setRoseInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendRoseMessage()}
+                    placeholder={isRecordingVoice ? "Rose IA vous écoute..." : "Écrivez ou appuyez sur le micro..."}
+                    className="flex-1 bg-transparent text-xs text-[#452737] outline-none"
+                  />
+                  <button
+                    onClick={() => handleSendRoseMessage()}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#a14364] text-white"
+                  >
+                    <Send size={15} />
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ------------------------------------------------------------------ */}
+          {/* ONGLET 5 : FAIRE UN DON (SUIT AUTOMATIQUEMENT ORANGE MONEY)         */}
+          {/* ------------------------------------------------------------------ */}
+          {section === "FaireUnDon" && !selectedCenter && (
+            <section className="ph-enter px-5 pt-4">
+              <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
+                Solidarité · Burkina Faso
+              </span>
+              <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+                Faire un don
+              </h1>
+              <p className="mt-1 text-xs text-[#795f6d]">
+                Votre contribution finance directement le dépistage et les soins de femmes sans revenus au Burkina Faso.
+              </p>
+
+              {/* Carte principale de déclenchement du don */}
+              <div className="mt-3.5 rounded-[26px] border border-orange-300 bg-gradient-to-br from-[#fff7f2] to-[#ffeedd] p-5 shadow-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f16e00] px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                  <Gift size={13} /> 100% Solidaire
+                </span>
+
+                <h3 className="ph-display mt-2 text-lg font-bold text-[#3d2430]">
+                  Offrir un examen de dépistage
                 </h3>
+                <p className="mt-1 text-xs text-[#684a58] leading-relaxed">
+                  Grâce à votre don de <strong>2 500 à 5 000 FCFA</strong>, une mère de famille vulnérable bénéficie immédiatement d'une consultation et d'une mammographie complète.
+                </p>
+
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowDonationModal(true)}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#f16e00] py-3 text-xs font-bold text-white shadow hover:bg-orange-600 transition"
+                  >
+                    <CreditCard size={15} /> Commencer mon don maintenant
+                  </button>
+                </div>
+              </div>
+
+              {/* Liste des associations bénéficiaires */}
+              <div className="mt-4">
+                <h3 className="ph-display text-sm font-bold text-[#452737]">Associations partenaires éligibles</h3>
                 <div className="mt-2 space-y-2">
                   {partnerAssociations.map((assoc) => (
                     <div key={assoc.id} className="rounded-2xl border border-[#eedde2] bg-white p-3 text-xs">
@@ -1775,18 +1752,15 @@ export function PinkHubMobile() {
                         <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800">Vérifié</span>
                       </div>
                       <p className="mt-1 text-[11px] text-[#785b6a]">{assoc.mission}</p>
-                      <div className="mt-2 flex items-center justify-between border-t border-[#f4e4e9] pt-1.5 text-[10px]">
-                        <span className="text-[#8e6174]">{assoc.beneficiariesCount}</span>
-                        <button
-                          onClick={() => {
-                            setSelectedAssociation(assoc);
-                            setShowDonationModal(true);
-                          }}
-                          className="font-bold text-[#f16e00] hover:underline"
-                        >
-                          Faire un don à cette association →
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedAssociation(assoc);
+                          setShowDonationModal(true);
+                        }}
+                        className="mt-2 font-bold text-[#f16e00] hover:underline block text-[10px]"
+                      >
+                        Faire un don à {assoc.acronym} →
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -1795,7 +1769,71 @@ export function PinkHubMobile() {
           )}
 
           {/* ------------------------------------------------------------------ */}
-          {/* FICHE DÉTAILLÉE D'UN CENTRE SÉLECTIONNÉ                             */}
+          {/* ONGLET ANNONCES (VIA SIDEBAR OU ACCUEIL)                           */}
+          {/* ------------------------------------------------------------------ */}
+          {section === "Annonces" && !selectedCenter && (
+            <section className="ph-enter px-5 pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
+                    Actualités & Partenaires
+                  </span>
+                  <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+                    Annonces
+                  </h1>
+                </div>
+                <button
+                  onClick={() => setShowNewAnnouncementModal(true)}
+                  className="rounded-full bg-[#a14364] px-3 py-1 text-xs font-bold text-white"
+                >
+                  + Publier
+                </button>
+              </div>
+
+              <div className="mt-3 space-y-2.5">
+                {announcements.map((a) => (
+                  <div key={a.id} className="rounded-2xl border border-[#efdfe4] bg-white p-3.5 text-xs shadow-sm">
+                    <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${a.badgeColor}`}>{a.badge}</span>
+                    <h3 className="ph-display mt-1 text-sm font-bold text-[#452737]">{a.title}</h3>
+                    <p className="text-[11px] text-[#8c405c] mt-0.5">{a.author}</p>
+                    <p className="mt-1 text-[#6d4f5e]">{a.content}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ------------------------------------------------------------------ */}
+          {/* ONGLET L'ACCOMPAGNANT                                              */}
+          {/* ------------------------------------------------------------------ */}
+          {section === "Accompagnant" && !selectedCenter && (
+            <section className="ph-enter px-5 pt-4">
+              <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
+                Aller à deux
+              </span>
+              <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+                L'Accompagnant
+              </h1>
+              <p className="mt-1 text-xs text-[#795f6d]">
+                Aller faire son dépistage, c'est plus facile à deux. Invitez une proche par WhatsApp ou SMS.
+              </p>
+              <div className="mt-3 rounded-2xl bg-white border border-[#ebd6dc] p-4 text-xs">
+                <button
+                  onClick={() => {
+                    const text = encodeURIComponent("Bonjour ma sœur, Aminata t'invite à faire ton dépistage avec elle sur PagLaafi : http://localhost:5173/");
+                    window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
+                    notify("Invitation WhatsApp prête à l'envoi.");
+                  }}
+                  className="w-full rounded-2xl bg-emerald-600 py-2.5 font-bold text-white text-center flex items-center justify-center gap-2"
+                >
+                  <MessageCircle size={16} /> Inviter mon accompagnant(e) par WhatsApp
+                </button>
+              </div>
+            </section>
+          )}
+
+          {/* ------------------------------------------------------------------ */}
+          {/* FICHE DÉTAILLÉE D'UN CENTRE                                        */}
           {/* ------------------------------------------------------------------ */}
           {selectedCenter && (
             <section className="ph-enter px-5 pt-4">
@@ -1807,56 +1845,35 @@ export function PinkHubMobile() {
               </button>
 
               <div className="rounded-[26px] bg-[#f8e7ec] p-4 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${selectedCenter.statusColor}`}>
-                    <Activity size={12} /> {selectedCenter.statusLabel}
-                  </span>
-                  <span className="text-[10px] font-semibold text-[#8a5d70]">{selectedCenter.city}</span>
-                </div>
-
-                <h1 className="ph-display mt-2 text-xl font-bold text-[#472738]">{selectedCenter.name}</h1>
-                <p className="mt-0.5 text-xs text-[#805e6f]">{selectedCenter.address}</p>
+                <h1 className="ph-display text-xl font-bold text-[#472738]">{selectedCenter.name}</h1>
+                <p className="text-xs text-[#805e6f]">{selectedCenter.address}</p>
 
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded-xl bg-white/90 p-2 shadow-sm">
+                  <div className="rounded-xl bg-white/90 p-2">
                     <p className="text-[9px] font-bold uppercase text-[#9f697d]">Équipement</p>
                     <p className="font-bold text-[#452737]">{selectedCenter.apparatus}</p>
                   </div>
-                  <div className="rounded-xl bg-white/90 p-2 shadow-sm">
-                    <p className="text-[9px] font-bold uppercase text-[#9f697d]">Personnel en poste</p>
-                    <p className="font-bold text-[#452737]">{selectedCenter.agentsPresent} agents</p>
+                  <div className="rounded-xl bg-white/90 p-2">
+                    <p className="text-[9px] font-bold uppercase text-[#9f697d]">File d'attente</p>
+                    <p className="font-bold text-[#452737]">{selectedCenter.queueCount} personnes</p>
                   </div>
-                </div>
-
-                <div className="mt-2 flex items-center justify-between rounded-xl bg-white/90 p-2 text-xs">
-                  <span>File d'attente actuelle : <strong>{selectedCenter.queueCount} personnes</strong></span>
-                  <span className="rounded-full bg-[#faedf1] px-2 py-0.5 font-bold text-[#963756]">{selectedCenter.estimatedWait}</span>
                 </div>
               </div>
 
-              {/* Message audio du centre */}
+              {/* Messages audio en 3 langues du centre */}
               <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3 text-xs">
                 <span className="flex items-center gap-1.5 font-bold text-[#4a2b3b]">
                   <Volume2 size={15} className="text-[#a14364]" /> Message audio du centre
                 </span>
                 <p className="mt-1 italic text-[#725462]">« {selectedCenter.audioMessageFr} »</p>
-                <div className="mt-2.5 flex items-center gap-2">
-                  <button
-                    onClick={() => handlePlayAudio(selectedCenter.audioMessageFr, "fr")}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#a14364] py-1.5 text-xs font-bold text-white"
-                  >
-                    <Play size={13} fill="currentColor" /> Français
-                  </button>
-                  <button
-                    onClick={() => handlePlayAudio(selectedCenter.audioMessageMoore, "moore")}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-xs font-bold text-[#8a3350]"
-                  >
-                    <AudioLines size={13} /> Mooré
-                  </button>
+                <div className="mt-2.5 flex items-center gap-1.5">
+                  <button onClick={() => handlePlayAudio(selectedCenter.audioMessageFr, "fr")} className="flex-1 rounded-xl bg-[#a14364] py-1.5 text-[11px] font-bold text-white">Français</button>
+                  <button onClick={() => handlePlayAudio(selectedCenter.audioMessageMoore, "moore")} className="flex-1 rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-[11px] font-bold text-[#8a3350]">Mooré</button>
+                  <button onClick={() => handlePlayAudio(selectedCenter.audioMessageDioula, "dioula")} className="flex-1 rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-[11px] font-bold text-[#8a3350]">Dioula</button>
                 </div>
               </div>
 
-              {/* Examens & Tarifs */}
+              {/* Tarifs */}
               <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3.5">
                 <h3 className="ph-display text-sm font-bold text-[#452737]">Examens & Tarifs officiels</h3>
                 <div className="mt-2 divide-y divide-[#f5e6eb] text-xs">
@@ -1870,448 +1887,12 @@ export function PinkHubMobile() {
                   ))}
                 </div>
               </div>
-
-              {/* Bouton de confirmation */}
-              <div className="mt-3 rounded-2xl bg-[#f9e9ee] p-3 text-center text-xs">
-                <button
-                  onClick={() => {
-                    setCenters((prev) =>
-                      prev.map((c) =>
-                        c.id === selectedCenter.id ? { ...c, confirmedVisitsToday: c.confirmedVisitsToday + 1 } : c,
-                      ),
-                    );
-                    notify("Merci ! Votre confirmation rassure la communauté.");
-                  }}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 font-bold text-emerald-800 border border-emerald-300 shadow-sm"
-                >
-                  <CheckCircle2 size={15} className="text-emerald-600" />
-                  J'y suis allée, ça s'est bien passé ({selectedCenter.confirmedVisitsToday})
-                </button>
-              </div>
             </section>
           )}
         </div>
 
         {/* ==================================================================== */}
-        {/* MODAL 1 : CONNEXION SIMPLE / CRÉATION DE COMPTE                      */}
-        {/* ==================================================================== */}
-        {showAuthModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
-            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl">
-              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#f8e7ec] text-[#a14364]">
-                    <User size={18} />
-                  </div>
-                  <h3 className="ph-display text-base font-bold text-[#472738]">
-                    {authMode === "register" ? "Créer mon compte PagLaafi" : "Se connecter"}
-                  </h3>
-                </div>
-                <button
-                  onClick={() => setShowAuthModal(false)}
-                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="mt-3 flex rounded-xl bg-[#f9edf1] p-1 text-xs">
-                <button
-                  onClick={() => setAuthMode("register")}
-                  className={`flex-1 rounded-lg py-1.5 font-bold transition ${authMode === "register" ? "bg-white text-[#913b5b] shadow-sm" : "text-[#7b5b6a]"}`}
-                >
-                  Inscription
-                </button>
-                <button
-                  onClick={() => setAuthMode("login")}
-                  className={`flex-1 rounded-lg py-1.5 font-bold transition ${authMode === "login" ? "bg-white text-[#913b5b] shadow-sm" : "text-[#7b5b6a]"}`}
-                >
-                  Connexion
-                </button>
-              </div>
-
-              <form onSubmit={handleAuthSubmit} className="mt-3 space-y-2.5 text-xs">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block font-bold text-[#563746]">Nom *</label>
-                    <input
-                      type="text"
-                      required
-                      value={authForm.nom}
-                      onChange={(e) => setAuthForm({ ...authForm, nom: e.target.value })}
-                      placeholder="Ex: Ouedraogo"
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs focus:border-[#a14364] focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#563746]">Prénom *</label>
-                    <input
-                      type="text"
-                      required
-                      value={authForm.prenom}
-                      onChange={(e) => setAuthForm({ ...authForm, prenom: e.target.value })}
-                      placeholder="Ex: Aminata"
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs focus:border-[#a14364] focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#563746]">Numéro de téléphone *</label>
-                  <input
-                    type="tel"
-                    required
-                    value={authForm.telephone}
-                    onChange={(e) => setAuthForm({ ...authForm, telephone: e.target.value })}
-                    placeholder="Ex: 70 12 34 56"
-                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs focus:border-[#a14364] focus:outline-none"
-                  />
-                  <p className="text-[9.5px] text-[#937583] mt-0.5">Sert à recevoir vos rappels de rendez-vous et SMS.</p>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#563746]">Mot de passe *</label>
-                  <input
-                    type="password"
-                    required
-                    value={authForm.motDePasse}
-                    onChange={(e) => setAuthForm({ ...authForm, motDePasse: e.target.value })}
-                    placeholder="••••••••"
-                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs focus:border-[#a14364] focus:outline-none"
-                  />
-                </div>
-
-                <div className="pt-2 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAuthModal(false)}
-                    className="flex-1 rounded-xl border border-[#e5ced6] py-2.5 font-bold text-[#725261]"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 rounded-xl bg-[#a14364] py-2.5 font-bold text-white shadow hover:bg-[#8d3955]"
-                  >
-                    {authMode === "register" ? "Valider l'inscription" : "Se connecter"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* ==================================================================== */}
-        {/* MODAL 2 : SIMULATION API ORANGE MONEY (BURKINA FASO)                  */}
-        {/* ==================================================================== */}
-        {showDonationModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
-            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl border border-orange-200">
-              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#f16e00] text-white font-black text-xs">
-                    OM
-                  </span>
-                  <div>
-                    <h3 className="ph-display text-sm font-bold text-[#3d2430]">Don Solidaire Orange Money</h3>
-                    <p className="text-[10px] text-orange-950 font-semibold">Orange Money Burkina Faso (#144#)</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => { setShowDonationModal(false); setDonationStep("form"); }}
-                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* ÉTAPE 1 : Choix de l'association et du montant */}
-              {donationStep === "form" && (
-                <div className="mt-3 space-y-3 text-xs">
-                  <div>
-                    <label className="block font-bold text-[#563746]">1. Choisir l'association partenaire :</label>
-                    <select
-                      value={selectedAssociation.id}
-                      onChange={(e) => {
-                        const found = partnerAssociations.find((a) => a.id === Number(e.target.value));
-                        if (found) setSelectedAssociation(found);
-                      }}
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 font-semibold text-[#452737]"
-                    >
-                      {partnerAssociations.map((assoc) => (
-                        <option key={assoc.id} value={assoc.id}>
-                          {assoc.acronym} — {assoc.name} ({assoc.city})
-                        </option>
-                      ))}
-                    </select>
-                    <p className="mt-1 text-[10px] text-[#785b6a] italic">
-                      Mission : {selectedAssociation.mission}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-[#563746]">2. Montant du don solidaire (FCFA) :</label>
-                    <div className="mt-1.5 grid grid-cols-3 gap-1.5">
-                      {[1000, 2500, 5000, 10000, 25000].map((amt) => (
-                        <button
-                          key={amt}
-                          type="button"
-                          onClick={() => { setDonationAmount(amt); setCustomDonationAmount(""); }}
-                          className={`rounded-xl py-2 font-bold transition text-xs ${donationAmount === amt && !customDonationAmount ? "bg-[#f16e00] text-white shadow-sm" : "border border-[#e7d5dc] bg-[#fffaf8] text-[#563746]"}`}
-                        >
-                          {amt.toLocaleString("fr-FR")} F
-                        </button>
-                      ))}
-                      <input
-                        type="number"
-                        placeholder="Autre..."
-                        value={customDonationAmount}
-                        onChange={(e) => setCustomDonationAmount(e.target.value)}
-                        className={`rounded-xl p-1.5 text-center text-xs font-bold border ${customDonationAmount ? "border-[#f16e00] bg-orange-50 text-orange-900" : "border-[#e7d5dc]"}`}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-[#563746]">3. Numéro Orange Money débiteur :</label>
-                    <div className="relative mt-1">
-                      <span className="absolute left-3 top-2.5 font-bold text-[#8c6778]">+226</span>
-                      <input
-                        type="tel"
-                        value={orangeMoneyPhone}
-                        onChange={(e) => setOrangeMoneyPhone(e.target.value)}
-                        placeholder="70 12 34 56"
-                        className="w-full rounded-xl border border-[#e4cfd6] py-2 pl-14 pr-3 font-bold text-[#452737] focus:border-[#f16e00] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleInitiateOrangeMoneyDonation}
-                    className="mt-2 w-full rounded-2xl bg-[#f16e00] py-3 text-xs font-bold text-white shadow-md hover:bg-orange-600 transition"
-                  >
-                    Valider le don de {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA →
-                  </button>
-                </div>
-              )}
-
-              {/* ÉTAPE 2 : Confirmation des détails */}
-              {donationStep === "confirm" && (
-                <div className="mt-3 space-y-3 text-xs">
-                  <div className="rounded-2xl bg-[#fff7f2] border border-orange-200 p-3.5 space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-[#7c5b6b]">Bénéficiaire :</span>
-                      <span className="font-bold text-[#452737]">{selectedAssociation.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#7c5b6b]">Montant :</span>
-                      <span className="font-extrabold text-[#f16e00] text-sm">
-                        {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#7c5b6b]">Téléphone Orange :</span>
-                      <span className="font-bold text-[#452737]">+226 {orangeMoneyPhone}</span>
-                    </div>
-                    <div className="flex justify-between text-[10.5px]">
-                      <span className="text-[#7c5b6b]">Frais de transaction :</span>
-                      <span className="font-bold text-emerald-700">0 FCFA (Pris en charge)</span>
-                    </div>
-                  </div>
-
-                  <p className="text-[10px] text-center text-[#7e5f6e]">
-                    En continuant, un message de confirmation USSD Orange Money sera envoyé à votre téléphone.
-                  </p>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setDonationStep("form")}
-                      className="flex-1 rounded-xl border border-[#e5ced6] py-2.5 font-bold text-[#725261]"
-                    >
-                      Modifier
-                    </button>
-                    <button
-                      onClick={handleConfirmOrangeMoney}
-                      className="flex-1 rounded-xl bg-[#f16e00] py-2.5 font-bold text-white shadow hover:bg-orange-600"
-                    >
-                      Confirmer l'envoi
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ÉTAPE 3 : Simulation Push USSD / Code OTP */}
-              {donationStep === "otp" && (
-                <div className="mt-3 space-y-3 text-xs text-center">
-                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-orange-100 text-[#f16e00] ph-pulse">
-                    <Phone size={24} />
-                  </div>
-
-                  <div>
-                    <h4 className="font-bold text-[#452737]">Validation Orange Money en cours</h4>
-                    <p className="text-[11px] text-[#7c5b6b] mt-1">
-                      Tapez <strong>#144*4*6#</strong> sur votre téléphone ou entrez le code secret/OTP reçu par SMS.
-                    </p>
-                  </div>
-
-                  <div className="mx-auto max-w-[200px]">
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value)}
-                      placeholder="Code OTP (ex: 4589)"
-                      className="w-full rounded-xl border-2 border-orange-400 p-2 text-center text-sm font-extrabold tracking-widest text-[#452737]"
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleValidateOrangeMoneyOTP}
-                    className="w-full rounded-2xl bg-[#f16e00] py-2.5 font-bold text-white shadow hover:bg-orange-600"
-                  >
-                    Valider et autoriser le débit
-                  </button>
-                </div>
-              )}
-
-              {/* ÉTAPE 4 : Reçu de paiement et succès */}
-              {donationStep === "success" && (
-                <div className="mt-3 space-y-3 text-xs text-center">
-                  <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-sm">
-                    <CheckCircle2 size={32} />
-                  </div>
-
-                  <div>
-                    <h4 className="ph-display text-lg font-bold text-[#452737]">Merci pour votre générosité !</h4>
-                    <p className="text-[11px] text-[#7c5b6b] mt-0.5">
-                      Votre don est intégralement transmis à <strong>{selectedAssociation.acronym}</strong> pour le dépistage des femmes.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl bg-[#f8f9fa] border border-[#e9ecef] p-3 text-left space-y-1 text-[11px]">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Réf Transaction :</span>
-                      <span className="font-mono font-bold text-gray-800">{lastDonationId}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Montant débité :</span>
-                      <span className="font-bold text-[#f16e00]">
-                        {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Moyen :</span>
-                      <span className="font-semibold text-gray-700">Orange Money Burkina Faso</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Statut :</span>
-                      <span className="font-bold text-emerald-700">Succès (Validé)</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => { setShowDonationModal(false); setDonationStep("form"); }}
-                    className="w-full rounded-2xl bg-[#a14364] py-2.5 font-bold text-white shadow"
-                  >
-                    Fermer le reçu
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ==================================================================== */}
-        {/* MODAL 3 : PUBLIER UNE ANNONCE (ASSOCIATION / PARTENAIRE)              */}
-        {/* ==================================================================== */}
-        {showNewAnnouncementModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
-            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl">
-              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
-                <h3 className="ph-display text-base font-bold text-[#472738]">Publier une annonce / événement</h3>
-                <button
-                  onClick={() => setShowNewAnnouncementModal(false)}
-                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <form onSubmit={handlePublishAnnouncement} className="mt-3 space-y-2.5 text-xs">
-                <div>
-                  <label className="block font-bold text-[#563746]">Titre de l'action / événement *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newAnnouncement.title}
-                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
-                    placeholder="Ex: Journée dépistage gratuit"
-                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 focus:border-[#a14364] focus:outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block font-bold text-[#563746]">Structure / Association *</label>
-                    <input
-                      type="text"
-                      required
-                      value={newAnnouncement.author}
-                      onChange={(e) => setNewAnnouncement({ ...newAnnouncement, author: e.target.value })}
-                      placeholder="Ex: ABAC, Clinique..."
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#563746]">Ville *</label>
-                    <select
-                      value={newAnnouncement.city}
-                      onChange={(e) => setNewAnnouncement({ ...newAnnouncement, city: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] bg-white p-2"
-                    >
-                      <option>Ouagadougou</option>
-                      <option>Bobo-Dioulasso</option>
-                      <option>Koudougou</option>
-                      <option>Ouahigouya</option>
-                      <option>Fada N'Gourma</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#563746]">Description détaillée *</label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={newAnnouncement.content}
-                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
-                    placeholder="Précisez le lieu exact, l'horaire et si l'examen est gratuit ou payant..."
-                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2"
-                  />
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowNewAnnouncementModal(false)}
-                    className="flex-1 rounded-xl border border-[#e5ced6] py-2.5 font-bold text-[#725261]"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 rounded-xl bg-[#a14364] py-2.5 font-bold text-white shadow"
-                  >
-                    Publier l'annonce
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* ==================================================================== */}
-        {/* BARRE DE NAVIGATION INFÉRIEURE FIXE (MOBILE NATIVE BAR)              */}
+        {/* BARRE DE NAVIGATION INFÉRIEURE : 5 ONGLETS CLÉS AVEC FAIRE UN DON   */}
         {/* ==================================================================== */}
         <nav
           aria-label="Navigation principale"
@@ -2322,8 +1903,8 @@ export function PinkHubMobile() {
               { label: "Accueil" as Section, icon: Heart, name: "Accueil" },
               { label: "Centres" as Section, icon: MapPin, name: "Centres" },
               { label: "RoseIA" as Section, icon: Sparkles, name: "Rose IA", isCentral: true },
-              { label: "Annonces" as Section, icon: Megaphone, name: "Annonces" },
-              { label: "Soutien" as Section, icon: HeartHandshake, name: "Soutien" },
+              { label: "Comprendre" as Section, icon: BookOpen, name: "Comprendre" },
+              { label: "FaireUnDon" as Section, icon: Gift, name: "Faire un don" },
             ].map(({ label, icon: Icon, name, isCentral }) => {
               const active = section === label;
 
@@ -2358,6 +1939,9 @@ export function PinkHubMobile() {
                   onClick={() => {
                     setSection(label);
                     setSelectedCenter(null);
+                    if (label === "FaireUnDon") {
+                      setShowDonationModal(true);
+                    }
                   }}
                   aria-current={active ? "page" : undefined}
                   className={`flex min-h-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl transition ${active ? "text-[#a14364]" : "text-[#9d838e] hover:text-[#785062]"}`}
@@ -2377,6 +1961,519 @@ export function PinkHubMobile() {
             })}
           </div>
         </nav>
+
+        {/* ==================================================================== */}
+        {/* MODAL 1 : CONNEXION SIMPLE & INSCRIPTION AVEC OEILLET ET 3 COMPTES  */}
+        {/* ==================================================================== */}
+        {showAuthModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
+            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#f8e7ec] text-[#a14364]">
+                    <User size={18} />
+                  </div>
+                  <div>
+                    <h3 className="ph-display text-base font-bold text-[#472738]">
+                      {authMode === "login" ? "Connexion" : "Créer un compte"}
+                    </h3>
+                    <p className="text-[10px] text-[#8a5b70]">PagLaafi · Burkina Faso</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAuthModal(false)}
+                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Bascule Connexion / Inscription */}
+              <div className="mt-3 flex rounded-xl bg-[#f9edf1] p-1 text-xs">
+                <button
+                  onClick={() => setAuthMode("login")}
+                  className={`flex-1 rounded-lg py-1.5 font-bold transition ${authMode === "login" ? "bg-white text-[#913b5b] shadow-sm" : "text-[#7b5b6a]"}`}
+                >
+                  Connexion
+                </button>
+                <button
+                  onClick={() => setAuthMode("register")}
+                  className={`flex-1 rounded-lg py-1.5 font-bold transition ${authMode === "register" ? "bg-white text-[#913b5b] shadow-sm" : "text-[#7b5b6a]"}`}
+                >
+                  Inscription
+                </button>
+              </div>
+
+              {/* Raccourcis de test des 3 comptes demandés */}
+              <div className="mt-3 rounded-xl bg-[#fcf4f7] border border-[#f2dbe2] p-2 text-[10px]">
+                <p className="font-bold text-[#863752] mb-1">Comptes de test rapides (1 clic) :</p>
+                <div className="flex flex-wrap gap-1">
+                  <button
+                    onClick={() => quickLoginAs("user")}
+                    className="rounded-lg bg-white px-2 py-1 font-semibold text-[#543444] border border-[#ebd0d9] hover:bg-[#faedf1]"
+                  >
+                    👩 Utilisatrice
+                  </button>
+                  <button
+                    onClick={() => quickLoginAs("admin")}
+                    className="rounded-lg bg-white px-2 py-1 font-semibold text-[#543444] border border-[#ebd0d9] hover:bg-[#faedf1]"
+                  >
+                    🏥 Admin Asso (ABAC)
+                  </button>
+                  <button
+                    onClick={() => quickLoginAs("superadmin")}
+                    className="rounded-lg bg-purple-900 px-2 py-1 font-bold text-white shadow-xs"
+                  >
+                    🛡️ Superadmin
+                  </button>
+                </div>
+              </div>
+
+              {/* FORMULAIRE CONNEXION : DEMANDE JUSTE LE TÉLÉPHONE ET LE MOT DE PASSE AVEC OEILLET */}
+              {authMode === "login" && (
+                <form onSubmit={handleLoginSubmit} className="mt-3 space-y-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-[#563746]">Numéro de téléphone *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={loginForm.telephone}
+                      onChange={(e) => setLoginForm({ ...loginForm, telephone: e.target.value })}
+                      placeholder="Ex: 70 12 34 56"
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2.5 text-xs font-semibold focus:border-[#a14364] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#563746]">Mot de passe *</label>
+                    <div className="relative mt-1">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        value={loginForm.motDePasse}
+                        onChange={(e) => setLoginForm({ ...loginForm, motDePasse: e.target.value })}
+                        placeholder="••••••••"
+                        className="w-full rounded-xl border border-[#e4cfd6] p-2.5 pr-10 text-xs font-semibold focus:border-[#a14364] focus:outline-none"
+                      />
+                      {/* Oeillet de visualisation exigé */}
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-2.5 text-[#8f6476] hover:text-[#522b3e]"
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-[#a14364] py-2.5 font-bold text-white shadow hover:bg-[#8d3955]"
+                  >
+                    Se connecter
+                  </button>
+                </form>
+              )}
+
+              {/* FORMULAIRE INSCRIPTION : NOM, PRÉNOM, TÉLÉPHONE, MOT DE PASSE + CONFIRMATION ET OEILLET */}
+              {authMode === "register" && (
+                <form onSubmit={handleRegisterSubmit} className="mt-3 space-y-2.5 text-xs">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block font-bold text-[#563746]">Nom *</label>
+                      <input
+                        type="text"
+                        required
+                        value={registerForm.nom}
+                        onChange={(e) => setRegisterForm({ ...registerForm, nom: e.target.value })}
+                        placeholder="Ouedraogo"
+                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-[#563746]">Prénom *</label>
+                      <input
+                        type="text"
+                        required
+                        value={registerForm.prenom}
+                        onChange={(e) => setRegisterForm({ ...registerForm, prenom: e.target.value })}
+                        placeholder="Aminata"
+                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#563746]">Type de compte *</label>
+                    <select
+                      value={registerForm.role}
+                      onChange={(e) => setRegisterForm({ ...registerForm, role: e.target.value as UserRole })}
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] bg-white p-2 text-xs font-semibold"
+                    >
+                      <option value="user">Utilisatrice / Patient</option>
+                      <option value="admin">Association / Partenaire de santé (Validation Superadmin requise)</option>
+                    </select>
+                  </div>
+
+                  {registerForm.role === "admin" && (
+                    <div>
+                      <label className="block font-bold text-[#563746]">Nom de l'association / structure *</label>
+                      <input
+                        type="text"
+                        required
+                        value={registerForm.structureName}
+                        onChange={(e) => setRegisterForm({ ...registerForm, structureName: e.target.value })}
+                        placeholder="Ex: ABAC, Espoir Bobo..."
+                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block font-bold text-[#563746]">Numéro de téléphone *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={registerForm.telephone}
+                      onChange={(e) => setRegisterForm({ ...registerForm, telephone: e.target.value })}
+                      placeholder="Ex: 70 12 34 56"
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
+                    />
+                  </div>
+
+                  {/* Mot de passe avec oeillet */}
+                  <div>
+                    <label className="block font-bold text-[#563746]">Mot de passe *</label>
+                    <div className="relative mt-1">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        value={registerForm.motDePasse}
+                        onChange={(e) => setRegisterForm({ ...registerForm, motDePasse: e.target.value })}
+                        placeholder="••••••••"
+                        className="w-full rounded-xl border border-[#e4cfd6] p-2 pr-9 text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-2.5 top-2 text-[#8f6476]"
+                      >
+                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Confirmer le mot de passe avec oeillet */}
+                  <div>
+                    <label className="block font-bold text-[#563746]">Confirmer le mot de passe *</label>
+                    <div className="relative mt-1">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        required
+                        value={registerForm.confirmerMotDePasse}
+                        onChange={(e) => setRegisterForm({ ...registerForm, confirmerMotDePasse: e.target.value })}
+                        placeholder="••••••••"
+                        className="w-full rounded-xl border border-[#e4cfd6] p-2 pr-9 text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-2.5 top-2 text-[#8f6476]"
+                      >
+                        {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-[#a14364] py-2.5 font-bold text-white shadow"
+                  >
+                    Valider l'inscription
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* MODAL 2 : PANNEAU SUPERADMIN (VALIDATION DES INSCRIPTIONS)           */}
+        {/* ==================================================================== */}
+        {showSuperadminModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
+            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl border-2 border-purple-900">
+              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-purple-950 text-white">
+                    <ShieldCheck size={20} className="text-amber-400" />
+                  </div>
+                  <div>
+                    <h3 className="ph-display text-sm font-bold text-[#351c2a]">Panneau Superadmin</h3>
+                    <p className="text-[10px] text-purple-900 font-bold">Validation des inscriptions nationales</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowSuperadminModal(false)}
+                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="mt-3 space-y-2 text-xs">
+                <p className="font-bold text-[#452737]">
+                  Demandes d'adhésion en attente ({pendingRegistrations.filter((r) => r.status === "pending").length}) :
+                </p>
+
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {pendingRegistrations.map((reg) => (
+                    <div key={reg.id} className="rounded-xl border border-[#ebd6dc] bg-[#fffafc] p-3 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#472738]">{reg.structure}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${reg.status === "pending" ? "bg-amber-100 text-amber-900" : reg.status === "approved" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
+                          {reg.status === "pending" ? "En attente" : reg.status === "approved" ? "Validé ✓" : "Refusé"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#735765] mt-0.5">Resp. : {reg.responsable} · {reg.telephone}</p>
+                      <p className="text-[10px] text-[#916b7c]">{reg.ville} · {reg.type}</p>
+
+                      {reg.status === "pending" && (
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            onClick={() => handleApproveRegistration(reg.id)}
+                            className="flex-1 rounded-lg bg-emerald-600 py-1 text-center font-bold text-white shadow-xs"
+                          >
+                            Valider l'inscription
+                          </button>
+                          <button
+                            onClick={() => handleRejectRegistration(reg.id)}
+                            className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1 font-bold text-rose-700"
+                          >
+                            Refuser
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 pt-2 border-t border-[#f2e1e6]">
+                <button
+                  onClick={() => setShowSuperadminModal(false)}
+                  className="w-full rounded-xl bg-purple-950 py-2 text-xs font-bold text-white"
+                >
+                  Fermer l'espace Superadmin
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* MODAL 3 : PROCESSUS ORANGE MONEY SUIVI DIRECTEMENT DU DON            */}
+        {/* ==================================================================== */}
+        {showDonationModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
+            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl border border-orange-200">
+              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#f16e00] text-white font-black text-xs">
+                    OM
+                  </span>
+                  <div>
+                    <h3 className="ph-display text-sm font-bold text-[#3d2430]">Faire un don solidaire</h3>
+                    <p className="text-[10px] text-orange-950 font-semibold">Validation Orange Money Burkina Faso</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setShowDonationModal(false); setDonationStep("form"); }}
+                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* ÉTAPE 1 : Choix de l'association et du montant */}
+              {donationStep === "form" && (
+                <div className="mt-3 space-y-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-[#563746]">1. Choisir l'association partenaire :</label>
+                    <select
+                      value={selectedAssociation.id}
+                      onChange={(e) => {
+                        const found = partnerAssociations.find((a) => a.id === Number(e.target.value));
+                        if (found) setSelectedAssociation(found);
+                      }}
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 font-semibold text-[#452737]"
+                    >
+                      {partnerAssociations.map((assoc) => (
+                        <option key={assoc.id} value={assoc.id}>
+                          {assoc.acronym} — {assoc.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#563746]">2. Montant du don solidaire (FCFA) :</label>
+                    <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                      {[1000, 2500, 5000, 10000, 25000].map((amt) => (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => { setDonationAmount(amt); setCustomDonationAmount(""); }}
+                          className={`rounded-xl py-2 font-bold transition text-xs ${donationAmount === amt && !customDonationAmount ? "bg-[#f16e00] text-white shadow-sm" : "border border-[#e7d5dc] bg-[#fffaf8] text-[#563746]"}`}
+                        >
+                          {amt.toLocaleString("fr-FR")} F
+                        </button>
+                      ))}
+                      <input
+                        type="number"
+                        placeholder="Autre..."
+                        value={customDonationAmount}
+                        onChange={(e) => setCustomDonationAmount(e.target.value)}
+                        className={`rounded-xl p-1.5 text-center text-xs font-bold border ${customDonationAmount ? "border-[#f16e00] bg-orange-50 text-orange-900" : "border-[#e7d5dc]"}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#563746]">3. Numéro de téléphone débiteur :</label>
+                    <div className="relative mt-1">
+                      <span className="absolute left-3 top-2.5 font-bold text-[#8c6778]">+226</span>
+                      <input
+                        type="tel"
+                        value={orangeMoneyPhone}
+                        onChange={(e) => setOrangeMoneyPhone(e.target.value)}
+                        placeholder="70 12 34 56"
+                        className="w-full rounded-xl border border-[#e4cfd6] py-2 pl-14 pr-3 font-bold text-[#452737] focus:border-[#f16e00] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleStartDonationProcess}
+                    className="mt-2 w-full rounded-2xl bg-[#f16e00] py-3 text-xs font-bold text-white shadow-md hover:bg-orange-600 transition"
+                  >
+                    Valider le don de {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA →
+                  </button>
+                </div>
+              )}
+
+              {/* ÉTAPE 2 : Confirmation */}
+              {donationStep === "confirm" && (
+                <div className="mt-3 space-y-3 text-xs">
+                  <div className="rounded-2xl bg-[#fff7f2] border border-orange-200 p-3.5 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-[#7c5b6b]">Bénéficiaire :</span>
+                      <span className="font-bold text-[#452737]">{selectedAssociation.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#7c5b6b]">Montant :</span>
+                      <span className="font-extrabold text-[#f16e00] text-sm">
+                        {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#7c5b6b]">Numéro débité :</span>
+                      <span className="font-bold text-[#452737]">+226 {orangeMoneyPhone}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setDonationStep("form")}
+                      className="flex-1 rounded-xl border border-[#e5ced6] py-2.5 font-bold text-[#725261]"
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      onClick={handleConfirmOrangeMoney}
+                      className="flex-1 rounded-xl bg-[#f16e00] py-2.5 font-bold text-white shadow hover:bg-orange-600"
+                    >
+                      Autoriser le paiement
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ÉTAPE 3 : Simulation USSD / Code OTP */}
+              {donationStep === "otp" && (
+                <div className="mt-3 space-y-3 text-xs text-center">
+                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-orange-100 text-[#f16e00] ph-pulse">
+                    <Phone size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[#452737]">Autorisation Orange Money (#144*4*6#)</h4>
+                    <p className="text-[11px] text-[#7c5b6b] mt-1">
+                      Composez <strong>#144*4*6#</strong> sur votre mobile ou saisissez votre code OTP reçu par SMS :
+                    </p>
+                  </div>
+
+                  <div className="mx-auto max-w-[180px]">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value)}
+                      placeholder="Code OTP"
+                      className="w-full rounded-xl border-2 border-orange-400 p-2 text-center text-sm font-extrabold tracking-widest text-[#452737]"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleValidateOrangeMoneyOTP}
+                    className="w-full rounded-2xl bg-[#f16e00] py-2.5 font-bold text-white shadow"
+                  >
+                    Confirmer le don
+                  </button>
+                </div>
+              )}
+
+              {/* ÉTAPE 4 : Reçu officiel de don */}
+              {donationStep === "success" && (
+                <div className="mt-3 space-y-3 text-xs text-center">
+                  <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-sm">
+                    <CheckCircle2 size={32} />
+                  </div>
+
+                  <div>
+                    <h4 className="ph-display text-lg font-bold text-[#452737]">Merci pour votre générosité !</h4>
+                    <p className="text-[11px] text-[#7c5b6b] mt-0.5">
+                      Votre don est intégralement alloué à <strong>{selectedAssociation.acronym}</strong> pour soutenir le dépistage au Burkina Faso.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-[#f8f9fa] border border-[#e9ecef] p-3 text-left space-y-1 text-[11px]">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Réf Transaction :</span>
+                      <span className="font-mono font-bold text-gray-800">{lastDonationId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Montant :</span>
+                      <span className="font-bold text-[#f16e00]">
+                        {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Opérateur :</span>
+                      <span className="font-semibold text-gray-700">Orange Money Burkina</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => { setShowDonationModal(false); setDonationStep("form"); }}
+                    className="w-full rounded-2xl bg-[#a14364] py-2.5 font-bold text-white shadow"
+                  >
+                    Fermer le reçu
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ==================================================================== */}
         {/* TOAST DE CONFIRMATION                                                */}

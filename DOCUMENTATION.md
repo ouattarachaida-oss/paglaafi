@@ -1,14 +1,20 @@
 # Documentation du Projet : PagLaafi (Maquette-mobile-PinkHub)
 
 ## 1. Contexte du Projet
-**PagLaafi** est une application d'information, d'orientation et de soutien autour du cancer du sein au **Burkina Faso** et en Afrique de l'Ouest.
-Elle permet aux femmes et à leurs proches d'accéder à une information fiable, transparente et humaine :
-- **Carte Vivante des centres de santé** : savoir avant de partir si l'appareil (mammographe/échographe) fonctionne aujourd'hui, le nombre d'agents présents, le temps d'attente estimé, les tarifs réels en FCFA (ou gratuité 0 FCFA) et un message vocal du centre (Français et Mooré).
-- **Module L'Accompagnant (Aller à deux)** : faciliter la démarche de dépistage en invitant une sœur, une amie, une voisine ou son conjoint via WhatsApp/SMS avec rappels conjoints et confirmation post-visite confidentielle.
-- **Rose IA (Assistante Vocale Spécialisée)** : compagnon bienveillant doté d'une écoute vocale au micro et d'une synthèse vocale pour répondre sans détour aux questions médicales du quotidien (douleur, prix, boule suspecte, centres ouverts) en français et mooré.
-- **Annonces & Événements Partenaires** : carrefour d'actualités où les associations (ABAC, COBUCAN, Espoir & Vie) et les soignants publient leurs caravanes de dépistage gratuit, causeries et subventions.
-- **Dons Solidaires par Orange Money (Simulation API #144#)** : possibilité pour les utilisatrices et donateurs de soutenir directement une association partenaire burkinabè vérifiée en payant par Orange Money avec reçu et confirmation immédiate.
-- **Authentification Simple** : inscription/connexion rapide avec Nom, Prénom, Téléphone burkinabè et Mot de passe.
+**PagLaafi** est une application d'information, d'orientation et de soutien solidaire autour du cancer du sein au **Burkina Faso** et en Afrique de l'Ouest.
+Elle permet aux femmes, à leurs familles et aux partenaires de santé d'accéder à une information fiable, transparente et humaine :
+- **Écran de démarrage (Splash Screen)** : Affichage du logo PagLaafi et du badge officiel **"Powered by Rose IA"** à l'ouverture de l'application.
+- **Carte Vivante des centres de santé** : savoir avant de se déplacer si l'appareil (mammographe/échographe) fonctionne aujourd'hui, le nombre d'agents présents, le temps d'attente estimé, les tarifs réels en FCFA (ou gratuité 0 FCFA) et un message vocal du centre disponible en **Français**, **Mooré** et **Dioula**.
+- **Module Comprendre (Guide Médical & Audio Trilingue)** : fiches pédagogiques claires sur la maladie, les signaux d'alerte et l'accompagnement, avec un lecteur audio interactif proposant l'écoute intégrale en **Français**, **Mooré** et **Dioula**.
+- **Rose IA (Assistante Vocale Spécialisée)** : compagnon interactif avec reconnaissance vocale au micro et synthèse vocale pour répondre sans tabou aux questions médicales du quotidien.
+- **Dons Solidaires Orange Money (Processus direct #144#)** : onglet "Faire un don" directement accessible dans la barre de navigation basse, déclenchant le processus de paiement Orange Money (choix de l'association burkinabè vérifiée, saisie du montant en FCFA, push USSD `#144*4*6#`, validation OTP et reçu officiel téléchargeable).
+- **Système de Gestion Multi-Comptes (3 Niveaux)** :
+  1. **Utilisatrice / Patient** : accès aux informations, à la carte, à Rose IA et aux dons.
+  2. **Admin Association & Partenaire** : publication d'annonces, mise à jour des disponibilités des centres et gestion des caravanes mobiles (soumis à validation préalable).
+  3. **Superadmin National** : tableau de bord sécurisé permettant d'examiner, valider ou refuser les demandes d'inscription des structures de santé et associations partenaires.
+- **Formulaires Sécurisés avec Visibilité (Œillet)** :
+  - **Connexion** : simplifiée au maximum, demande **exclusivement le numéro de téléphone et le mot de passe**, avec icône œillet pour afficher/masquer le mot de passe.
+  - **Inscription** : nom, prénom, choix du rôle, téléphone, mot de passe et champ obligatoire de **confirmation du mot de passe**, tous deux équipés d'un œillet de visualisation.
 
 ---
 
@@ -18,13 +24,16 @@ Le projet est structuré sous forme de monorepo géré avec `pnpm workspaces` :
 
 - `artifacts/mockup-sandbox/` :
   - `src/components/mockups/pinkhub-mvp/PinkHubMobile.tsx` : Composant React complet contenant l'ensemble de la maquette mobile interactive avec :
-    - La **Page de Connexion / Inscription** (Nom, Prénom, Numéro, Mot de passe).
-    - La **Carte Vivante** (points colorés pulsants : 🟢 Vert = dispo/fluide, 🟠 Orange = affluence, 🔴 Rouge = maintenance, ⚪ Gris = non mis à jour).
+    - Le **Splash Screen animé** ("Powered by Rose IA").
+    - La **Barre de Navigation Basse 5 onglets** : Accueil, Centres, Rose IA (bouton central flottant surélevé), Comprendre, Faire un don.
+    - Le **Module Comprendre trilingue** avec lecteur audio (Français, Mooré, Dioula).
+    - Le **Module de Connexion / Inscription** avec mot de passe masquable/démasquable (œillet) et confirmation de mot de passe.
+    - Le **Panneau Superadmin** de modération des structures et associations partenaires.
+    - La **Carte Vivante** (statuts temps réel : 🟢 Vert = dispo/fluide, 🟠 Orange = affluence, 🔴 Rouge = maintenance, ⚪ Gris = non mis à jour).
     - **Rose IA** : Assistante IA avec micro vocal et réponses parlées.
-    - **Annonces & Événements** : Flux des campagnes et formulaire de publication.
-    - Le module **L'Accompagnant** (génération de message WhatsApp/SMS, vocal Mooré, binôme et confirmation de visite).
-    - Le module **Dons Orange Money** : Simulation d'API Orange Money Burkina Faso avec choix de l'association, saisie du montant en FCFA, push USSD `#144*4*6#` et reçu transactionnel.
-    - Le tiroir latéral de navigation (**Sidebar Drawer**) et la barre basse 5 onglets.
+    - **Annonces & Événements** : Flux des campagnes et formulaire de publication pour les associations.
+    - Le module **L'Accompagnant** (génération d'invitation WhatsApp/SMS).
+    - Le processus **Dons Orange Money** (simulation API #144*4*6# avec reçu).
   - `src/App.tsx` : Point d'entrée avec chargement automatique de la maquette mobile par défaut sur `/`.
   - `vite.config.ts` : Configuration Vite compatible Windows avec valeurs de repli automatiques.
 - `artifacts/paglaafi/` :
@@ -52,21 +61,39 @@ pnpm run dev:mobile
 
 ---
 
-## 4. Fonctionnalités Clés & Règles Métier
+## 4. Fonctionnalités Clés & Rôles Applicatifs
 
-1. **Rose IA & Synthèse Vocale** :
-   - Écoute interactive via le micro (Web Speech Recognition) et réponses à haute voix (Web Speech Synthesis).
-   - Réponses médicales pédagogiques bienveillantes sans poser de diagnostic à la place du médecin.
-2. **Dons Orange Money (#144#)** :
-   - Simulation fidèle du parcours Orange Money Burkina Faso : choix de l'association partenaire (ABAC, COBUCAN, Schiphra, Espoir & Vie), montant en FCFA, numéro débiteur, confirmation USSD/OTP et reçu de transaction unique `OM-BF-XXXXXX`.
-3. **La Carte Vivante (Code couleur strict)** :
-   - 🟢 **Vert** : Appareil fonctionnel et file d'attente fluide (< 30 min).
-   - 🟠 **Orange** : Appareil en marche mais forte affluence (> 1h d'attente).
-   - 🔴 **Rouge** : Appareil en panne ou en révision technique (ne pas se déplacer pour cet examen).
-   - ⚪ **Gris** : Rapport de présence non validé ce matin (téléphoner avant de se déplacer).
-4. **Confidentialité de L'Accompagnant** :
-   - Seule la confirmation de la visite (« J'y suis allée ») est partagée entre les deux personnes.
-   - Les résultats médicaux sont protégés par le secret médical le plus strict.
-5. **Encodage & Localisation** :
-   - Encodage en **UTF-8 sans BOM**.
-   - Tarifs exprimés en **FCFA**, numéros d'urgence burkinabè (80 00 11 22) et Orange Money Burkina (+226).
+### Les 3 Niveaux de Comptes Utilisateurs
+1. **Compte Utilisatrice (Standard)** :
+   - Inscription immédiate avec nom, prénom, numéro de téléphone, mot de passe et confirmation.
+   - Connexion rapide avec **téléphone et mot de passe uniquement**.
+2. **Compte Admin (Associations & Partenaires)** :
+   - Destiné aux structures de santé (ABAC, COBUCAN, CMA Schiphra, cliniques privées).
+   - Inscription avec sélection du statut "Association / Partenaire" et nom de la structure.
+   - Compte placé automatiquement en statut **"En attente de validation"** par sécurité.
+3. **Compte Superadmin (Modérateur National)** :
+   - Accès via le profil Superadmin (ex : Kaboré Alimata, testable en 1 clic dans le modal d'authentification).
+   - Débloque le bouton **"Panneau Superadmin"** dans le menu latéral.
+   - Permet de valider ou refuser les demandes d'adhésion des associations et d'activer leurs droits de publication.
+
+### Audio & Localisation Trilingue (Français, Mooré, Dioula)
+- **Synthèse Vocale Web Speech API** intégrée nativement dans le navigateur sans dépendance externe.
+- Chaque leçon du module **Comprendre** dispose d'un résumé audio et d'une transcription adaptés aux trois langues majeures du Burkina Faso.
+- Les centres de santé disposent également de fiches d'écoute vocale en Français, Mooré et Dioula pour garantir l'accessibilité aux femmes non lectrices.
+
+### Processus Don Orange Money
+- Déclenchement automatique au clic sur l'onglet **"Faire un don"** dans la barre basse.
+- Parcours complet :
+  1. Sélection de l'association burkinabè (ABAC, COBUCAN, Schiphra, Espoir & Vie).
+  2. Sélection ou saisie libre du montant en FCFA (1 000 F, 2 500 F, 5 000 F, etc.).
+  3. Numéro Orange Money Burkina (+226).
+  4. Simulation du push USSD `#144*4*6#` et saisie du code OTP.
+  5. Émission du reçu officiel de transaction solidaire avec référence unique `OM-BF-XXXXXX`.
+
+---
+
+## 5. Maintenance & Standards Techniques
+- **Encodage** : Tout fichier créé ou édité est encodé en **UTF-8 sans BOM**.
+- **Langue des commentaires** : Tous les commentaires dans le code source sont rédigés en **français**.
+- **Zéro Python** : Stack 100% TypeScript, React, HTML5, CSS et APIs Web natives.
+- **Ergonomie Mobile-First** : breakpoints responsives, navigation basse ergonomique à portée de pouce et icônes d'accessibilité tactiles.
