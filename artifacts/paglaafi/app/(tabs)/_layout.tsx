@@ -1,5 +1,10 @@
 import React from 'react';
-import { Platform, StyleSheet, useColorScheme, View } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { useColors } from '@/hooks/useColors';
 import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -8,6 +13,7 @@ import { Tabs } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { SymbolView } from 'expo-symbols';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useResponsiveLayout } from '@/components/common';
 
 function NativeTabLayout() {
   return (
@@ -47,10 +53,12 @@ function NativeTabLayout() {
 function ClassicTabLayout() {
   const colors = useColors();
   const safeAreaInsets = useSafeAreaInsets();
+  const { isTablet, isDesktop } = useResponsiveLayout();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const isIOS = Platform.OS === 'ios';
   const isWeb = Platform.OS === 'web';
+  const tabBarPosition = isDesktop ? 'left' : isTablet ? 'top' : 'bottom';
 
   return (
     <Tabs
@@ -58,17 +66,48 @@ function ClassicTabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.mutedForeground,
         headerShown: false,
+        tabBarPosition,
+        tabBarVariant: isDesktop ? 'material' : 'uikit',
+        tabBarLabelPosition: isDesktop ? 'beside-icon' : 'below-icon',
+        tabBarActiveBackgroundColor: isDesktop ? colors.secondary : undefined,
+        tabBarItemStyle: isDesktop
+          ? {
+              minHeight: 50,
+              marginVertical: 4,
+              paddingHorizontal: 12,
+              borderRadius: 15,
+              justifyContent: 'flex-start',
+            }
+          : isTablet
+            ? { flex: 1 }
+            : undefined,
+        tabBarIconStyle: isDesktop ? { marginRight: 10 } : undefined,
+        tabBarLabelStyle: {
+          fontFamily: 'Inter_600SemiBold',
+          fontSize: 10,
+          textAlign: isDesktop ? 'left' : 'center',
+        },
         tabBarStyle: {
           backgroundColor: isIOS ? 'transparent' : colors.background,
-          borderTopWidth: 1,
+          borderTopWidth: isDesktop || isTablet ? 0 : 1,
           borderTopColor: colors.border,
+          borderBottomWidth: isTablet ? 1 : 0,
+          borderBottomColor: colors.border,
+          borderRightWidth: isDesktop ? 1 : 0,
+          borderRightColor: colors.border,
           elevation: 0,
-          height: isWeb ? 84 : undefined,
-          paddingTop: 6,
-          paddingBottom: isWeb ? 0 : safeAreaInsets.bottom,
+          width: isDesktop ? 244 : undefined,
+          height: isTablet ? 78 : isWeb ? 84 : undefined,
+          paddingTop: isDesktop ? 24 : 6,
+          paddingBottom: isDesktop || (isWeb && isTablet)
+            ? 0
+            : isWeb
+              ? 0
+              : safeAreaInsets.bottom,
+          paddingHorizontal: isDesktop ? 12 : undefined,
         },
         tabBarBackground: () =>
-          isIOS ? (
+          isIOS && !isTablet ? (
             <BlurView
               intensity={100}
               tint={isDark ? 'dark' : 'light'}
@@ -141,7 +180,8 @@ function ClassicTabLayout() {
 }
 
 export default function TabLayout() {
-  if (isLiquidGlassAvailable()) {
+  const { isTablet } = useResponsiveLayout();
+  if (!isTablet && isLiquidGlassAvailable()) {
     return <NativeTabLayout />;
   }
   return <ClassicTabLayout />;

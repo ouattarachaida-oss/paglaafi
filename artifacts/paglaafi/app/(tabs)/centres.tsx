@@ -9,12 +9,18 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { BrandHeader, EmptyState, ScreenHeading } from "@/components/common";
+import {
+  BrandHeader,
+  EmptyState,
+  ScreenHeading,
+  useResponsiveLayout,
+} from "@/components/common";
 import { healthCentres } from "@/data/content";
 import { useColors } from "@/hooks/useColors";
 
 export default function CentresScreen() {
   const colors = useColors();
+  const { contentStyle, sidePadding } = useResponsiveLayout();
   const [query, setQuery] = useState("");
   const filteredCentres = useMemo(() => {
     const search = query.trim().toLocaleLowerCase("fr");
@@ -38,7 +44,13 @@ export default function CentresScreen() {
         title="Centres & orientation"
         description="Recherchez une structure de santé ou un service d’orientation près de vous."
       />
-      <View style={styles.content}>
+      <View
+        style={[
+          styles.content,
+          contentStyle,
+          { paddingHorizontal: sidePadding },
+        ]}
+      >
         <View
           style={[
             styles.searchBox,

@@ -1,12 +1,17 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { BrandHeader, EmptyState } from "@/components/common";
+import {
+  BrandHeader,
+  EmptyState,
+  useResponsiveLayout,
+} from "@/components/common";
 import { useColors } from "@/hooks/useColors";
 
 export default function EventsScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { contentStyle, sidePadding } = useResponsiveLayout();
 
   return (
     <ScrollView
@@ -14,7 +19,13 @@ export default function EventsScreen() {
       showsVerticalScrollIndicator={false}
     >
       <BrandHeader />
-      <View style={styles.content}>
+      <View
+        style={[
+          styles.content,
+          contentStyle,
+          { paddingHorizontal: sidePadding, maxWidth: 800 },
+        ]}
+      >
         <Pressable
           accessibilityRole="button"
           onPress={() => router.back()}
@@ -57,7 +68,6 @@ export default function EventsScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: 20,
     paddingTop: 17,
     paddingBottom: 36,
     gap: 14,

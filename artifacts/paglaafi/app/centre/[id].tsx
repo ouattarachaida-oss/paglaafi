@@ -1,13 +1,18 @@
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { BrandHeader, EmptyState } from "@/components/common";
+import {
+  BrandHeader,
+  EmptyState,
+  useResponsiveLayout,
+} from "@/components/common";
 import { healthCentres } from "@/data/content";
 import { useColors } from "@/hooks/useColors";
 
 export default function CentreDetailScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { contentStyle, sidePadding } = useResponsiveLayout();
   const { id } = useLocalSearchParams<{ id: string }>();
   const centre = healthCentres.find((item) => item.id === id);
 
@@ -16,7 +21,13 @@ export default function CentreDetailScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
     >
       <BrandHeader />
-      <View style={styles.content}>
+      <View
+        style={[
+          styles.content,
+          contentStyle,
+          { paddingHorizontal: sidePadding, maxWidth: 800 },
+        ]}
+      >
         <Pressable
           accessibilityRole="button"
           onPress={() => router.back()}
@@ -67,7 +78,6 @@ export default function CentreDetailScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 35,
     gap: 15,

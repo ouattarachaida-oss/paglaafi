@@ -11,7 +11,11 @@ import {
   Text,
   View,
 } from "react-native";
-import { BrandHeader, TrustNotice } from "@/components/common";
+import {
+  BrandHeader,
+  TrustNotice,
+  useResponsiveLayout,
+} from "@/components/common";
 import { useSavedContent } from "@/context/saved-content";
 import { articles } from "@/data/content";
 import { useColors } from "@/hooks/useColors";
@@ -19,6 +23,7 @@ import { useColors } from "@/hooks/useColors";
 export default function ArticleDetailScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { isTablet, sidePadding, contentStyle } = useResponsiveLayout();
   const { id } = useLocalSearchParams<{ id: string }>();
   const article = articles.find((item) => item.id === id);
   const { savedIds, toggleSaved, storageError } = useSavedContent();
@@ -100,7 +105,16 @@ export default function ArticleDetailScreen() {
       showsVerticalScrollIndicator={false}
     >
       <BrandHeader />
-      <View style={styles.content}>
+      <View
+        style={[
+          styles.content,
+          contentStyle,
+          {
+            maxWidth: isTablet ? 820 : undefined,
+            paddingHorizontal: sidePadding,
+          },
+        ]}
+      >
         <Pressable
           accessibilityRole="button"
           onPress={() => router.back()}
@@ -212,7 +226,6 @@ export default function ArticleDetailScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: 21,
     paddingTop: 15,
     paddingBottom: 38,
     gap: 15,

@@ -7,6 +7,7 @@ import {
   EmptyState,
   ScreenHeading,
   TrustNotice,
+  useResponsiveLayout,
 } from "@/components/common";
 import { articles } from "@/data/content";
 import { useSavedContent } from "@/context/saved-content";
@@ -15,6 +16,7 @@ import { useColors } from "@/hooks/useColors";
 export default function SoutienScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { contentStyle, sidePadding } = useResponsiveLayout();
   const { savedIds, isLoading, storageError } = useSavedContent();
   const savedArticles = articles.filter((article) => savedIds.includes(article.id));
 
@@ -36,7 +38,13 @@ export default function SoutienScreen() {
         title="Vous n’avez pas à traverser cela seule."
         description="Des pistes pour les personnes concernées et leurs proches, à leur rythme."
       />
-      <View style={styles.content}>
+      <View
+        style={[
+          styles.content,
+          contentStyle,
+          { paddingHorizontal: sidePadding },
+        ]}
+      >
         <View
           style={[
             styles.supportCard,
@@ -147,7 +155,6 @@ export default function SoutienScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: 20,
     gap: 14,
     paddingBottom: 36,
   },

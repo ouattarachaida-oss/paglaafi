@@ -32,6 +32,7 @@ Application mobile francophone d’information, d’orientation et de soutien au
 ## Architecture decisions
 
 - Première version sans compte ni serveur spécifique : les favoris sont conservés sur l’appareil pour limiter la collecte de données.
+- Une seule application s’adapte aux téléphones, tablettes et ordinateurs : navigation en bas sur téléphone, en haut sur tablette, latérale sur grand écran.
 - Ne jamais inventer de centres, contacts, tarifs, horaires ou dates de campagne. Les informations locales doivent être validées avec des partenaires de santé avant publication.
 - L’assistant IA médical est différé : il exige des sources fiables, une validation clinique et une gestion explicite des limites et urgences.
 
@@ -41,7 +42,7 @@ Quatre espaces dans le MVP : Accueil, Centres, Comprendre et Soutien. Les campag
 
 ## User preferences
 
-Identité rose et blanche, navigation simple en bas de l’écran et priorité au public burkinabè.
+Identité rose et blanche, expérience responsive sur téléphone, tablette et ordinateur, priorité au public burkinabè.
 
 ## Gotchas
 

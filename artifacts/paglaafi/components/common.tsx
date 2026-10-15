@@ -1,15 +1,42 @@
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+
+export function useResponsiveLayout() {
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 720;
+  const isDesktop = width >= 1180;
+
+  return {
+    width,
+    isTablet,
+    isDesktop,
+    sidePadding: isDesktop ? 40 : isTablet ? 28 : 20,
+    contentStyle: {
+      width: "100%" as const,
+      maxWidth: isDesktop ? 1120 : isTablet ? 960 : undefined,
+      alignSelf: "center" as const,
+    },
+  };
+}
 
 export function BrandHeader() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const topInset = Platform.OS === "web" ? 67 : insets.top;
+  const { width } = useWindowDimensions();
+  const topInset = Platform.OS === "web" ? 0 : insets.top;
 
   return (
     <View
@@ -19,6 +46,10 @@ export function BrandHeader() {
           borderBottomColor: colors.border,
           paddingTop: topInset,
           minHeight: 68 + topInset,
+          width: "100%",
+          maxWidth: 1280,
+          alignSelf: "center",
+          paddingHorizontal: width >= 720 ? 30 : 18,
         },
       ]}
     >
@@ -71,8 +102,15 @@ export function ScreenHeading({
   description?: string;
 }) {
   const colors = useColors();
+  const { width, contentStyle, sidePadding } = useResponsiveLayout();
   return (
-    <View style={styles.heading}>
+    <View
+      style={[
+        styles.heading,
+        contentStyle,
+        { paddingHorizontal: width >= 1180 ? 40 : sidePadding },
+      ]}
+    >
       <Text style={[styles.eyebrow, { color: colors.primary }]}>{eyebrow}</Text>
       <Text style={[styles.title, { color: colors.foreground }]}>{title}</Text>
       {description ? (
@@ -238,7 +276,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   heading: {
-    paddingHorizontal: 20,
     paddingTop: 22,
     paddingBottom: 16,
   },

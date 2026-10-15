@@ -1,13 +1,18 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { BrandHeader, ScreenHeading } from "@/components/common";
+import {
+  BrandHeader,
+  ScreenHeading,
+  useResponsiveLayout,
+} from "@/components/common";
 import { articles } from "@/data/content";
 import { useColors } from "@/hooks/useColors";
 
 export default function ComprendreScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { isTablet, contentStyle, sidePadding } = useResponsiveLayout();
 
   return (
     <ScrollView
@@ -20,7 +25,13 @@ export default function ComprendreScreen() {
         title="Comprendre, pas à pas."
         description="Des repères généraux en français simple, avec leurs sources."
       />
-      <View style={styles.content}>
+      <View
+        style={[
+          styles.content,
+          contentStyle,
+          { paddingHorizontal: sidePadding },
+        ]}
+      >
         <View
           style={[
             styles.sourceBanner,
@@ -34,58 +45,61 @@ export default function ComprendreScreen() {
           </Text>
         </View>
 
-        {articles.map((article, index) => (
-          <Pressable
-            key={article.id}
-            accessibilityRole="button"
-            testID={`article-${article.id}`}
-            onPress={() =>
-              router.push({
-                pathname: "/article/[id]",
-                params: { id: article.id },
-              })
-            }
-            style={({ pressed }) => [
-              styles.articleCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                opacity: pressed ? 0.84 : 1,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.articleIcon,
-                { backgroundColor: index === 1 ? colors.accent : colors.secondary },
+        <View style={[styles.articleGrid, isTablet && styles.articleGridWide]}>
+          {articles.map((article, index) => (
+            <Pressable
+              key={article.id}
+              accessibilityRole="button"
+              testID={`article-${article.id}`}
+              onPress={() =>
+                router.push({
+                  pathname: "/article/[id]",
+                  params: { id: article.id },
+                })
+              }
+              style={({ pressed }) => [
+                styles.articleCard,
+                isTablet && styles.articleCardWide,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  opacity: pressed ? 0.84 : 1,
+                },
               ]}
             >
-              <Feather
-                name={index === 1 ? "heart" : index === 2 ? "message-circle" : "book-open"}
-                size={19}
-                color={index === 1 ? colors.accentForeground : colors.primary}
-              />
-            </View>
-            <View style={styles.articleCopy}>
-              <Text style={[styles.category, { color: colors.primary }]}>
-                {article.category.toUpperCase()}
-              </Text>
-              <Text style={[styles.articleTitle, { color: colors.foreground }]}>
-                {article.title}
-              </Text>
-              <Text
-                numberOfLines={2}
-                style={[styles.summary, { color: colors.mutedForeground }]}
+              <View
+                style={[
+                  styles.articleIcon,
+                  { backgroundColor: index === 1 ? colors.accent : colors.secondary },
+                ]}
               >
-                {article.summary}
-              </Text>
-              <Text style={[styles.readTime, { color: colors.mutedForeground }]}>
-                {article.readingTime} de lecture · Source OMS
-              </Text>
-            </View>
-            <Feather name="chevron-right" size={18} color={colors.primary} />
-          </Pressable>
-        ))}
+                <Feather
+                  name={index === 1 ? "heart" : index === 2 ? "message-circle" : "book-open"}
+                  size={19}
+                  color={index === 1 ? colors.accentForeground : colors.primary}
+                />
+              </View>
+              <View style={styles.articleCopy}>
+                <Text style={[styles.category, { color: colors.primary }]}>
+                  {article.category.toUpperCase()}
+                </Text>
+                <Text style={[styles.articleTitle, { color: colors.foreground }]}>
+                  {article.title}
+                </Text>
+                <Text
+                  numberOfLines={2}
+                  style={[styles.summary, { color: colors.mutedForeground }]}
+                >
+                  {article.summary}
+                </Text>
+                <Text style={[styles.readTime, { color: colors.mutedForeground }]}>
+                  {article.readingTime} de lecture · Source OMS
+                </Text>
+              </View>
+              <Feather name="chevron-right" size={18} color={colors.primary} />
+            </Pressable>
+          ))}
+        </View>
 
         <View style={styles.footer}>
           <Feather name="wifi-off" size={15} color={colors.mutedForeground} />
@@ -100,9 +114,16 @@ export default function ComprendreScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: 20,
     gap: 12,
     paddingBottom: 36,
+  },
+  articleGrid: {
+    gap: 12,
+  },
+  articleGridWide: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
   sourceBanner: {
     padding: 13,
@@ -119,12 +140,17 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   articleCard: {
+    width: "100%",
     padding: 13,
     borderWidth: 1,
     borderRadius: 20,
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 11,
+  },
+  articleCardWide: {
+    width: "48.5%",
+    minHeight: 156,
   },
   articleIcon: {
     width: 42,

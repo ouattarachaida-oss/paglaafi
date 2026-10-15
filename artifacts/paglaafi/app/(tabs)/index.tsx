@@ -1,12 +1,17 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { BrandHeader, TrustNotice } from "@/components/common";
+import {
+  BrandHeader,
+  TrustNotice,
+  useResponsiveLayout,
+} from "@/components/common";
 import { useColors } from "@/hooks/useColors";
 
 export default function HomeScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { isTablet, sidePadding, contentStyle } = useResponsiveLayout();
 
   return (
     <ScrollView
@@ -17,6 +22,12 @@ export default function HomeScreen() {
       <View
         style={[
           styles.hero,
+          contentStyle,
+          {
+            marginTop: isTablet ? 20 : 0,
+            borderRadius: isTablet ? 30 : 0,
+            paddingHorizontal: sidePadding + (isTablet ? 18 : 0),
+          },
           { backgroundColor: colors.secondary, borderColor: colors.border },
         ]}
       >
@@ -27,11 +38,28 @@ export default function HomeScreen() {
             UN REPÈRE, À VOTRE RYTHME
           </Text>
         </View>
-        <Text style={[styles.heroTitle, { color: colors.foreground }]}>
+        <Text
+          style={[
+            styles.heroTitle,
+            {
+              color: colors.foreground,
+              fontSize: isTablet ? 48 : 36,
+              lineHeight: isTablet ? 54 : 39,
+            },
+          ]}
+        >
           Une question ?{"\n"}
           <Text style={{ color: colors.primary }}>Vous n’êtes pas seule.</Text>
         </Text>
-        <Text style={[styles.heroBody, { color: colors.mutedForeground }]}>
+        <Text
+          style={[
+            styles.heroBody,
+            {
+              color: colors.mutedForeground,
+              maxWidth: isTablet ? 540 : 330,
+            },
+          ]}
+        >
           Des informations claires et des pistes pour trouver le bon
           accompagnement, au Burkina Faso.
         </Text>
@@ -72,7 +100,13 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <View style={styles.content}>
+      <View
+        style={[
+          styles.content,
+          contentStyle,
+          { paddingHorizontal: sidePadding },
+        ]}
+      >
         <View style={styles.sectionHeading}>
           <View>
             <Text style={[styles.eyebrow, { color: colors.primary }]}>
@@ -89,24 +123,32 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        <QuickAction
-          icon="map-pin"
-          title="Trouver un centre d’orientation"
-          description="Consulter les fiches vérifiées disponibles"
-          onPress={() => router.push("/centres")}
-        />
-        <QuickAction
-          icon="book-open"
-          title="Comprendre le cancer du sein"
-          description="Lire des repères issus de sources fiables"
-          onPress={() => router.push("/comprendre")}
-        />
-        <QuickAction
-          icon="heart"
-          title="Trouver du soutien"
-          description="Des ressources pour vous et vos proches"
-          onPress={() => router.push("/soutien")}
-        />
+        <View style={[styles.quickGrid, isTablet && styles.quickGridWide]}>
+          <View style={isTablet ? styles.quickGridItemWide : styles.quickGridItem}>
+            <QuickAction
+              icon="map-pin"
+              title="Trouver un centre d’orientation"
+              description="Consulter les fiches vérifiées disponibles"
+              onPress={() => router.push("/centres")}
+            />
+          </View>
+          <View style={isTablet ? styles.quickGridItemWide : styles.quickGridItem}>
+            <QuickAction
+              icon="book-open"
+              title="Comprendre le cancer du sein"
+              description="Lire des repères issus de sources fiables"
+              onPress={() => router.push("/comprendre")}
+            />
+          </View>
+          <View style={isTablet ? styles.quickGridItemWide : styles.quickGridItem}>
+            <QuickAction
+              icon="heart"
+              title="Trouver du soutien"
+              description="Des ressources pour vous et vos proches"
+              onPress={() => router.push("/soutien")}
+            />
+          </View>
+        </View>
 
         <Pressable
           accessibilityRole="button"
@@ -215,6 +257,8 @@ function QuickAction({
 
 const styles = StyleSheet.create({
   hero: {
+    width: "100%",
+    borderWidth: 1,
     paddingHorizontal: 20,
     paddingTop: 23,
     paddingBottom: 22,
@@ -294,6 +338,21 @@ const styles = StyleSheet.create({
     paddingTop: 21,
     paddingBottom: 34,
     gap: 10,
+  },
+  quickGrid: {
+    gap: 10,
+  },
+  quickGridWide: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  quickGridItem: {
+    width: "100%",
+  },
+  quickGridItemWide: {
+    width: "48.5%",
+    marginBottom: 2,
   },
   sectionHeading: {
     marginBottom: 3,
