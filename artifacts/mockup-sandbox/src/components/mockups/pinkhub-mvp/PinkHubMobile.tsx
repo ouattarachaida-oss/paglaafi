@@ -2311,42 +2311,72 @@ export function PinkHubMobile() {
         )}
 
         {/* ==================================================================== */}
-        {/* BARRE DE NAVIGATION INFÉRIEURE AVEC 5 ONGLETS CLÉS                  */}
+        {/* BARRE DE NAVIGATION INFÉRIEURE FIXE (MOBILE NATIVE BAR)              */}
         {/* ==================================================================== */}
-        {!selectedCenter && (
-          <nav
-            aria-label="Navigation principale"
-            className="z-20 grid shrink-0 grid-cols-5 border-t border-[#f0dee3] bg-[#fffaf9] px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-1.5"
-          >
+        <nav
+          aria-label="Navigation principale"
+          className="z-30 shrink-0 border-t border-[#f0dee3] bg-white/95 backdrop-blur-md px-1 pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-8px_25px_rgba(75,30,50,.07)]"
+        >
+          <div className="grid grid-cols-5 items-end">
             {[
               { label: "Accueil" as Section, icon: Heart, name: "Accueil" },
               { label: "Centres" as Section, icon: MapPin, name: "Centres" },
-              { label: "RoseIA" as Section, icon: Sparkles, name: "Rose IA" },
+              { label: "RoseIA" as Section, icon: Sparkles, name: "Rose IA", isCentral: true },
               { label: "Annonces" as Section, icon: Megaphone, name: "Annonces" },
               { label: "Soutien" as Section, icon: HeartHandshake, name: "Soutien" },
-            ].map(({ label, icon: Icon, name }) => {
+            ].map(({ label, icon: Icon, name, isCentral }) => {
               const active = section === label;
-              const isRose = label === "RoseIA";
+
+              if (isCentral) {
+                return (
+                  <button
+                    key={label}
+                    onClick={() => {
+                      setSection(label);
+                      setSelectedCenter(null);
+                    }}
+                    aria-current={active ? "page" : undefined}
+                    className="group relative -mt-4 flex flex-col items-center justify-center focus:outline-none"
+                  >
+                    <span
+                      className={`flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-white shadow-[0_6px_18px_rgba(161,67,100,.35)] transition-all duration-300 group-hover:scale-105 ${active ? "bg-gradient-to-tr from-[#8a3350] via-[#a14364] to-[#cf5d83] text-white ring-2 ring-[#a14364]/30" : "bg-gradient-to-tr from-[#9c3e5d] to-[#be5377] text-white"}`}
+                    >
+                      <Sparkles size={21} className="text-amber-300 animate-pulse" />
+                    </span>
+                    <span
+                      className={`mt-0.5 text-[9.5px] tracking-tight font-extrabold transition ${active ? "text-[#a14364]" : "text-[#7b5465]"}`}
+                    >
+                      Rose IA
+                    </span>
+                  </button>
+                );
+              }
+
               return (
                 <button
                   key={label}
-                  onClick={() => setSection(label)}
+                  onClick={() => {
+                    setSection(label);
+                    setSelectedCenter(null);
+                  }}
                   aria-current={active ? "page" : undefined}
-                  className={`flex min-h-[50px] flex-col items-center justify-center gap-0.5 rounded-2xl transition ${active ? "text-[#a14364]" : "text-[#9d838e] hover:bg-[#fdf4f7] hover:text-[#785062]"}`}
+                  className={`flex min-h-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl transition ${active ? "text-[#a14364]" : "text-[#9d838e] hover:text-[#785062]"}`}
                 >
                   <span
-                    className={`grid h-7 w-8 place-items-center rounded-full transition ${active ? "bg-[#f8e3e9]" : isRose ? "bg-amber-100/70 text-amber-600" : ""}`}
+                    className={`grid h-7 w-9 place-items-center rounded-full transition-all duration-200 ${active ? "bg-[#fbe7ed] text-[#a14364] shadow-xs" : ""}`}
                   >
-                    <Icon size={18} strokeWidth={active ? 2.4 : 1.8} />
+                    <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
                   </span>
-                  <span className={`text-[9.5px] truncate max-w-[65px] ${active ? "font-bold text-[#a14364]" : "font-medium"}`}>
+                  <span
+                    className={`text-[9.5px] tracking-tight transition ${active ? "font-bold text-[#a14364]" : "font-medium text-[#9d838e]"}`}
+                  >
                     {name}
                   </span>
                 </button>
               );
             })}
-          </nav>
-        )}
+          </div>
+        </nav>
 
         {/* ==================================================================== */}
         {/* TOAST DE CONFIRMATION                                                */}
