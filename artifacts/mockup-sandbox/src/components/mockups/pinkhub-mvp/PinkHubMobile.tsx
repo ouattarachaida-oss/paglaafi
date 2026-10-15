@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowRight,
   AudioLines,
+  Bell,
   BookOpen,
   Calendar,
   Check,
@@ -12,22 +13,34 @@ import {
   ChevronRight,
   CircleHelp,
   Clock,
+  CreditCard,
   Edit3,
+  Flame,
+  Gift,
   Headphones,
   Heart,
   HeartHandshake,
+  Lock,
+  LogOut,
   MapPin,
+  Megaphone,
   Menu,
   MessageCircle,
+  Mic,
+  MicOff,
   Pause,
   Phone,
   Play,
+  Plus,
   RotateCcw,
   Search,
+  Send,
   Share2,
   ShieldCheck,
   Sparkles,
   Stethoscope,
+  Tag,
+  User,
   UserCheck,
   UserPlus,
   UsersRound,
@@ -42,7 +55,14 @@ import {
  */
 
 // Sections de navigation principale
-type Section = "Accueil" | "Centres" | "Comprendre" | "Accompagnant" | "Soutien";
+type Section =
+  | "Accueil"
+  | "Centres"
+  | "Comprendre"
+  | "Accompagnant"
+  | "Annonces"
+  | "RoseIA"
+  | "Soutien";
 
 // Statuts en direct de la Carte Vivante
 type CenterStatus = "available" | "busy" | "maintenance" | "outdated";
@@ -62,7 +82,7 @@ interface HealthCenter {
   city: "Ouagadougou" | "Bobo-Dioulasso" | "Koudougou";
   status: CenterStatus;
   statusLabel: string;
-  statusColor: string; // classe Tailwind
+  statusColor: string;
   apparatus: string;
   isApparatusWorking: boolean;
   agentsPresent: number;
@@ -76,7 +96,31 @@ interface HealthCenter {
   phone: string;
   address: string;
   lastUpdate: string;
-  coordinates: { x: number; y: number }; // Pourcentage sur la carte SVG (0 à 100)
+  coordinates: { x: number; y: number };
+}
+
+interface PartnerAnnouncement {
+  id: number;
+  title: string;
+  author: string;
+  authorType: "Association" | "Partenaire Santé" | "Hôpital";
+  city: string;
+  date: string;
+  badge: string;
+  badgeColor: string;
+  content: string;
+  contact: string;
+  likes: number;
+}
+
+interface PartnerAssociation {
+  id: number;
+  name: string;
+  acronym: string;
+  mission: string;
+  city: string;
+  verified: boolean;
+  beneficiariesCount: string;
 }
 
 /**
@@ -105,11 +149,11 @@ const initialCenters: HealthCenter[] = [
     ],
     audioMessageFr: "Bonjour, ici la sage-femme responsable de Schiphra. Notre mammographe fonctionne parfaitement aujourd'hui. L'attente est faible ce matin, vous serez reçue en moins de 20 minutes.",
     audioMessageMoore: "Ne y beogo pagbã fãa, CMA Schiphra tɩɩm zĩiga yaa kaset. Masã masã, mammographie masĩnã tʋmdame tɩ zĩigã pa noom ye. Wa-y laafi.",
-    confirmedVisitsToday: 38,
+    confirmedVisitsToday: 41,
     phone: "+226 25 36 30 70",
     address: "Tanghin, Secteur 17 (ex-Secteur 30), Ouagadougou",
     lastUpdate: "Aujourd'hui à 08h30 par Mme Sawadogo (Sage-femme chef)",
-    coordinates: { x: 52, y: 46 }, // Ouagadougou
+    coordinates: { x: 52, y: 46 },
   },
   {
     id: 2,
@@ -134,11 +178,11 @@ const initialCenters: HealthCenter[] = [
     ],
     audioMessageFr: "Au CHU de Bogodogo, les deux appareils fonctionnent mais nous avons une forte affluence ce matin. Si vous êtes pressée, privilégiez le début d'après-midi.",
     audioMessageMoore: "CHU Bogodogo tʋmdame, la neb wʋsg n be kãenkãenga rũnda. Bɩ y bãng tɩ zãama nooma, sã n yaa ne yãmb yaa sõma tɩ y wa zaabre.",
-    confirmedVisitsToday: 64,
+    confirmedVisitsToday: 68,
     phone: "+226 25 37 40 40",
     address: "Boulevard des Tansoba, Arrondissement 5, Ouagadougou",
     lastUpdate: "Aujourd'hui à 09h15 par Dr. Ouedraogo",
-    coordinates: { x: 55, y: 48 }, // Sud-Est Ouaga
+    coordinates: { x: 55, y: 48 },
   },
   {
     id: 3,
@@ -162,11 +206,11 @@ const initialCenters: HealthCenter[] = [
     ],
     audioMessageFr: "Bonjour aux femmes de Bobo. Notre service de dépistage est ouvert en continu jusqu'à 16 heures. L'équipe est au complet et prête à vous orienter avec bienveillance.",
     audioMessageMoore: "Bobo CHU Sourô Sanou pʋgẽ, b sɩngame tɩ b gũusd pagbã ne laafi. Ned baa a yembre pa be n gũud wʋsg ye. Wa-y tɩ b ges yãmba.",
-    confirmedVisitsToday: 42,
+    confirmedVisitsToday: 45,
     phone: "+226 20 97 00 44",
     address: "Avenue de la République, Bobo-Dioulasso",
     lastUpdate: "Aujourd'hui à 07h50 par Major Traoré",
-    coordinates: { x: 26, y: 64 }, // Bobo
+    coordinates: { x: 26, y: 64 },
   },
   {
     id: 4,
@@ -189,11 +233,11 @@ const initialCenters: HealthCenter[] = [
     ],
     audioMessageFr: "Attention pour le CHR de Koudougou : notre mammographe est en maintenance pour la journée. Les sages-femmes assurent la palpation manuelle, mais pour la mammographie, prévoyez de revenir demain ou orientez-vous vers Schiphra.",
     audioMessageMoore: "CHR Koudougou: Masĩnã komsame bilfu tɩ b ket n manegda. La pagbã tõe n waame tɩ b ning-b nus n ges b yĩnsa zaalem. Mammographie pa tʋmd rũnda ye.",
-    confirmedVisitsToday: 15,
+    confirmedVisitsToday: 17,
     phone: "+226 25 44 01 24",
     address: "Route de Ouagadougou, Secteur 1, Koudougou",
     lastUpdate: "Aujourd'hui à 08h00 par l'ingénieur biomédical",
-    coordinates: { x: 42, y: 47 }, // Koudougou
+    coordinates: { x: 42, y: 47 },
   },
   {
     id: 5,
@@ -216,16 +260,116 @@ const initialCenters: HealthCenter[] = [
     ],
     audioMessageFr: "Ce centre n'a pas encore validé son rapport de présence ce matin. Nous vous conseillons d'appeler avant de vous déplacer.",
     audioMessageMoore: "Kasetã pa paam kʋdemd sebr rũnda ye. Bɩ y tẽeg n bãng bãmb sã n sɩngame tɩ y yaool n ta.",
-    confirmedVisitsToday: 4,
+    confirmedVisitsToday: 5,
     phone: "+226 25 35 12 00",
     address: "Tampouy, Arrondissement 3, Ouagadougou",
     lastUpdate: "Hier à 16h45",
-    coordinates: { x: 50, y: 43 }, // Nord Ouaga
+    coordinates: { x: 50, y: 43 },
   },
 ];
 
 /**
- * Contenus pédagogiques (Leçons) avec texte intégral pour la synthèse vocale
+ * Annonces des associations et partenaires de santé au Burkina Faso
+ */
+const initialAnnouncements: PartnerAnnouncement[] = [
+  {
+    id: 1,
+    title: "Caravane Mobile : Dépistages et Échographies 100% Gratuits",
+    author: "Association Burkinabè d'Action contre le Cancer (ABAC)",
+    authorType: "Association",
+    city: "Koudougou & Environs",
+    date: "Samedi 24 et Dimanche 25 Octobre 2026",
+    badge: "Gratuit (0 FCFA)",
+    badgeColor: "bg-emerald-100 text-emerald-800",
+    content: "L'ABAC déploie sa clinique mobile sur la place du Marché de Koudougou. Examen clinique gratuit pour toutes les femmes de 25 à 65 ans. Échographies gratuites sur place en cas de doute.",
+    contact: "+226 70 20 11 22",
+    likes: 134,
+  },
+  {
+    id: 2,
+    title: "Grande Causerie Éducative : Démystifier le Cancer du Sein",
+    author: "Coalition Burkinabè contre le Cancer (COBUCAN)",
+    authorType: "Association",
+    city: "Ouagadougou (Maison de la Femme)",
+    date: "Vendredi 23 Octobre à 15h00",
+    badge: "Rencontre & Débat",
+    badgeColor: "bg-purple-100 text-purple-800",
+    content: "Venez échanger avec nos sages-femmes et des patientes guéries. Explications en français et en mooré. Rafraîchissements offerts et apprentissage des gestes d'auto-palpation.",
+    contact: "+226 76 50 33 44",
+    likes: 92,
+  },
+  {
+    id: 3,
+    title: "Opération Mammographies Subventionnées à 5 000 FCFA",
+    author: "CMA de Schiphra & Partenaires Internationaux",
+    authorType: "Hôpital",
+    city: "Ouagadougou",
+    date: "Du 15 au 31 Octobre 2026",
+    badge: "Tarif Spécial",
+    badgeColor: "bg-amber-100 text-amber-900",
+    content: "Grâce au soutien des donateurs de PagLaafi et d'Orange Money, 200 mammographies sont subventionnées à 5 000 FCFA (au lieu de 12 000 FCFA) pour les femmes sans assurance.",
+    contact: "+226 25 36 30 70",
+    likes: 215,
+  },
+  {
+    id: 4,
+    title: "Permanence d'Écoute Psychologique & Prise en Charge à Bobo",
+    author: "Association Espoir et Vie Bobo",
+    authorType: "Partenaire Santé",
+    city: "Bobo-Dioulasso",
+    date: "Tous les mercredis et samedis",
+    badge: "Soutien Moral",
+    badgeColor: "bg-pink-100 text-pink-800",
+    content: "Un espace confidentiel pour poser vos questions, pleurer sans honte et trouver des compagnes de route pour le traitement. Accueil avec thé et bienveillance.",
+    contact: "+226 78 90 12 34",
+    likes: 88,
+  },
+];
+
+/**
+ * Associations partenaires éligibles aux dons Orange Money
+ */
+const partnerAssociations: PartnerAssociation[] = [
+  {
+    id: 1,
+    name: "Association Burkinabè d'Action contre le Cancer",
+    acronym: "ABAC",
+    mission: "Financement de cliniques mobiles et dépistages gratuits dans les villages et provinces.",
+    city: "Ouagadougou",
+    verified: true,
+    beneficiariesCount: "1 450 femmes dépistées en 2026",
+  },
+  {
+    id: 2,
+    name: "Coalition Burkinabè contre le Cancer",
+    acronym: "COBUCAN",
+    mission: "Aide financière directe pour l'achat de médicaments et chimio pour patientes vulnérables.",
+    city: "National (Burkina Faso)",
+    verified: true,
+    beneficiariesCount: "320 traitements pris en charge",
+  },
+  {
+    id: 3,
+    name: "Fonds de Solidarité Patientes Vulnérables — Schiphra",
+    acronym: "Fonds Schiphra",
+    mission: "Subvention immédiate des mammographies et biopsies pour les femmes sans revenus.",
+    city: "Ouagadougou",
+    verified: true,
+    beneficiariesCount: "580 examens financés",
+  },
+  {
+    id: 4,
+    name: "Association Espoir & Vie Bobo",
+    acronym: "Espoir & Vie",
+    mission: "Hébergement solidaire et soutien psychologique des patientes venues de province.",
+    city: "Bobo-Dioulasso",
+    verified: true,
+    beneficiariesCount: "190 femmes hébergées",
+  },
+];
+
+/**
+ * Leçons pédagogiques avec texte intégral pour la voix
  */
 const lessons = [
   {
@@ -264,6 +408,32 @@ const lessons = [
 ];
 
 /**
+ * Réponses types de l'Assistant Vocal ROSE IA
+ */
+const roseIaResponses: Record<string, { fr: string; moore: string }> = {
+  mal: {
+    fr: "Rassurez-vous, la palpation clinique faite par la sage-femme est totalement indolore et très douce. Pour la mammographie, on ressent une brève pression de quelques secondes sur le sein, qui peut être un peu désagréable mais pas douloureuse. Dites à la manipulatrice d'y aller doucement !",
+    moore: "Laafi beame. Ges-m-yĩngã pa namsd ned ye. Masĩnã tõe n mii bilfu la a pa wãbd ned ye. Kasetã sõngdame tɩ b bãng laafi.",
+  },
+  prix: {
+    fr: "Au Burkina Faso, la palpation clinique est GRATUITE (0 FCFA) dans la plupart des centres publics et durant les campagnes Octobre Rose. L'échographie coûte entre 6 000 et 7 500 FCFA, et la mammographie entre 10 000 et 12 000 FCFA (subventionnée à 5 000 FCFA avec nos associations partenaires).",
+    moore: "Nus gesgã yaa zaalem (0 FCFA). Échographie yaa 6 000 n tãag 7 500 FCFA, la mammographie yaa 10 000 n tãag 12 000 FCFA.",
+  },
+  boule: {
+    fr: "Ne paniquez surtout pas. 8 boules sur 10 au niveau du sein sont totalement bénignes (un kyste d'eau ou un nodule fibreux). Cependant, il faut impérativement la faire examiner par une sage-femme à Schiphra, Bogodogo ou Sourô Sanou pour avoir l'esprit tranquille.",
+    moore: "Da zoe rabeem ye. Bõn-kʋdga wʋsg pa bãag ye. La yaa tɩlae tɩ y tɩ wilg tɩɩm dãmbã tɩ b ges n bilg y yam.",
+  },
+  centres: {
+    fr: "Aujourd'hui, le mammographe de Schiphra à Ouagadougou et celui du CHU Sourô Sanou à Bobo sont parfaitement fonctionnels avec peu d'attente. Attention, le CHR de Koudougou est en maintenance ce jour. Consultez l'onglet 'Centres' pour la carte vivante !",
+    moore: "Rũnda Schiphra ne Bobo Sourô Sanou masĩnã tʋmdame tɩ zĩigã yaa sõma. Koudougou n koms bilfu. Ges-y carte wã pʋgẽ.",
+  },
+  default: {
+    fr: "Je suis Rose IA, votre compagne de santé bienveillante. Je suis là pour vous écouter, vous rassurer et vous orienter vers les structures du Burkina Faso. Posez-moi votre question à la voix ou à l'écrit !",
+    moore: "Mam yaa Rose IA. M be n na n sõng yãmba ne laafi kaset. Sok-y maam bũmb ning fãa y sẽn rat n bãngã.",
+  },
+};
+
+/**
  * ============================================================================
  * COMPOSANT PRINCIPAL : PINKHUB MOBILE
  * ============================================================================
@@ -274,6 +444,21 @@ export function PinkHubMobile() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [toast, setToast] = useState<string>("");
 
+  // Authentification / Compte utilisateur
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "register">("register");
+  const [currentUser, setCurrentUser] = useState<{
+    nom: string;
+    prenom: string;
+    telephone: string;
+  } | null>(null);
+  const [authForm, setAuthForm] = useState({
+    nom: "Ouedraogo",
+    prenom: "Aminata",
+    telephone: "70 12 34 56",
+    motDePasse: "123456",
+  });
+
   // Centres & Carte Vivante
   const [centers, setCenters] = useState<HealthCenter[]>(initialCenters);
   const [selectedCenter, setSelectedCenter] = useState<HealthCenter | null>(null);
@@ -283,7 +468,49 @@ export function PinkHubMobile() {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [showAgentModal, setShowAgentModal] = useState<HealthCenter | null>(null);
 
-  // Audio & Synthèse vocale
+  // Annonces & Événements Partenaires
+  const [announcements, setAnnouncements] = useState<PartnerAnnouncement[]>(initialAnnouncements);
+  const [showNewAnnouncementModal, setShowNewAnnouncementModal] = useState(false);
+  const [newAnnouncement, setNewAnnouncement] = useState({
+    title: "",
+    author: "",
+    authorType: "Association" as const,
+    city: "Ouagadougou",
+    date: "Samedi prochain",
+    badge: "Sensibilisation",
+    badgeColor: "bg-pink-100 text-pink-800",
+    content: "",
+    contact: "",
+  });
+
+  // Assistant Vocal ROSE IA
+  const [roseMessages, setRoseMessages] = useState<
+    Array<{ sender: "user" | "rose"; text: string; time: string; mooreText?: string }>
+  >([
+    {
+      sender: "rose",
+      text: "Bonjour ! Je suis Rose IA, votre assistante de santé. Une question sur le dépistage, une douleur ou un centre ? Appuyez sur le micro ou écrivez-moi.",
+      mooreText: "Ne y beogo ! Mam yaa Rose IA. Sok-y maam bũmb fãa y sẽn rat n bãngã.",
+      time: "Maintenant",
+    },
+  ]);
+  const [roseInput, setRoseInput] = useState("");
+  const [isRecordingVoice, setIsRecordingVoice] = useState(false);
+  const [roseSpeaking, setRoseSpeaking] = useState(false);
+
+  // Module Don Orange Money Burkina Faso
+  const [showDonationModal, setShowDonationModal] = useState(false);
+  const [selectedAssociation, setSelectedAssociation] = useState<PartnerAssociation>(
+    partnerAssociations[0],
+  );
+  const [donationAmount, setDonationAmount] = useState<number>(2500);
+  const [customDonationAmount, setCustomDonationAmount] = useState<string>("");
+  const [orangeMoneyPhone, setOrangeMoneyPhone] = useState<string>("70 12 34 56");
+  const [donationStep, setDonationStep] = useState<"form" | "confirm" | "otp" | "success">("form");
+  const [otpCode, setOtpCode] = useState<string>("");
+  const [lastDonationId, setLastDonationId] = useState<string>("");
+
+  // Audio & Synthèse vocale générale
   const [activeLesson, setActiveLesson] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [audioProgress, setAudioProgress] = useState<number>(0);
@@ -291,51 +518,50 @@ export function PinkHubMobile() {
   const audioIntervalRef = useRef<number | null>(null);
 
   // Module "L'Accompagnant"
-  const [companionName, setCompanionName] = useState("");
+  const [companionName, setCompanionName] = useState("Fatim");
   const [companionRelation, setCompanionRelation] = useState("Ma sœur");
-  const [companionPhone, setCompanionPhone] = useState("");
+  const [companionPhone, setCompanionPhone] = useState("76 89 01 23");
   const [companionCenterId, setCompanionCenterId] = useState<number>(1);
   const [companionDate, setCompanionDate] = useState("Samedi 24 Octobre 2026");
   const [hasInvited, setHasInvited] = useState(false);
   const [hasConfirmedVisit, setHasConfirmedVisit] = useState(false);
   const [companionConfirmedVisit, setCompanionConfirmedVisit] = useState(false);
 
-  // Helper Toast
+  // Notification Toast Helper
   const notify = (msg: string) => {
     setToast(msg);
-    window.setTimeout(() => setToast(""), 3200);
+    window.setTimeout(() => setToast(""), 3400);
   };
 
   /**
    * Moteur de Synthèse Vocale (Web Speech API)
-   * Permet d'écouter les textes en vrai audio directement dans le navigateur
    */
   const handlePlayAudio = (textToSpeak: string, language: "fr" | "moore" = "fr") => {
     if (!("speechSynthesis" in window)) {
-      notify("La synthèse vocale n'est pas supportée par votre navigateur.");
+      notify("La synthèse vocale n'est pas supportée sur ce navigateur.");
       return;
     }
 
     if (isPlaying) {
       window.speechSynthesis.cancel();
       setIsPlaying(false);
+      setRoseSpeaking(false);
       if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
       setAudioProgress(0);
       return;
     }
 
-    // Arrêter toute lecture précédente
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
     utterance.lang = "fr-FR";
-    utterance.rate = language === "moore" ? 0.85 : 0.95;
-    utterance.pitch = 1.0;
+    utterance.rate = language === "moore" ? 0.88 : 0.96;
+    utterance.pitch = 1.05;
 
     utterance.onstart = () => {
       setIsPlaying(true);
+      setRoseSpeaking(true);
       setAudioProgress(5);
-      // Simulation barre de progression
       if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
       audioIntervalRef.current = window.setInterval(() => {
         setAudioProgress((prev) => (prev >= 95 ? 95 : prev + 4));
@@ -344,6 +570,7 @@ export function PinkHubMobile() {
 
     utterance.onend = () => {
       setIsPlaying(false);
+      setRoseSpeaking(false);
       setAudioProgress(100);
       if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
       window.setTimeout(() => setAudioProgress(0), 1000);
@@ -351,13 +578,14 @@ export function PinkHubMobile() {
 
     utterance.onerror = () => {
       setIsPlaying(false);
+      setRoseSpeaking(false);
       if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
     };
 
     window.speechSynthesis.speak(utterance);
   };
 
-  // Arrêt de l'audio lors du changement de section ou démontage
+  // Arrêt de l'audio lors du changement de section
   useEffect(() => {
     return () => {
       if ("speechSynthesis" in window) {
@@ -368,7 +596,30 @@ export function PinkHubMobile() {
   }, [section]);
 
   /**
-   * Filtrage dynamique des centres de santé
+   * Gestion de la Connexion / Inscription
+   */
+  const handleAuthSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authForm.nom || !authForm.prenom || !authForm.telephone || !authForm.motDePasse) {
+      notify("Veuillez renseigner tous les champs obligatoires.");
+      return;
+    }
+    setCurrentUser({
+      nom: authForm.nom,
+      prenom: authForm.prenom,
+      telephone: authForm.telephone,
+    });
+    setShowAuthModal(false);
+    notify(`Bienvenue, ${authForm.prenom} ${authForm.nom} ! Vous êtes connectée.`);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    notify("Vous avez été déconnectée.");
+  };
+
+  /**
+   * Filtrage des centres de santé
    */
   const filteredCenters = useMemo(() => {
     return centers.filter((center) => {
@@ -392,76 +643,161 @@ export function PinkHubMobile() {
   }, [centers, searchQuery, statusFilter, cityFilter]);
 
   /**
-   * Confirmation communautaire : "J'y suis allée, ça s'est bien passé"
+   * Interaction ROSE IA
    */
-  const handleConfirmCenterVisit = (centerId: number) => {
-    setCenters((prev) =>
-      prev.map((c) =>
-        c.id === centerId ? { ...c, confirmedVisitsToday: c.confirmedVisitsToday + 1 } : c,
-      ),
-    );
-    notify("Merci ! Votre confirmation a été enregistrée pour rassurer les autres femmes.");
+  const handleSendRoseMessage = (textOverride?: string) => {
+    const textToSend = textOverride || roseInput;
+    if (!textToSend.trim()) return;
+
+    const userMsg = {
+      sender: "user" as const,
+      text: textToSend,
+      time: "Maintenant",
+    };
+    setRoseMessages((prev) => [...prev, userMsg]);
+    setRoseInput("");
+
+    // Détection d'intention médicale bienveillante
+    const lower = textToSend.toLowerCase();
+    let responseKey = "default";
+    if (lower.includes("mal") || lower.includes("douleur") || lower.includes("peur")) {
+      responseKey = "mal";
+    } else if (lower.includes("prix") || lower.includes("coût") || lower.includes("argent") || lower.includes("fcfa")) {
+      responseKey = "prix";
+    } else if (lower.includes("boule") || lower.includes("kyste") || lower.includes("nodule") || lower.includes("bosse")) {
+      responseKey = "boule";
+    } else if (lower.includes("centre") || lower.includes("où") || lower.includes("adresse") || lower.includes("ouaga") || lower.includes("bobo")) {
+      responseKey = "centres";
+    }
+
+    const answer = roseIaResponses[responseKey] || roseIaResponses.default;
+
+    window.setTimeout(() => {
+      const roseMsg = {
+        sender: "rose" as const,
+        text: answer.fr,
+        mooreText: answer.moore,
+        time: "À l'instant",
+      };
+      setRoseMessages((prev) => [...prev, roseMsg]);
+      handlePlayAudio(answer.fr, "fr");
+    }, 700);
   };
 
   /**
-   * Envoi d'invitation Accompagnant (WhatsApp / SMS)
+   * Reconnaissance vocale (Speech-to-Text) pour Rose IA
    */
-  const generateInvitationText = () => {
-    const selectedCenterObj = centers.find((c) => c.id === companionCenterId) || centers[0];
-    return `Bonjour ${companionName || "ma sœur"}, Aminata t'invite à faire ton dépistage du cancer du sein avec elle le ${companionDate} au ${selectedCenterObj.shortName} (${selectedCenterObj.city}). C'est gratuit ou à prix encadré, et l'appareil est disponible aujourd'hui ! Découvre les détails ici : http://localhost:5173/`;
-  };
+  const handleToggleVoiceRecording = () => {
+    const SpeechRecognition =
+      (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown })
+        .SpeechRecognition ||
+      (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown })
+        .webkitSpeechRecognition;
 
-  const handleSendWhatsApp = () => {
-    if (!companionName) {
-      notify("Veuillez indiquer le prénom de votre accompagnant(e).");
+    if (!SpeechRecognition) {
+      // Simulation guidée si reconnaissance non supportée
+      notify("Micro activé en simulation. Rose IA écoute votre voix...");
+      setIsRecordingVoice(true);
+      window.setTimeout(() => {
+        setIsRecordingVoice(false);
+        handleSendRoseMessage("Est-ce que la mammographie fait mal ?");
+      }, 2200);
       return;
     }
-    const text = encodeURIComponent(generateInvitationText());
-    const url = companionPhone
-      ? `https://api.whatsapp.com/send?phone=${companionPhone.replace(/\D/g, "")}&text=${text}`
-      : `https://api.whatsapp.com/send?text=${text}`;
-    window.open(url, "_blank");
-    setHasInvited(true);
-    notify("Lien WhatsApp ouvert ! Votre binôme est maintenant créé.");
-  };
 
-  const handleSendSMS = () => {
-    if (!companionName) {
-      notify("Veuillez indiquer le prénom de votre accompagnant(e).");
-      return;
+    try {
+      // @ts-expect-error constructeur API speech standard
+      const recognition = new SpeechRecognition();
+      recognition.lang = "fr-FR";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      setIsRecordingVoice(true);
+      // @ts-expect-error événement de résultat speech
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setIsRecordingVoice(false);
+        handleSendRoseMessage(transcript);
+      };
+      recognition.onerror = () => {
+        setIsRecordingVoice(false);
+        notify("La saisie vocale n'a pas pu être captée, vous pouvez écrire votre message.");
+      };
+      recognition.onend = () => {
+        setIsRecordingVoice(false);
+      };
+      recognition.start();
+    } catch {
+      setIsRecordingVoice(false);
     }
-    const text = encodeURIComponent(generateInvitationText());
-    const url = `sms:${companionPhone}?body=${text}`;
-    window.open(url, "_blank");
-    setHasInvited(true);
-    notify("Message SMS prêt à l'envoi.");
   };
 
   /**
-   * Mise à jour du centre par le responsable (Simulation Agent de Santé)
+   * Simulation Orange Money API
    */
-  const handleSaveCenterUpdate = (updatedCenter: HealthCenter) => {
-    setCenters((prev) => prev.map((c) => (c.id === updatedCenter.id ? updatedCenter : c)));
-    if (selectedCenter && selectedCenter.id === updatedCenter.id) {
-      setSelectedCenter(updatedCenter);
+  const handleInitiateOrangeMoneyDonation = () => {
+    const amount = customDonationAmount ? Number(customDonationAmount) : donationAmount;
+    if (!amount || amount < 100) {
+      notify("Veuillez sélectionner ou entrer un montant valide (min. 100 FCFA).");
+      return;
     }
-    setShowAgentModal(null);
-    notify("Le statut du centre a été mis à jour en direct sur la carte vivante !");
+    if (!orangeMoneyPhone.trim()) {
+      notify("Veuillez renseigner votre numéro Orange Money.");
+      return;
+    }
+    setDonationStep("confirm");
+  };
+
+  const handleConfirmOrangeMoney = () => {
+    // Passage à l'étape OTP / Push USSD
+    setDonationStep("otp");
+    notify("Demande envoyée à Orange Money Burkina Faso (#144*4*6#)");
+  };
+
+  const handleValidateOrangeMoneyOTP = () => {
+    // Génération du numéro de reçu Orange Money
+    const randomId = "OM-BF-" + Math.floor(100000 + Math.random() * 900000);
+    setLastDonationId(randomId);
+    setDonationStep("success");
+    notify("Paiement Orange Money réussi ! Merci pour votre don solidaire.");
+  };
+
+  const handlePublishAnnouncement = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAnnouncement.title || !newAnnouncement.content || !newAnnouncement.author) {
+      notify("Veuillez remplir le titre, la structure et la description.");
+      return;
+    }
+    const created: PartnerAnnouncement = {
+      id: Date.now(),
+      title: newAnnouncement.title,
+      author: newAnnouncement.author,
+      authorType: newAnnouncement.authorType,
+      city: newAnnouncement.city,
+      date: newAnnouncement.date,
+      badge: newAnnouncement.badge,
+      badgeColor: newAnnouncement.badgeColor,
+      content: newAnnouncement.content,
+      contact: newAnnouncement.contact || "+226 70 00 00 00",
+      likes: 1,
+    };
+    setAnnouncements([created, ...announcements]);
+    setShowNewAnnouncementModal(false);
+    notify("Votre annonce a été publiée avec succès pour toute la communauté !");
   };
 
   return (
     <main
-      className="min-h-[100dvh] bg-[#f7e6eb] px-0 text-[#3a222f] sm:flex sm:items-center sm:justify-center sm:p-6"
+      className="min-h-[100dvh] bg-[#f7e6eb] px-0 text-[#3a222f] sm:flex sm:items-center sm:justify-center sm:p-5"
       style={{ fontFamily: "'DM Sans', ui-sans-serif, system-ui, sans-serif" }}
     >
-      {/* Styles personnalisés pour typographie et animations fluides */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap');
         .ph-display { font-family: 'Fraunces', Georgia, serif; }
         .ph-scroll::-webkit-scrollbar { display:none; }
         .ph-scroll { scrollbar-width:none; }
         @keyframes ph-rise { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-        .ph-enter { animation: ph-rise .28s ease-out both; }
+        .ph-enter { animation: ph-rise .26s ease-out both; }
         @keyframes ph-pulse-glow {
           0%, 100% { transform: scale(1); opacity: 0.9; }
           50% { transform: scale(1.35); opacity: 0.4; }
@@ -469,11 +805,11 @@ export function PinkHubMobile() {
         .ph-pulse { animation: ph-pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
       `}</style>
 
-      {/* Cadre smartphone / viewport mobile centré */}
-      <div className="relative mx-auto flex h-[100dvh] w-full max-w-[440px] flex-col overflow-hidden bg-[#fffbfa] shadow-[0_28px_80px_rgba(93,39,61,.18)] sm:h-[min(880px,94dvh)] sm:rounded-[36px] sm:border sm:border-white/90">
+      {/* Viewport smartphone */}
+      <div className="relative mx-auto flex h-[100dvh] w-full max-w-[440px] flex-col overflow-hidden bg-[#fffbfa] shadow-[0_28px_80px_rgba(93,39,61,.18)] sm:h-[min(890px,95dvh)] sm:rounded-[36px] sm:border sm:border-white/90">
 
         {/* ==================================================================== */}
-        {/* BARRE LATÉRALE (SIDEBAR NAVIGATION)                                  */}
+        {/* BARRE LATÉRALE (SIDEBAR NAVIGATION COMPLÈTE)                         */}
         {/* ==================================================================== */}
         {sidebarOpen && (
           <div
@@ -481,113 +817,166 @@ export function PinkHubMobile() {
             onClick={() => setSidebarOpen(false)}
           >
             <div
-              className="relative flex h-full w-[82%] max-w-[320px] flex-col bg-[#fffaf9] p-5 shadow-2xl transition-transform"
+              className="relative flex h-full w-[84%] max-w-[325px] flex-col bg-[#fffaf9] p-5 shadow-2xl transition-transform"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-4">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3.5">
+                <div className="flex items-center gap-2.5">
                   <img
                     src="/images/pinkhub-mvp-paglaafi.png"
                     alt="Logo PagLaafi"
-                    className="h-12 w-12 object-contain mix-blend-multiply"
+                    className="h-11 w-11 object-contain mix-blend-multiply"
                   />
                   <div>
                     <h2 className="ph-display text-xl font-bold text-[#472738]">PagLaafi</h2>
-                    <p className="text-[11px] font-medium text-[#92546e]">Burkina Faso · Santé des femmes</p>
+                    <p className="text-[10px] font-medium text-[#92546e]">Burkina Faso · Santé des femmes</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="grid h-9 w-9 place-items-center rounded-full text-[#815568] hover:bg-[#f8e7ec]"
+                  className="grid h-8 w-8 place-items-center rounded-full text-[#815568] hover:bg-[#f8e7ec]"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
 
-              {/* Liens de la barre latérale */}
-              <nav className="mt-5 space-y-1.5 flex-1 overflow-y-auto">
+              {/* État de connexion dans le menu */}
+              <div className="mt-3 rounded-2xl bg-[#f9edf1] p-3 text-xs">
+                {currentUser ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="block text-[10px] font-bold uppercase tracking-wider text-[#9b4967]">Connectée</span>
+                      <span className="font-bold text-[#472738]">{currentUser.prenom} {currentUser.nom}</span>
+                      <span className="block text-[10px] text-[#7d5d6c]">{currentUser.telephone}</span>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="grid h-8 w-8 place-items-center rounded-xl bg-white text-rose-600 shadow-sm"
+                      title="Déconnexion"
+                    >
+                      <LogOut size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setSidebarOpen(false); setShowAuthModal(true); }}
+                    className="flex w-full items-center justify-between font-bold text-[#913b5b]"
+                  >
+                    <span className="flex items-center gap-2">
+                      <User size={16} /> Se connecter / Créer un compte
+                    </span>
+                    <ChevronRight size={16} />
+                  </button>
+                )}
+              </div>
+
+              {/* Navigation latérale complète */}
+              <nav className="mt-4 space-y-1 flex-1 overflow-y-auto">
                 <button
                   onClick={() => { setSection("Accueil"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${section === "Accueil" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Accueil" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
-                  <Heart size={19} className={section === "Accueil" ? "text-[#a14364]" : "text-[#977382]"} />
+                  <Heart size={18} className={section === "Accueil" ? "text-[#a14364]" : "text-[#977382]"} />
                   <span>Accueil</span>
                 </button>
 
                 <button
                   onClick={() => { setSection("Centres"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${section === "Centres" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Centres" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
                   <div className="flex items-center gap-3">
-                    <MapPin size={19} className={section === "Centres" ? "text-[#a14364]" : "text-[#977382]"} />
+                    <MapPin size={18} className={section === "Centres" ? "text-[#a14364]" : "text-[#977382]"} />
                     <span>Carte Vivante des Centres</span>
                   </div>
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">Direct</span>
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800">En direct</span>
                 </button>
 
                 <button
-                  onClick={() => { setSection("Comprendre"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${section === "Comprendre" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  onClick={() => { setSection("RoseIA"); setSelectedCenter(null); setSidebarOpen(false); }}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "RoseIA" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
-                  <AudioLines size={19} className={section === "Comprendre" ? "text-[#a14364]" : "text-[#977382]"} />
-                  <span>Comprendre & Audio</span>
+                  <div className="flex items-center gap-3">
+                    <Sparkles size={18} className="text-[#a14364]" />
+                    <span>Rose IA (Assistante Vocale)</span>
+                  </div>
+                  <span className="rounded-full bg-[#a14364] px-2 py-0.5 text-[9px] font-bold text-white">Vocal</span>
+                </button>
+
+                <button
+                  onClick={() => { setSection("Annonces"); setSelectedCenter(null); setSidebarOpen(false); }}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Annonces" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Megaphone size={18} className={section === "Annonces" ? "text-[#a14364]" : "text-[#977382]"} />
+                    <span>Annonces & Événements</span>
+                  </div>
+                  <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[9px] font-bold text-purple-900">Actu</span>
                 </button>
 
                 <button
                   onClick={() => { setSection("Accompagnant"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${section === "Accompagnant" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Accompagnant" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <UserPlus size={19} className={section === "Accompagnant" ? "text-[#a14364]" : "text-[#977382]"} />
-                    <span>L'Accompagnant (À deux)</span>
-                  </div>
-                  <span className="rounded-full bg-[#a14364] px-2 py-0.5 text-[10px] font-bold text-white">Nouveau</span>
+                  <UserPlus size={18} className={section === "Accompagnant" ? "text-[#a14364]" : "text-[#977382]"} />
+                  <span>L'Accompagnant (À deux)</span>
+                </button>
+
+                <button
+                  onClick={() => { setSection("Comprendre"); setSelectedCenter(null); setSidebarOpen(false); }}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Comprendre" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                >
+                  <AudioLines size={18} className={section === "Comprendre" ? "text-[#a14364]" : "text-[#977382]"} />
+                  <span>Comprendre & Audio</span>
                 </button>
 
                 <button
                   onClick={() => { setSection("Soutien"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${section === "Soutien" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-sm font-semibold transition ${section === "Soutien" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
-                  <HeartHandshake size={19} className={section === "Soutien" ? "text-[#a14364]" : "text-[#977382]"} />
-                  <span>Soutien & Entraide</span>
+                  <div className="flex items-center gap-3">
+                    <HeartHandshake size={18} className={section === "Soutien" ? "text-[#a14364]" : "text-[#977382]"} />
+                    <span>Soutien & Don Orange Money</span>
+                  </div>
+                  <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[9px] font-bold text-orange-800">OM</span>
                 </button>
 
-                <div className="pt-4 border-t border-[#f2e1e6]">
-                  <p className="px-4 text-[10px] font-bold uppercase tracking-wider text-[#a07484]">Espace Professionnel</p>
+                {/* Espace Soignant */}
+                <div className="pt-3 border-t border-[#f2e1e6]">
+                  <p className="px-3.5 text-[9px] font-bold uppercase tracking-wider text-[#a07484]">Accès Professionnels</p>
                   <button
                     onClick={() => {
                       setSidebarOpen(false);
                       setShowAgentModal(centers[0]);
                     }}
-                    className="mt-2 flex w-full items-center gap-3 rounded-2xl border border-dashed border-[#dfb3c1] bg-[#fcf5f7] px-4 py-3 text-left text-xs font-bold text-[#863853] hover:bg-[#f8e9ee]"
+                    className="mt-1.5 flex w-full items-center gap-2.5 rounded-2xl border border-dashed border-[#dfb3c1] bg-[#fcf5f7] px-3.5 py-2.5 text-left text-xs font-bold text-[#863853] hover:bg-[#f8e9ee]"
                   >
-                    <Edit3 size={16} />
+                    <Edit3 size={15} />
                     <span>Mettre à jour mon centre (Soignant)</span>
                   </button>
                 </div>
               </nav>
 
-              {/* Bas de sidebar : Numéro d'écoute & réassurance */}
-              <div className="mt-auto rounded-2xl bg-[#76445d] p-4 text-white">
+              {/* Bas de sidebar */}
+              <div className="mt-auto rounded-2xl bg-[#734059] p-3 text-white">
                 <div className="flex items-center gap-2 text-xs font-bold">
-                  <Phone size={15} /> Ligne d'écoute gratuite
+                  <Phone size={14} /> Numéro vert national gratuit
                 </div>
-                <p className="mt-1 text-sm font-extrabold tracking-wide">80 00 11 22</p>
-                <p className="mt-1 text-[10px] text-white/70">Anonyme & confidentiel au Burkina Faso</p>
+                <p className="mt-0.5 text-sm font-extrabold tracking-wide">80 00 11 22</p>
+                <p className="text-[10px] text-white/70">Anonyme au Burkina Faso</p>
               </div>
             </div>
           </div>
         )}
 
         {/* ==================================================================== */}
-        {/* HEADER APPLICATION AVEC BOUTON BURGER & DÉTAILS                     */}
+        {/* HEADER APPLICATION                                                   */}
         {/* ==================================================================== */}
         <header className="z-20 flex shrink-0 items-center justify-between border-b border-[#f0dee2] bg-[#fffaf9]/95 px-4 py-2 backdrop-blur">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(true)}
-              aria-label="Ouvrir le menu latéral"
-              className="grid h-10 w-10 place-items-center rounded-2xl border border-[#f2e1e6] bg-white text-[#633b4e] transition hover:bg-[#fceef2] hover:text-[#9e3b5e]"
+              aria-label="Ouvrir le menu"
+              className="grid h-10 w-10 place-items-center rounded-2xl border border-[#f2e1e6] bg-white text-[#633b4e] transition hover:bg-[#fceef2]"
             >
               <Menu size={20} />
             </button>
@@ -606,23 +995,27 @@ export function PinkHubMobile() {
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            {/* Bouton Rose IA Vocal direct */}
             <button
-              onClick={() => {
-                setSection("Centres");
-                setViewMode("map");
-              }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-800 shadow-sm"
+              onClick={() => setSection("RoseIA")}
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition shadow-sm ${section === "RoseIA" ? "bg-[#a14364] text-white" : "border border-[#e7bcc9] bg-[#fbf0f4] text-[#8e3857]"}`}
             >
-              <span className="h-2 w-2 rounded-full bg-emerald-500 ph-pulse" />
-              <span>Carte en direct</span>
+              <Sparkles size={13} className="text-amber-500" />
+              <span>Rose IA</span>
             </button>
+
+            {/* Bouton Compte / Connexion */}
             <button
-              onClick={() => notify("PagLaafi vous oriente vers des centres de santé vérifiés au Burkina Faso.")}
-              aria-label="Informations"
-              className="grid h-9 w-9 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
+              onClick={() => setShowAuthModal(true)}
+              className="grid h-9 w-9 place-items-center rounded-full border border-[#eedfe4] bg-white text-[#7d5668] hover:bg-[#faedf1]"
+              title={currentUser ? `Connectée : ${currentUser.prenom}` : "Connexion"}
             >
-              <CircleHelp size={19} />
+              {currentUser ? (
+                <span className="text-xs font-bold text-[#a14364]">{currentUser.prenom[0]}</span>
+              ) : (
+                <User size={18} />
+              )}
             </button>
           </div>
         </header>
@@ -637,137 +1030,139 @@ export function PinkHubMobile() {
           {/* ------------------------------------------------------------------ */}
           {section === "Accueil" && !selectedCenter && (
             <section className="ph-enter">
-              {/* Grand Bandeau Hero Rose */}
-              <div className="relative overflow-hidden bg-[#f9e9ed] px-5 pb-6 pt-6">
+              <div className="relative overflow-hidden bg-[#f9e9ed] px-5 pb-6 pt-5">
                 <div className="pointer-events-none absolute -right-6 -top-8 h-44 w-44 rounded-full border-[20px] border-[#f0d0db] opacity-60" />
-                <div className="pointer-events-none absolute right-6 top-16 h-16 w-16 rounded-full border border-[#e4aebd]" />
 
                 <div className="relative flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-[#a44666] shadow-sm">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#d65f84]" /> Dépistage au Burkina Faso
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-[#a44666] shadow-sm">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#d65f84]" /> Santé des femmes · Burkina Faso
                   </span>
-                  <span className="text-[11px] font-semibold text-[#8e6174]">Octobre Rose & toute l'année</span>
+                  {currentUser && (
+                    <span className="text-[11px] font-bold text-[#8e4462]">
+                      Bonjour, {currentUser.prenom} !
+                    </span>
+                  )}
                 </div>
 
-                <h1 className="ph-display relative mt-4 text-[36px] leading-[1.02] tracking-[-.025em] text-[#452637]">
+                <h1 className="ph-display relative mt-3 text-[34px] leading-[1.02] tracking-[-.025em] text-[#452637]">
                   Une question ?<br />
                   <span className="text-[#b94e70]">Vous n'êtes pas seule.</span>
                 </h1>
 
-                <p className="relative mt-3 text-[14px] leading-[1.6] text-[#745866]">
+                <p className="relative mt-2.5 text-[13px] leading-[1.6] text-[#745866]">
                   Avant de vous déplacer, sachez où l'appareil fonctionne aujourd'hui, combien ça coûte et l'attente sur place.
                 </p>
 
-                <div className="relative mt-5 flex flex-wrap items-center gap-2.5">
+                <div className="relative mt-4 flex flex-wrap items-center gap-2">
                   <button
-                    onClick={() => {
-                      setSection("Centres");
-                      setViewMode("map");
-                    }}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#a14364] px-5 py-3 text-[13px] font-bold text-white shadow-[0_8px_20px_rgba(161,67,100,.25)] transition hover:bg-[#8f3956]"
+                    onClick={() => { setSection("Centres"); setViewMode("map"); }}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#a14364] px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#8f3956]"
                   >
-                    <MapPin size={16} /> Voir la carte en direct
+                    <MapPin size={15} /> Voir la carte en direct
                   </button>
                   <button
-                    onClick={() => {
-                      setSection("Comprendre");
-                      handlePlayAudio(lessons[0].fullText, "fr");
-                    }}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#dfb3c1] bg-white px-4 py-3 text-[13px] font-bold text-[#8c3e59] shadow-sm hover:bg-[#fbf4f6]"
+                    onClick={() => setSection("RoseIA")}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[#dfb3c1] bg-white px-4 py-2.5 text-xs font-bold text-[#8c3e59] shadow-sm hover:bg-[#fbf4f6]"
                   >
-                    <Play size={15} fill="currentColor" /> Écouter l'explication
+                    <Sparkles size={14} className="text-amber-500" /> Parler à Rose IA
                   </button>
                 </div>
               </div>
 
-              {/* Raccourci "Aller à deux : L'Accompagnant" */}
-              <div className="px-5 pt-5">
+              {/* Raccourci Annonces Partenaires Défilant */}
+              <div className="px-5 pt-4">
                 <div
-                  onClick={() => setSection("Accompagnant")}
-                  className="cursor-pointer rounded-[24px] border-2 border-[#e8bcc9] bg-gradient-to-br from-[#fff6f8] to-[#fbf0f4] p-4 shadow-sm transition hover:border-[#cf7794]"
+                  onClick={() => setSection("Annonces")}
+                  className="cursor-pointer rounded-2xl border border-purple-200 bg-purple-50/70 p-3 shadow-sm hover:border-purple-300"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#a14364] text-white shadow-md">
-                        <UserPlus size={22} />
-                      </span>
-                      <div>
-                        <span className="rounded-full bg-[#a14364]/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#a14364]">
-                          Aller à deux
-                        </span>
-                        <h3 className="ph-display mt-0.5 text-[18px] leading-tight text-[#472738]">
-                          Inviter mon accompagnant
-                        </h3>
-                      </div>
-                    </div>
-                    <ChevronRight size={20} className="mt-2 text-[#a14364]" />
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-purple-900">
+                      <Megaphone size={13} /> Événement du moment
+                    </span>
+                    <span className="text-[10px] font-semibold text-purple-700">Voir tout →</span>
                   </div>
-                  <p className="mt-2.5 text-xs leading-5 text-[#735764]">
-                    Faire son dépistage est bien plus rassurant à deux (sœur, amie, voisin, conjoint). Choisissez le centre ensemble et recevez un rappel.
+                  <h4 className="mt-1 text-xs font-bold text-purple-950">
+                    {announcements[0].title}
+                  </h4>
+                  <p className="text-[11px] text-purple-800 line-clamp-1 mt-0.5">
+                    {announcements[0].content}
                   </p>
                 </div>
               </div>
 
-              {/* Grille des 3 actions prioritaires */}
-              <div className="px-5 pt-5">
-                <div className="mb-3 flex items-end justify-between">
-                  <h2 className="ph-display text-[22px] leading-tight text-[#482839]">Par où commencer ?</h2>
-                  <span className="text-[11px] font-medium text-[#9a7686]">Guides rapides</span>
-                </div>
-
-                <div className="space-y-2.5">
-                  <button
-                    onClick={() => { setSection("Centres"); setViewMode("map"); }}
-                    className="flex w-full items-center gap-3 rounded-[20px] border border-[#f0dfe4] bg-white p-3.5 text-left transition hover:border-[#dfa3b5] hover:shadow-sm"
-                  >
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f8e8ec] text-[#a44666]">
-                      <MapPin size={21} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-bold text-[#4c2d3c]">Carte vivante des centres</span>
-                      <span className="mt-0.5 block text-xs text-[#8c737f]">Disponibilité des appareils, prix et affluence</span>
-                    </span>
-                    <ChevronRight size={18} className="text-[#a87487]" />
-                  </button>
-
-                  <button
-                    onClick={() => setSection("Comprendre")}
-                    className="flex w-full items-center gap-3 rounded-[20px] border border-[#f0dfe4] bg-white p-3.5 text-left transition hover:border-[#dfa3b5] hover:shadow-sm"
-                  >
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f5edf7] text-[#845089]">
-                      <Headphones size={21} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-bold text-[#4c2d3c]">Guide audio en français & mooré</span>
-                      <span className="mt-0.5 block text-xs text-[#8c737f]">Écouter les repères médicaux sans jargon</span>
-                    </span>
-                    <ChevronRight size={18} className="text-[#a87487]" />
-                  </button>
-
-                  <button
-                    onClick={() => setSection("Soutien")}
-                    className="flex w-full items-center gap-3 rounded-[20px] border border-[#f0dfe4] bg-white p-3.5 text-left transition hover:border-[#dfa3b5] hover:shadow-sm"
-                  >
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#eff6fb] text-[#42799c]">
-                      <HeartHandshake size={21} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-bold text-[#4c2d3c]">Soutien et numéros d'écoute</span>
-                      <span className="mt-0.5 block text-xs text-[#8c737f]">Permanence téléphonique et conseils de confiance</span>
-                    </span>
-                    <ChevronRight size={18} className="text-[#a87487]" />
-                  </button>
+              {/* Raccourci L'Accompagnant */}
+              <div className="px-5 pt-3">
+                <div
+                  onClick={() => setSection("Accompagnant")}
+                  className="cursor-pointer rounded-[22px] border-2 border-[#e8bcc9] bg-gradient-to-br from-[#fff6f8] to-[#fbf0f4] p-3.5 shadow-sm transition hover:border-[#cf7794]"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#a14364] text-white">
+                        <UserPlus size={19} />
+                      </span>
+                      <div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-[#a14364]">Aller à deux</span>
+                        <h3 className="ph-display text-base font-bold text-[#472738]">Inviter mon accompagnant(e)</h3>
+                      </div>
+                    </div>
+                    <ChevronRight size={18} className="text-[#a14364]" />
+                  </div>
                 </div>
               </div>
 
-              {/* Bloc Campagnes & Confiance */}
-              <div className="mx-5 mt-5 rounded-2xl border border-[#eedde2] bg-[#fffcfb] p-4 text-[#7d6571]">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck size={20} className="mt-0.5 shrink-0 text-[#a44666]" />
-                  <div className="text-[11px] leading-[1.6]">
-                    <strong className="text-[#563143]">Espace sécurisé & transparent :</strong> Les informations de disponibilité sont actualisées chaque matin par les équipes soignantes. Vos démarches restent strictement confidentielles.
+              {/* Don solidaire Orange Money sur l'accueil */}
+              <div className="px-5 pt-3">
+                <div className="rounded-[22px] border border-orange-200 bg-gradient-to-r from-orange-50 to-[#fff8f5] p-3.5 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f16e00] text-white shadow-sm font-black text-sm">
+                        OM
+                      </span>
+                      <div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-orange-900">Solidarité Burkina</span>
+                        <h4 className="ph-display text-sm font-bold text-[#452737]">Faire un don par Orange Money</h4>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowDonationModal(true)}
+                      className="rounded-full bg-[#f16e00] px-3 py-1.5 text-xs font-bold text-white shadow hover:bg-orange-600"
+                    >
+                      Aider
+                    </button>
                   </div>
                 </div>
+              </div>
+
+              {/* 3 Blocs Rapides */}
+              <div className="px-5 pt-4 space-y-2">
+                <button
+                  onClick={() => { setSection("Centres"); setViewMode("map"); }}
+                  className="flex w-full items-center gap-3 rounded-2xl border border-[#f0dfe4] bg-white p-3 text-left transition hover:border-[#dfa3b5]"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f8e8ec] text-[#a44666]">
+                    <MapPin size={19} />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className="block text-xs font-bold text-[#4c2d3c]">Carte vivante des centres</span>
+                    <span className="block text-[11px] text-[#8c737f]">Appareil dispo, prix et attente en direct</span>
+                  </div>
+                  <ChevronRight size={16} className="text-[#a87487]" />
+                </button>
+
+                <button
+                  onClick={() => setSection("Comprendre")}
+                  className="flex w-full items-center gap-3 rounded-2xl border border-[#f0dfe4] bg-white p-3 text-left transition hover:border-[#dfa3b5]"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f5edf7] text-[#845089]">
+                    <Headphones size={19} />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className="block text-xs font-bold text-[#4c2d3c]">Guide vocal français & mooré</span>
+                    <span className="block text-[11px] text-[#8c737f]">Écouter les leçons sans jargon</span>
+                  </div>
+                  <ChevronRight size={16} className="text-[#a87487]" />
+                </button>
               </div>
             </section>
           )}
@@ -777,139 +1172,99 @@ export function PinkHubMobile() {
           {/* ------------------------------------------------------------------ */}
           {section === "Centres" && (
             <section className="ph-enter px-5 pt-4">
-              {/* Entête avec switch Vue Carte / Vue Liste */}
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
                     Temps réel · Burkina Faso
                   </span>
-                  <h1 className="ph-display text-[28px] leading-tight text-[#452637]">
+                  <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
                     Carte vivante des soins
                   </h1>
                 </div>
                 <div className="flex rounded-2xl border border-[#ebd8de] bg-[#f8e9ed] p-1">
                   <button
                     onClick={() => setViewMode("map")}
-                    className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${viewMode === "map" ? "bg-white text-[#963c5d] shadow-sm" : "text-[#835e6e]"}`}
+                    className={`rounded-xl px-2.5 py-1 text-xs font-bold transition ${viewMode === "map" ? "bg-white text-[#963c5d] shadow-sm" : "text-[#835e6e]"}`}
                   >
                     Carte
                   </button>
                   <button
                     onClick={() => setViewMode("list")}
-                    className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${viewMode === "list" ? "bg-white text-[#963c5d] shadow-sm" : "text-[#835e6e]"}`}
+                    className={`rounded-xl px-2.5 py-1 text-xs font-bold transition ${viewMode === "list" ? "bg-white text-[#963c5d] shadow-sm" : "text-[#835e6e]"}`}
                   >
                     Liste ({filteredCenters.length})
                   </button>
                 </div>
               </div>
 
-              <p className="mt-1 text-xs leading-5 text-[#7c6370]">
-                Vérifiez avant de partir : appareil en marche, examens, prix réels et attente en direct.
-              </p>
-
-              {/* Barre de recherche avec filtre texte fonctionnel */}
+              {/* Recherche */}
               <div className="mt-3 relative">
-                <Search size={17} className="absolute left-3.5 top-3.5 text-[#9f7183]" />
+                <Search size={16} className="absolute left-3.5 top-3 text-[#9f7183]" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher par centre, ville, examen..."
-                  className="w-full rounded-2xl border border-[#ebd8de] bg-white py-2.5 pl-10 pr-9 text-xs text-[#4b2f3e] placeholder:text-[#ab919c] focus:border-[#a14364] focus:outline-none focus:ring-1 focus:ring-[#a14364]"
+                  placeholder="Rechercher centre, ville, examen..."
+                  className="w-full rounded-2xl border border-[#ebd8de] bg-white py-2 pl-9 pr-8 text-xs text-[#4b2f3e] focus:border-[#a14364] focus:outline-none"
                 />
                 {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-3 text-[#9f7183] hover:text-[#5f3347]"
-                  >
-                    <X size={16} />
+                  <button onClick={() => setSearchQuery("")} className="absolute right-3 top-2.5 text-[#9f7183]">
+                    <X size={15} />
                   </button>
                 )}
               </div>
 
-              {/* Filtres rapides cliquables (Villes & Statuts) */}
-              <div className="ph-scroll mt-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
+              {/* Filtres Badges */}
+              <div className="ph-scroll mt-2 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
                 <button
                   onClick={() => { setStatusFilter("all"); setCityFilter("all"); }}
-                  className={`shrink-0 rounded-full px-3 py-1 font-bold transition ${statusFilter === "all" && cityFilter === "all" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`shrink-0 rounded-full px-3 py-1 font-bold ${statusFilter === "all" && cityFilter === "all" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   Tous ({centers.length})
                 </button>
                 <button
                   onClick={() => setStatusFilter(statusFilter === "available" ? "all" : "available")}
-                  className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-bold transition ${statusFilter === "available" ? "bg-emerald-600 text-white" : "border border-emerald-300 bg-emerald-50 text-emerald-800"}`}
+                  className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-bold ${statusFilter === "available" ? "bg-emerald-600 text-white" : "border border-emerald-300 bg-emerald-50 text-emerald-800"}`}
                 >
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" /> Dispo de suite
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Dispo de suite
                 </button>
                 <button
                   onClick={() => setStatusFilter(statusFilter === "free" ? "all" : "free")}
-                  className={`shrink-0 rounded-full px-3 py-1 font-bold transition ${statusFilter === "free" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${statusFilter === "free" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   0 FCFA (Gratuit)
                 </button>
                 <button
                   onClick={() => setCityFilter(cityFilter === "Ouagadougou" ? "all" : "Ouagadougou")}
-                  className={`shrink-0 rounded-full px-3 py-1 font-bold transition ${cityFilter === "Ouagadougou" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Ouagadougou" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
-                  Ouagadougou
+                  Ouaga
                 </button>
                 <button
                   onClick={() => setCityFilter(cityFilter === "Bobo-Dioulasso" ? "all" : "Bobo-Dioulasso")}
-                  className={`shrink-0 rounded-full px-3 py-1 font-bold transition ${cityFilter === "Bobo-Dioulasso" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Bobo-Dioulasso" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
-                  Bobo-Dioulasso
+                  Bobo
                 </button>
                 <button
                   onClick={() => setCityFilter(cityFilter === "Koudougou" ? "all" : "Koudougou")}
-                  className={`shrink-0 rounded-full px-3 py-1 font-bold transition ${cityFilter === "Koudougou" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Koudougou" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   Koudougou
                 </button>
               </div>
 
-              {/* Légende des 4 codes couleurs vivants */}
-              <div className="mt-2.5 grid grid-cols-2 gap-1.5 rounded-2xl bg-[#faedf1] p-2 text-[10px] text-[#71505f]">
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                  <span><strong>Vert :</strong> Dispo & attente fluide</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                  <span><strong>Orange :</strong> Forte affluence</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-                  <span><strong>Rouge :</strong> En maintenance</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-slate-400" />
-                  <span><strong>Gris :</strong> Pas de MAJ du matin</span>
-                </div>
-              </div>
-
-              {/* VUE 1 : LA CARTE INTERACTIVE (Burkina Faso SVG & Points Vivants) */}
+              {/* Carte SVG stylisée */}
               {viewMode === "map" && (
-                <div className="mt-3">
-                  <div className="relative h-[270px] w-full overflow-hidden rounded-[26px] border border-[#e5d0d8] bg-gradient-to-b from-[#fdf7f9] to-[#f4e4ea] p-3 shadow-inner">
-                    {/* Carte SVG stylisée du Burkina Faso */}
-                    <svg
-                      viewBox="0 0 100 80"
-                      className="absolute inset-0 h-full w-full opacity-40"
-                      preserveAspectRatio="none"
-                    >
-                      <polygon
-                        points="15,40 25,20 45,15 70,12 85,25 90,45 80,68 60,75 35,72 20,65 10,50"
-                        fill="#ecd3dc"
-                        stroke="#dfb6c4"
-                        strokeWidth="1.2"
-                      />
-                      {/* Villes repères */}
+                <div className="mt-2.5">
+                  <div className="relative h-[250px] w-full overflow-hidden rounded-[24px] border border-[#e5d0d8] bg-gradient-to-b from-[#fdf7f9] to-[#f4e4ea] p-2.5 shadow-inner">
+                    <svg viewBox="0 0 100 80" className="absolute inset-0 h-full w-full opacity-35" preserveAspectRatio="none">
+                      <polygon points="15,40 25,20 45,15 70,12 85,25 90,45 80,68 60,75 35,72 20,65 10,50" fill="#ecd3dc" stroke="#dfb6c4" strokeWidth="1.2" />
                       <text x="50" y="44" fontSize="3.5" fill="#a46d81" fontWeight="bold">Ouagadougou</text>
                       <text x="24" y="62" fontSize="3.2" fill="#a46d81">Bobo</text>
                       <text x="36" y="46" fontSize="3" fill="#a46d81">Koudougou</text>
                     </svg>
 
-                    {/* Épingles interactives vivantes sur la carte */}
                     {filteredCenters.map((c) => (
                       <button
                         key={c.id}
@@ -917,119 +1272,530 @@ export function PinkHubMobile() {
                         style={{ left: `${c.coordinates.x}%`, top: `${c.coordinates.y}%` }}
                         className="group absolute -translate-x-1/2 -translate-y-1/2 focus:outline-none"
                       >
-                        {/* Halo d'animation pulsant */}
-                        <span
-                          className={`absolute -inset-2 rounded-full opacity-60 ${c.status === "available" ? "bg-emerald-400 ph-pulse" : c.status === "busy" ? "bg-amber-400 ph-pulse" : c.status === "maintenance" ? "bg-rose-400" : "bg-slate-300"}`}
-                        />
-                        {/* Point d'épingle central */}
-                        <span
-                          className={`relative flex h-7 w-7 items-center justify-center rounded-full text-white shadow-md transition-transform group-hover:scale-125 ${c.statusColor}`}
-                        >
-                          <Activity size={14} />
+                        <span className={`absolute -inset-1.5 rounded-full opacity-60 ${c.status === "available" ? "bg-emerald-400 ph-pulse" : c.status === "busy" ? "bg-amber-400 ph-pulse" : c.status === "maintenance" ? "bg-rose-400" : "bg-slate-300"}`} />
+                        <span className={`relative flex h-6 w-6 items-center justify-center rounded-full text-white shadow-md ${c.statusColor}`}>
+                          <Activity size={12} />
                         </span>
-                        {/* Bulle d'info miniature */}
-                        <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#422333]/90 px-1.5 py-0.5 text-[9px] font-bold text-white shadow">
+                        <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-[#422333]/90 px-1 py-0.5 text-[8.5px] font-bold text-white shadow">
                           {c.shortName} · {c.queueCount} attente
                         </span>
                       </button>
                     ))}
-
-                    <div className="absolute bottom-2 left-3 rounded-lg bg-white/80 px-2 py-0.5 text-[10px] font-semibold text-[#7c5666] backdrop-blur">
-                      Touchez un point pour voir la fiche en direct
-                    </div>
                   </div>
                 </div>
               )}
 
-              {/* VUE 2 / LISTE DES CENTRES FILTRÉS */}
-              <div className="mt-3 space-y-2.5">
+              {/* Liste des centres */}
+              <div className="mt-3 space-y-2">
                 {filteredCenters.map((center) => (
-                  <div
-                    key={center.id}
-                    className="rounded-[22px] border border-[#efdfe4] bg-white p-4 shadow-sm transition hover:border-[#dea0b2]"
-                  >
+                  <div key={center.id} className="rounded-2xl border border-[#efdfe4] bg-white p-3.5 shadow-sm">
                     <div className="flex items-start justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${center.statusColor}`} />
-                          <span className="text-[11px] font-bold text-[#8f4a64]">{center.statusLabel}</span>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`h-2 w-2 rounded-full ${center.statusColor}`} />
+                          <span className="text-[10px] font-bold text-[#8f4a64]">{center.statusLabel}</span>
                         </div>
-                        <h3 className="ph-display mt-1 text-[16px] font-bold leading-snug text-[#482839]">
-                          {center.name}
-                        </h3>
-                        <p className="text-xs text-[#846b77]">{center.place}</p>
+                        <h3 className="ph-display mt-0.5 text-sm font-bold text-[#482839]">{center.name}</h3>
+                        <p className="text-[11px] text-[#846b77]">{center.place}</p>
                       </div>
-                      <button
-                        onClick={() => setSelectedCenter(center)}
-                        className="rounded-xl bg-[#faedf1] p-2 text-[#a14364] hover:bg-[#f6dbe3]"
-                      >
-                        <ChevronRight size={18} />
+                      <button onClick={() => setSelectedCenter(center)} className="rounded-xl bg-[#faedf1] p-1.5 text-[#a14364]">
+                        <ChevronRight size={16} />
                       </button>
                     </div>
 
-                    {/* Ligne d'état clé : Appareil & Agents */}
-                    <div className="mt-3 rounded-xl bg-[#fbf6f7] p-2.5 text-xs text-[#6e515e]">
+                    <div className="mt-2 rounded-xl bg-[#fbf6f7] p-2 text-[11px] text-[#6e515e]">
                       <div className="flex items-center justify-between font-semibold">
-                        <span className="flex items-center gap-1.5">
-                          <Stethoscope size={14} className="text-[#a14364]" />
-                          {center.isApparatusWorking ? "Mammographe dispo" : "Appareil indisponible"}
-                        </span>
-                        <span className="flex items-center gap-1 text-[#8f4a64]">
-                          <Clock size={13} /> {center.estimatedWait}
-                        </span>
+                        <span>{center.isApparatusWorking ? "Mammographe opérationnel" : "Appareil indisponible"}</span>
+                        <span className="text-[#8f4a64]">{center.estimatedWait}</span>
                       </div>
-                      <div className="mt-1 flex items-center justify-between text-[11px] text-[#866a78]">
-                        <span>{center.agentsPresent} agents en poste ({center.queueCount} en file)</span>
+                      <div className="mt-0.5 flex justify-between text-[10px] text-[#866a78]">
+                        <span>{center.agentsPresent} agents ({center.queueCount} en file)</span>
                         <span className="font-bold text-emerald-700">Palpation : 0 FCFA</span>
                       </div>
                     </div>
 
-                    {/* Actions directes rapides */}
-                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#f4e4e9] pt-2.5">
-                      <button
-                        onClick={() => handlePlayAudio(center.audioMessageMoore, "moore")}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-[#e4bfcd] bg-white px-2.5 py-1 text-[11px] font-bold text-[#92405d] hover:bg-[#fef7f9]"
-                      >
-                        <Volume2 size={13} /> Message Mooré
+                    <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-[#f4e4e9] pt-2 text-[10px]">
+                      <button onClick={() => handlePlayAudio(center.audioMessageMoore, "moore")} className="inline-flex items-center gap-1 rounded-full border border-[#e4bfcd] bg-white px-2 py-0.5 font-bold text-[#92405d]">
+                        <Volume2 size={12} /> Message Mooré
                       </button>
-
-                      <button
-                        onClick={() => handleConfirmCenterVisit(center.id)}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#664654] hover:text-[#92405d]"
-                      >
-                        <UserCheck size={13} className="text-emerald-600" />
-                        <span>{center.confirmedVisitsToday} ont confirmé</span>
-                      </button>
-
-                      <button
-                        onClick={() => setSelectedCenter(center)}
-                        className="rounded-full bg-[#a14364] px-3 py-1 text-[11px] font-bold text-white hover:bg-[#893450]"
-                      >
+                      <button onClick={() => setSelectedCenter(center)} className="rounded-full bg-[#a14364] px-2.5 py-1 font-bold text-white">
                         Détails & Tarifs
                       </button>
                     </div>
                   </div>
                 ))}
-
-                {filteredCenters.length === 0 && (
-                  <div className="rounded-2xl border border-dashed border-[#dfb3c1] p-6 text-center">
-                    <Search size={24} className="mx-auto text-[#b07b8f]" />
-                    <p className="mt-2 text-sm font-bold text-[#563143]">Aucun centre ne correspond</p>
-                    <p className="text-xs text-[#8c6f7d]">Essayez de modifier vos filtres ou d'élargir la recherche.</p>
-                    <button
-                      onClick={() => { setSearchQuery(""); setStatusFilter("all"); setCityFilter("all"); }}
-                      className="mt-3 rounded-full bg-[#a14364] px-4 py-1.5 text-xs font-bold text-white"
-                    >
-                      Réinitialiser les filtres
-                    </button>
-                  </div>
-                )}
               </div>
             </section>
           )}
 
           {/* ------------------------------------------------------------------ */}
-          {/* FICHE DÉTAILLÉE D'UN CENTRE DE SANTÉ (MODAL / OVERLAY)             */}
+          {/* ONGLET 3 : ROSE IA (ASSISTANTE VOCALE SPÉCIALISÉE)                 */}
+          {/* ------------------------------------------------------------------ */}
+          {section === "RoseIA" && !selectedCenter && (
+            <section className="ph-enter flex flex-col h-full px-5 pt-3">
+              {/* Entête Rose IA */}
+              <div className="rounded-[24px] bg-gradient-to-r from-[#734059] to-[#924b6d] p-4 text-white shadow-md">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="relative">
+                      <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/20 text-white shadow-inner">
+                        <Sparkles size={22} className="text-amber-300" />
+                      </span>
+                      {roseSpeaking && (
+                        <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white ph-pulse" />
+                      )}
+                    </div>
+                    <div>
+                      <h2 className="ph-display text-lg font-bold">Rose IA</h2>
+                      <p className="text-[11px] text-white/80">Assistance vocale santé au Burkina Faso</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handlePlayAudio("Bonjour, je suis Rose IA. Posez-moi votre question en touchant le micro.", "fr")}
+                    className="rounded-full bg-white/20 p-2 text-white hover:bg-white/30"
+                    title="Écouter la voix de Rose IA"
+                  >
+                    <Volume2 size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Questions suggérées rapides */}
+              <div className="ph-scroll mt-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
+                {[
+                  "Est-ce que ça fait mal ?",
+                  "Combien coûte le dépistage ?",
+                  "J'ai senti une petite boule",
+                  "Quels centres sont ouverts ?",
+                ].map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => handleSendRoseMessage(q)}
+                    className="shrink-0 rounded-full border border-[#e4cad3] bg-white px-2.5 py-1 text-[#863b55] font-semibold hover:bg-[#faf0f3]"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+
+              {/* Fil de discussion */}
+              <div className="mt-3 space-y-3 flex-1 overflow-y-auto">
+                {roseMessages.map((msg, i) => (
+                  <div
+                    key={i}
+                    className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
+                  >
+                    <div
+                      className={`max-w-[85%] rounded-[20px] p-3 text-xs leading-relaxed shadow-sm ${msg.sender === "user" ? "bg-[#a14364] text-white rounded-tr-sm" : "bg-white text-[#452737] border border-[#f0dfe4] rounded-tl-sm"}`}
+                    >
+                      <p>{msg.text}</p>
+                      {msg.mooreText && (
+                        <div className="mt-2 border-t border-[#f4e4e9] pt-1.5 text-[10.5px] italic text-[#845068]">
+                          <span className="font-bold">Mooré :</span> {msg.mooreText}
+                        </div>
+                      )}
+                    </div>
+                    {msg.sender === "rose" && (
+                      <button
+                        onClick={() => handlePlayAudio(msg.text, "fr")}
+                        className="mt-1 flex items-center gap-1 text-[10px] font-bold text-[#a14364] hover:underline"
+                      >
+                        <Volume2 size={12} /> Réécouter la réponse
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Barre de saisie & Micro vocal */}
+              <div className="mt-3 rounded-2xl border border-[#e5ccd5] bg-white p-2 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleToggleVoiceRecording}
+                    className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition ${isRecordingVoice ? "bg-rose-600 text-white ph-pulse" : "bg-[#f8e7ec] text-[#a14364] hover:bg-[#f3d7df]"}`}
+                    title={isRecordingVoice ? "Enregistrement en cours..." : "Parler à la voix"}
+                  >
+                    <Mic size={19} />
+                  </button>
+                  <input
+                    type="text"
+                    value={roseInput}
+                    onChange={(e) => setRoseInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendRoseMessage()}
+                    placeholder={isRecordingVoice ? "Rose IA écoute votre voix..." : "Posez votre question à Rose IA..."}
+                    className="flex-1 bg-transparent text-xs text-[#452737] outline-none placeholder:text-[#a68c98]"
+                  />
+                  <button
+                    onClick={() => handleSendRoseMessage()}
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#a14364] text-white hover:bg-[#8e3956]"
+                  >
+                    <Send size={16} />
+                  </button>
+                </div>
+                <div className="mt-1 px-2 text-center text-[9px] text-[#937583]">
+                  Rose IA informe et rassure. En cas d'urgence ou de douleur aiguë, consultez un médecin.
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ------------------------------------------------------------------ */}
+          {/* ONGLET 4 : ANNONCES & ÉVÉNEMENTS DES PARTENAIRES                     */}
+          {/* ------------------------------------------------------------------ */}
+          {section === "Annonces" && !selectedCenter && (
+            <section className="ph-enter px-5 pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
+                    Communauté & Partenaires
+                  </span>
+                  <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+                    Annonces & Événements
+                  </h1>
+                </div>
+                <button
+                  onClick={() => setShowNewAnnouncementModal(true)}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#a14364] px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-[#8e3956]"
+                >
+                  <Plus size={15} /> Publier
+                </button>
+              </div>
+
+              <p className="mt-1 text-xs text-[#795f6d]">
+                Retrouvez les campagnes mobiles, causeries éducatives et dépistages gratuits partagés par les associations burkinabè.
+              </p>
+
+              {/* Liste des annonces */}
+              <div className="mt-3.5 space-y-3">
+                {announcements.map((a) => (
+                  <div key={a.id} className="rounded-[22px] border border-[#efdfe4] bg-white p-4 shadow-sm">
+                    <div className="flex items-start justify-between">
+                      <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${a.badgeColor}`}>
+                        {a.badge}
+                      </span>
+                      <span className="text-[10px] font-semibold text-[#8b6576]">{a.city}</span>
+                    </div>
+
+                    <h3 className="ph-display mt-2 text-base font-bold text-[#452737] leading-snug">
+                      {a.title}
+                    </h3>
+
+                    <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-[#8c405c]">
+                      <Megaphone size={13} /> {a.author} ({a.authorType})
+                    </div>
+
+                    <p className="mt-2 text-xs leading-relaxed text-[#6d4f5e]">
+                      {a.content}
+                    </p>
+
+                    <div className="mt-3 flex items-center justify-between border-t border-[#f4e4e9] pt-2.5 text-xs">
+                      <div className="flex items-center gap-1.5 text-[11px] text-[#846b77]">
+                        <Calendar size={13} /> {a.date}
+                      </div>
+                      <a
+                        href={`tel:${a.contact}`}
+                        className="inline-flex items-center gap-1 rounded-full bg-[#faedf1] px-2.5 py-1 text-[11px] font-bold text-[#a14364] hover:bg-[#f6dbe3]"
+                      >
+                        <Phone size={12} /> Contacter
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ------------------------------------------------------------------ */}
+          {/* ONGLET 5 : L'ACCOMPAGNANT (ALLER À DEUX)                           */}
+          {/* ------------------------------------------------------------------ */}
+          {section === "Accompagnant" && !selectedCenter && (
+            <section className="ph-enter px-5 pt-4">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f9e8ed] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
+                <HeartHandshake size={14} /> Aller faire son dépistage à deux
+              </span>
+              <h1 className="ph-display mt-1 text-[28px] leading-tight text-[#452637]">
+                L'Accompagnant
+              </h1>
+              <p className="mt-1 text-xs leading-5 text-[#795f6d]">
+                Aller faire son dépistage, c'est plus facile à deux. Invitez une sœur, une amie, une voisine ou votre conjoint à y aller avec vous.
+              </p>
+
+              {/* Formulaire */}
+              <div className="mt-3.5 rounded-[24px] border border-[#ebd6dc] bg-white p-4 shadow-sm">
+                <h2 className="ph-display text-base font-bold text-[#452737]">
+                  Inviter mon accompagnant(e)
+                </h2>
+
+                <div className="mt-3 space-y-2.5 text-xs">
+                  <div>
+                    <label className="block font-bold text-[#5c3c4b]">Prénom de l'accompagnant(e)</label>
+                    <input
+                      type="text"
+                      value={companionName}
+                      onChange={(e) => setCompanionName(e.target.value)}
+                      placeholder="Ex: Fatim, Aïcha, Moussa..."
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs text-[#4c2e3d] focus:border-[#a14364] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block font-bold text-[#5c3c4b]">Lien de parenté</label>
+                      <select
+                        value={companionRelation}
+                        onChange={(e) => setCompanionRelation(e.target.value)}
+                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] bg-white p-2 text-xs text-[#4c2e3d]"
+                      >
+                        <option>Ma sœur</option>
+                        <option>Une amie</option>
+                        <option>Une voisine</option>
+                        <option>Mon mari / conjoint</option>
+                        <option>Ma mère</option>
+                        <option>Autre proche</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-bold text-[#5c3c4b]">Téléphone</label>
+                      <input
+                        type="tel"
+                        value={companionPhone}
+                        onChange={(e) => setCompanionPhone(e.target.value)}
+                        placeholder="Ex: 70 12 34 56"
+                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs text-[#4c2e3d]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-col gap-2">
+                  <button
+                    onClick={() => {
+                      const text = encodeURIComponent(`Bonjour ${companionName || "ma sœur"}, Aminata t'invite à faire ton dépistage avec elle. C'est plus facile à deux ! Rendez-vous sur PagLaafi : http://localhost:5173/`);
+                      window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
+                      setHasInvited(true);
+                      notify("Invitation WhatsApp prête à l'envoi.");
+                    }}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow hover:bg-emerald-700"
+                  >
+                    <MessageCircle size={16} /> Inviter par WhatsApp
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const text = encodeURIComponent(`Bonjour ${companionName || "ma sœur"}, Aminata t'invite à faire ton dépistage avec elle.`);
+                      window.open(`sms:${companionPhone}?body=${text}`, "_blank");
+                      setHasInvited(true);
+                      notify("SMS d'invitation préparé.");
+                    }}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#dfb3c1] bg-white py-2 text-xs font-bold text-[#8c3e59]"
+                  >
+                    <Share2 size={15} /> Inviter par SMS classique
+                  </button>
+                </div>
+              </div>
+
+              {/* Suivi du binôme */}
+              <div className="mt-4 rounded-[24px] bg-[#f9e9ee] p-4 shadow-sm text-xs">
+                <div className="flex items-center justify-between font-bold text-[#452737]">
+                  <span>Binôme : Aminata & {companionName || "Fatim"}</span>
+                  <span className="rounded-full bg-white px-2 py-0.5 text-[9px] text-[#865366]">Actif</span>
+                </div>
+                <p className="mt-1 text-[11px] text-[#7e5e6e]">Rendez-vous prévu le {companionDate}</p>
+
+                <div className="mt-3 flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => {
+                      setHasConfirmedVisit(!hasConfirmedVisit);
+                      notify(!hasConfirmedVisit ? "Visite confirmée !" : "Réinitialisé.");
+                    }}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${hasConfirmedVisit ? "bg-emerald-600 text-white" : "border border-emerald-400 bg-emerald-50 text-emerald-800"}`}
+                  >
+                    <CheckCircle2 size={15} />
+                    {hasConfirmedVisit ? "Moi : J'y suis allée ✓" : "Moi : J'y suis allée"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCompanionConfirmedVisit(!companionConfirmedVisit);
+                      notify(!companionConfirmedVisit ? "Accompagnant confirmé !" : "Réinitialisé.");
+                    }}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${companionConfirmedVisit ? "bg-emerald-600 text-white" : "border border-emerald-400 bg-emerald-50 text-emerald-800"}`}
+                  >
+                    <CheckCircle2 size={15} />
+                    {companionConfirmedVisit ? "Accompagnant : Présent ✓" : "Accompagnant : Présent"}
+                  </button>
+                </div>
+
+                <p className="mt-2.5 text-center text-[9.5px] text-[#8a6f7c]">
+                  🔒 Seule la confirmation de présence est partagée. Les résultats restent sous secret médical strict.
+                </p>
+              </div>
+            </section>
+          )}
+
+          {/* ------------------------------------------------------------------ */}
+          {/* ONGLET 6 : COMPRENDRE & AUDIO                                      */}
+          {/* ------------------------------------------------------------------ */}
+          {section === "Comprendre" && !selectedCenter && (
+            <section className="ph-enter px-5 pt-4">
+              <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
+                Guide vocal & écrit
+              </span>
+              <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+                Comprendre, à votre rythme
+              </h1>
+
+              {/* Lecteur */}
+              <div className="mt-3.5 overflow-hidden rounded-[24px] bg-[#734059] p-4 text-white shadow-md">
+                <div className="flex items-center justify-between text-[10px] text-white/75">
+                  <span className="inline-flex items-center gap-1 font-bold uppercase tracking-wider">
+                    <Headphones size={13} /> Lecteur Audio PagLaafi
+                  </span>
+                  <div className="flex rounded-full bg-white/15 p-0.5">
+                    <button
+                      onClick={() => setSpeechLanguage("fr")}
+                      className={`rounded-full px-2 py-0.5 font-bold ${speechLanguage === "fr" ? "bg-white text-[#734059]" : "text-white/80"}`}
+                    >
+                      Français
+                    </button>
+                    <button
+                      onClick={() => setSpeechLanguage("moore")}
+                      className={`rounded-full px-2 py-0.5 font-bold ${speechLanguage === "moore" ? "bg-white text-[#734059]" : "text-white/80"}`}
+                    >
+                      Mooré
+                    </button>
+                  </div>
+                </div>
+
+                <h2 className="ph-display mt-2 text-lg leading-snug">
+                  {lessons[activeLesson].title}
+                </h2>
+                <p className="mt-1 text-xs text-white/80">
+                  {speechLanguage === "moore" ? lessons[activeLesson].mooreSummary : lessons[activeLesson].summary}
+                </p>
+
+                <div className="mt-3 flex items-center justify-between border-t border-white/15 pt-2.5">
+                  <button
+                    onClick={() => {
+                      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+                      setIsPlaying(false);
+                      setAudioProgress(0);
+                    }}
+                    className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white"
+                  >
+                    <RotateCcw size={15} />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handlePlayAudio(
+                        speechLanguage === "moore" ? lessons[activeLesson].mooreSummary : lessons[activeLesson].fullText,
+                        speechLanguage,
+                      )
+                    }
+                    className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#734059] shadow"
+                  >
+                    {isPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
+                    <span>{isPlaying ? "Pause" : "Écouter l'explication"}</span>
+                  </button>
+
+                  <span className="text-[10px] text-white/70">{lessons[activeLesson].duration}</span>
+                </div>
+              </div>
+
+              {/* Texte */}
+              <div className="mt-3 rounded-2xl border border-[#eedde2] bg-white p-3.5 text-xs text-[#5b3c4c] leading-relaxed">
+                {lessons[activeLesson].fullText}
+              </div>
+            </section>
+          )}
+
+          {/* ------------------------------------------------------------------ */}
+          {/* ONGLET 7 : SOUTIEN, ENTRAIDE & DON ORANGE MONEY                    */}
+          {/* ------------------------------------------------------------------ */}
+          {section === "Soutien" && !selectedCenter && (
+            <section className="ph-enter px-5 pt-4">
+              <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
+                Entraide & Solidarité
+              </span>
+              <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+                À plusieurs, c'est moins lourd.
+              </h1>
+
+              {/* Module spécial : Faire un don Orange Money */}
+              <div className="mt-3.5 overflow-hidden rounded-[26px] border border-orange-300 bg-gradient-to-br from-[#fff7f2] to-[#ffeedd] p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f16e00] px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                    <Gift size={13} /> Orange Money Burkina Faso
+                  </span>
+                  <span className="text-[10px] font-bold text-orange-950">100% Solidaire</span>
+                </div>
+
+                <h3 className="ph-display mt-2 text-lg font-bold text-[#3d2430]">
+                  Soutenir une femme pour son dépistage
+                </h3>
+                <p className="mt-1 text-xs leading-relaxed text-[#684a58]">
+                  Au Burkina Faso, un don de <strong>5 000 FCFA</strong> permet de subventionner une mammographie complète pour une femme démunie.
+                </p>
+
+                <div className="mt-3 flex items-center justify-between gap-2 border-t border-orange-200/80 pt-3">
+                  <div>
+                    <span className="block text-[10px] text-orange-900 font-medium">Associations vérifiées :</span>
+                    <span className="text-xs font-bold text-[#452737]">ABAC, COBUCAN, Schiphra</span>
+                  </div>
+                  <button
+                    onClick={() => setShowDonationModal(true)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#f16e00] px-4 py-2 text-xs font-bold text-white shadow hover:bg-orange-600 transition"
+                  >
+                    <CreditCard size={14} /> Donner par Orange Money
+                  </button>
+                </div>
+              </div>
+
+              {/* Ligne d'urgence */}
+              <div className="mt-3.5 overflow-hidden rounded-2xl bg-[#734059] p-4 text-white shadow">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white/80">
+                  Numéro vert national gratuit
+                </span>
+                <h3 className="ph-display mt-1 text-2xl font-bold">80 00 11 22</h3>
+                <p className="mt-0.5 text-[11px] text-white/80">
+                  Écoute psychologique & conseils médicaux 7j/7 depuis tout téléphone au Burkina Faso.
+                </p>
+              </div>
+
+              {/* Liste des associations partenaires soutenues */}
+              <div className="mt-4">
+                <h3 className="ph-display text-base font-bold text-[#452737]">
+                  Nos associations partenaires
+                </h3>
+                <div className="mt-2 space-y-2">
+                  {partnerAssociations.map((assoc) => (
+                    <div key={assoc.id} className="rounded-2xl border border-[#eedde2] bg-white p-3 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#452737]">{assoc.name} ({assoc.acronym})</span>
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800">Vérifié</span>
+                      </div>
+                      <p className="mt-1 text-[11px] text-[#785b6a]">{assoc.mission}</p>
+                      <div className="mt-2 flex items-center justify-between border-t border-[#f4e4e9] pt-1.5 text-[10px]">
+                        <span className="text-[#8e6174]">{assoc.beneficiariesCount}</span>
+                        <button
+                          onClick={() => {
+                            setSelectedAssociation(assoc);
+                            setShowDonationModal(true);
+                          }}
+                          className="font-bold text-[#f16e00] hover:underline"
+                        >
+                          Faire un don à cette association →
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ------------------------------------------------------------------ */}
+          {/* FICHE DÉTAILLÉE D'UN CENTRE SÉLECTIONNÉ                             */}
           {/* ------------------------------------------------------------------ */}
           {selectedCenter && (
             <section className="ph-enter px-5 pt-4">
@@ -1040,704 +1806,512 @@ export function PinkHubMobile() {
                 <ArrowLeft size={16} /> Retour à la carte des centres
               </button>
 
-              <div className="rounded-[26px] bg-[#f8e7ec] p-5 shadow-sm">
+              <div className="rounded-[26px] bg-[#f8e7ec] p-4 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold text-white ${selectedCenter.statusColor}`}>
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${selectedCenter.statusColor}`}>
                     <Activity size={12} /> {selectedCenter.statusLabel}
                   </span>
-                  <span className="text-[10px] font-semibold text-[#8a5d70]">
-                    {selectedCenter.city}
-                  </span>
+                  <span className="text-[10px] font-semibold text-[#8a5d70]">{selectedCenter.city}</span>
                 </div>
 
-                <h1 className="ph-display mt-3 text-[24px] font-bold leading-tight text-[#472738]">
-                  {selectedCenter.name}
-                </h1>
-                <p className="mt-1 text-xs text-[#805e6f]">{selectedCenter.address}</p>
+                <h1 className="ph-display mt-2 text-xl font-bold text-[#472738]">{selectedCenter.name}</h1>
+                <p className="mt-0.5 text-xs text-[#805e6f]">{selectedCenter.address}</p>
 
-                {/* État des appareils et de l'équipe */}
-                <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded-xl bg-white/90 p-2.5 shadow-sm">
-                    <p className="text-[10px] font-bold uppercase text-[#9f697d]">Disponibilité équipement</p>
-                    <p className="mt-1 font-bold text-[#452737]">{selectedCenter.apparatus}</p>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-xl bg-white/90 p-2 shadow-sm">
+                    <p className="text-[9px] font-bold uppercase text-[#9f697d]">Équipement</p>
+                    <p className="font-bold text-[#452737]">{selectedCenter.apparatus}</p>
                   </div>
-                  <div className="rounded-xl bg-white/90 p-2.5 shadow-sm">
-                    <p className="text-[10px] font-bold uppercase text-[#9f697d]">Personnel présent</p>
-                    <p className="mt-1 font-bold text-[#452737]">{selectedCenter.agentsPresent} agents en poste</p>
-                    <p className="text-[10px] text-[#7d606e]">{selectedCenter.staffDescription}</p>
+                  <div className="rounded-xl bg-white/90 p-2 shadow-sm">
+                    <p className="text-[9px] font-bold uppercase text-[#9f697d]">Personnel en poste</p>
+                    <p className="font-bold text-[#452737]">{selectedCenter.agentsPresent} agents</p>
                   </div>
                 </div>
 
-                {/* File d'attente estimée */}
-                <div className="mt-2.5 flex items-center justify-between rounded-xl bg-white/90 p-2.5 text-xs">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-[#9f697d]">Attente actuelle</span>
-                    <p className="font-bold text-[#452737]">{selectedCenter.queueCount} personnes dans la file</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="rounded-full bg-[#faedf1] px-2 py-0.5 text-[11px] font-extrabold text-[#963756]">
-                      {selectedCenter.estimatedWait}
-                    </span>
-                  </div>
+                <div className="mt-2 flex items-center justify-between rounded-xl bg-white/90 p-2 text-xs">
+                  <span>File d'attente actuelle : <strong>{selectedCenter.queueCount} personnes</strong></span>
+                  <span className="rounded-full bg-[#faedf1] px-2 py-0.5 font-bold text-[#963756]">{selectedCenter.estimatedWait}</span>
                 </div>
               </div>
 
-              {/* Messages Vocaux du centre (Mooré & Français) */}
-              <div className="mt-4 rounded-2xl border border-[#ebd6dc] bg-white p-4">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-[#4a2b3b]">
-                    <Volume2 size={16} className="text-[#a14364]" /> Message audio du centre
-                  </span>
-                  <span className="text-[10px] text-[#8e6e7c]">Par le personnel soignant</span>
-                </div>
-                <p className="mt-2 text-xs italic text-[#725462]">
-                  « {selectedCenter.audioMessageFr} »
-                </p>
-
-                <div className="mt-3 flex items-center gap-2">
+              {/* Message audio du centre */}
+              <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3 text-xs">
+                <span className="flex items-center gap-1.5 font-bold text-[#4a2b3b]">
+                  <Volume2 size={15} className="text-[#a14364]" /> Message audio du centre
+                </span>
+                <p className="mt-1 italic text-[#725462]">« {selectedCenter.audioMessageFr} »</p>
+                <div className="mt-2.5 flex items-center gap-2">
                   <button
                     onClick={() => handlePlayAudio(selectedCenter.audioMessageFr, "fr")}
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#a14364] py-2 text-xs font-bold text-white hover:bg-[#8a3350]"
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#a14364] py-1.5 text-xs font-bold text-white"
                   >
-                    <Play size={14} fill="currentColor" /> Écouter en Français
+                    <Play size={13} fill="currentColor" /> Français
                   </button>
                   <button
                     onClick={() => handlePlayAudio(selectedCenter.audioMessageMoore, "moore")}
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-2 text-xs font-bold text-[#8a3350] hover:bg-[#f9e7ec]"
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-xs font-bold text-[#8a3350]"
                   >
-                    <AudioLines size={14} /> Écouter en Mooré
+                    <AudioLines size={13} /> Mooré
                   </button>
                 </div>
               </div>
 
-              {/* Grille des examens et tarifs en FCFA */}
-              <div className="mt-4 rounded-2xl border border-[#ebd6dc] bg-white p-4">
-                <h3 className="ph-display text-base font-bold text-[#452737]">
-                  Examens pratiqués & Tarifs
-                </h3>
-                <p className="text-[11px] text-[#8b6e7d]">
-                  Tarifs officiels appliqués au Burkina Faso. Aucune surprise sur place.
-                </p>
-
-                <div className="mt-3 divide-y divide-[#f5e6eb]">
+              {/* Examens & Tarifs */}
+              <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3.5">
+                <h3 className="ph-display text-sm font-bold text-[#452737]">Examens & Tarifs officiels</h3>
+                <div className="mt-2 divide-y divide-[#f5e6eb] text-xs">
                   {selectedCenter.exams.map((exam, i) => (
-                    <div key={i} className="flex items-center justify-between py-2 text-xs">
-                      <div>
-                        <p className="font-semibold text-[#482838]">{exam.name}</p>
-                        {exam.notes && <p className="text-[10px] text-[#907280]">{exam.notes}</p>}
-                      </div>
-                      <div className="text-right">
-                        {exam.free ? (
-                          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-black text-emerald-800">
-                            GRATUIT (0 FCFA)
-                          </span>
-                        ) : (
-                          <span className="font-bold text-[#a14364]">
-                            {exam.price.toLocaleString("fr-FR")} FCFA
-                          </span>
-                        )}
-                      </div>
+                    <div key={i} className="flex items-center justify-between py-1.5">
+                      <span>{exam.name}</span>
+                      <span className={exam.free ? "font-bold text-emerald-700" : "font-bold text-[#a14364]"}>
+                        {exam.free ? "0 FCFA (Gratuit)" : `${exam.price.toLocaleString("fr-FR")} FCFA`}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Bouton de confirmation communautaire */}
-              <div className="mt-4 rounded-2xl bg-[#f9e9ee] p-4 text-center">
-                <p className="text-xs font-semibold text-[#705260]">
-                  Avez-vous visité ce centre aujourd'hui ?
-                </p>
-                <button
-                  onClick={() => handleConfirmCenterVisit(selectedCenter.id)}
-                  className="mt-2 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold text-emerald-800 shadow-sm border border-emerald-300 hover:bg-emerald-50"
-                >
-                  <CheckCircle2 size={16} className="text-emerald-600" />
-                  J'y suis allée, ça s'est bien passé ({selectedCenter.confirmedVisitsToday})
-                </button>
-              </div>
-
-              {/* Bouton pour inviter son accompagnant vers ce centre */}
-              <div className="mt-4">
+              {/* Bouton de confirmation */}
+              <div className="mt-3 rounded-2xl bg-[#f9e9ee] p-3 text-center text-xs">
                 <button
                   onClick={() => {
-                    setCompanionCenterId(selectedCenter.id);
-                    setSection("Accompagnant");
+                    setCenters((prev) =>
+                      prev.map((c) =>
+                        c.id === selectedCenter.id ? { ...c, confirmedVisitsToday: c.confirmedVisitsToday + 1 } : c,
+                      ),
+                    );
+                    notify("Merci ! Votre confirmation rassure la communauté.");
                   }}
-                  className="flex w-full items-center justify-between rounded-2xl bg-[#a14364] px-4 py-3.5 text-left text-white shadow-md hover:bg-[#8a3350]"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 font-bold text-emerald-800 border border-emerald-300 shadow-sm"
                 >
-                  <div>
-                    <span className="block text-xs font-bold uppercase tracking-wider text-white/80">
-                      Aller à deux dans ce centre
-                    </span>
-                    <span className="block text-sm font-bold">
-                      Inviter mon accompagnant(e) à Schiphra
-                    </span>
-                  </div>
-                  <UserPlus size={20} />
+                  <CheckCircle2 size={15} className="text-emerald-600" />
+                  J'y suis allée, ça s'est bien passé ({selectedCenter.confirmedVisitsToday})
                 </button>
-              </div>
-
-              {/* Date de dernière vérification */}
-              <p className="mt-4 text-center text-[10px] text-[#997787]">
-                Dernière confirmation : {selectedCenter.lastUpdate}
-              </p>
-            </section>
-          )}
-
-          {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 3 : COMPRENDRE & AUDIO (LECTEUR VOCAL RÉEL)                 */}
-          {/* ------------------------------------------------------------------ */}
-          {section === "Comprendre" && !selectedCenter && (
-            <section className="ph-enter px-5 pt-4">
-              <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-                Guide vocal & écrit
-              </span>
-              <h1 className="ph-display text-[30px] leading-tight text-[#452637]">
-                Comprendre, à votre rythme
-              </h1>
-              <p className="mt-1 text-xs leading-5 text-[#795f6d]">
-                Écoutez ou lisez des repères simples, validés par des soignants, sans mots compliqués.
-              </p>
-
-              {/* Lecteur Audio Interactif Principal */}
-              <div className="mt-4 overflow-hidden rounded-[26px] bg-[#734059] p-5 text-white shadow-md">
-                <div className="flex items-center justify-between text-[11px] text-white/75">
-                  <span className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider">
-                    <Headphones size={15} /> Lecteur Audio PagLaafi
-                  </span>
-                  <div className="flex rounded-full bg-white/15 p-0.5 text-[10px]">
-                    <button
-                      onClick={() => setSpeechLanguage("fr")}
-                      className={`rounded-full px-2 py-0.5 font-bold transition ${speechLanguage === "fr" ? "bg-white text-[#734059]" : "text-white/80"}`}
-                    >
-                      Français
-                    </button>
-                    <button
-                      onClick={() => setSpeechLanguage("moore")}
-                      className={`rounded-full px-2 py-0.5 font-bold transition ${speechLanguage === "moore" ? "bg-white text-[#734059]" : "text-white/80"}`}
-                    >
-                      Mooré
-                    </button>
-                  </div>
-                </div>
-
-                <h2 className="ph-display mt-3 text-[22px] leading-snug">
-                  {lessons[activeLesson].title}
-                </h2>
-                <p className="mt-1.5 text-xs text-white/80 leading-relaxed">
-                  {speechLanguage === "moore"
-                    ? lessons[activeLesson].mooreSummary
-                    : lessons[activeLesson].summary}
-                </p>
-
-                {/* Barre de progression & Contrôles */}
-                <div className="mt-4">
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-white/20">
-                    <div
-                      className="h-full rounded-full bg-[#f6c2d1] transition-all duration-300"
-                      style={{ width: `${audioProgress}%` }}
-                    />
-                  </div>
-                  <div className="mt-1.5 flex justify-between text-[10px] text-white/70">
-                    <span>{isPlaying ? "Lecture vocale en cours..." : "Prêt à écouter"}</span>
-                    <span>{lessons[activeLesson].duration}</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between border-t border-white/15 pt-3">
-                  <button
-                    onClick={() => {
-                      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-                      setIsPlaying(false);
-                      setAudioProgress(0);
-                    }}
-                    className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
-                    title="Arrêter"
-                  >
-                    <RotateCcw size={17} />
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      handlePlayAudio(
-                        speechLanguage === "moore"
-                          ? lessons[activeLesson].mooreSummary
-                          : lessons[activeLesson].fullText,
-                        speechLanguage,
-                      )
-                    }
-                    className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-bold text-[#734059] shadow-lg transition hover:scale-105"
-                  >
-                    {isPlaying ? (
-                      <>
-                        <Pause size={17} fill="currentColor" /> Mettre en pause
-                      </>
-                    ) : (
-                      <>
-                        <Play size={17} fill="currentColor" /> Écouter le texte
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      notify(
-                        speechLanguage === "fr"
-                          ? "Langue : Français de référence."
-                          : "Langue : Mooré (Gomde de sensibilisation).",
-                      )
-                    }
-                    className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
-                  >
-                    <Volume2 size={17} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Texte intégral à lire */}
-              <div className="mt-4 rounded-2xl border border-[#eedde2] bg-white p-4">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#a14364]">
-                  Texte complet de la fiche
-                </span>
-                <p className="mt-2 text-xs leading-[1.7] text-[#5b3c4c]">
-                  {lessons[activeLesson].fullText}
-                </p>
-              </div>
-
-              {/* Liste des autres leçons */}
-              <div className="mt-5">
-                <h3 className="ph-display text-base font-bold text-[#452737]">
-                  Toutes les explications
-                </h3>
-                <div className="mt-2.5 space-y-2">
-                  {lessons.map((lesson, idx) => (
-                    <button
-                      key={lesson.id}
-                      onClick={() => {
-                        setActiveLesson(idx);
-                        if (isPlaying) {
-                          handlePlayAudio(
-                            speechLanguage === "moore" ? lesson.mooreSummary : lesson.fullText,
-                            speechLanguage,
-                          );
-                        }
-                      }}
-                      className={`flex w-full items-center gap-3 rounded-[20px] border p-3.5 text-left transition ${activeLesson === idx ? "border-[#cf869f] bg-[#fbf0f4]" : "border-[#f0dfe4] bg-white hover:border-[#dea0b2]"}`}
-                    >
-                      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${activeLesson === idx ? "bg-[#a14364] text-white" : "bg-[#f9e9ed] text-[#a14364]"}`}>
-                        {activeLesson === idx && isPlaying ? <AudioLines size={18} /> : <BookOpen size={18} />}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <span className="block text-xs font-bold text-[#4c2d3c]">{lesson.title}</span>
-                        <span className="text-[10px] text-[#8e6e7c]">{lesson.category} · {lesson.duration}</span>
-                      </div>
-                      <ChevronRight size={16} className="text-[#a87487]" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 4 : L'ACCOMPAGNANT (ALLER À DEUX)                           */}
-          {/* ------------------------------------------------------------------ */}
-          {section === "Accompagnant" && !selectedCenter && (
-            <section className="ph-enter px-5 pt-4">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f9e8ed] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-                <HeartHandshake size={14} /> Aller faire son dépistage à deux
-              </span>
-              <h1 className="ph-display mt-1 text-[30px] leading-tight text-[#452637]">
-                L'Accompagnant
-              </h1>
-              <p className="mt-1 text-xs leading-5 text-[#795f6d]">
-                Aller faire son dépistage, c'est plus facile à deux. Invitez une sœur, une amie, une voisine ou votre conjoint à y aller avec vous.
-              </p>
-
-              {/* Formulaire d'invitation d'accompagnant */}
-              <div className="mt-4 rounded-[26px] border border-[#ebd6dc] bg-white p-5 shadow-sm">
-                <h2 className="ph-display text-lg font-bold text-[#452737]">
-                  Inviter mon accompagnant(e)
-                </h2>
-                <p className="text-[11px] text-[#8a6c7b]">
-                  L'invité(e) n'a rien à installer. Elle reçoit un lien clair par WhatsApp ou SMS.
-                </p>
-
-                <div className="mt-4 space-y-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-[#5c3c4b]">Prénom de l'accompagnant(e)</label>
-                    <input
-                      type="text"
-                      value={companionName}
-                      onChange={(e) => setCompanionName(e.target.value)}
-                      placeholder="Ex: Fatim, Aïcha, Moussa..."
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2.5 text-xs text-[#4c2e3d] focus:border-[#a14364] focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[11px] font-bold text-[#5c3c4b]">Lien de parenté / Proximité</label>
-                      <select
-                        value={companionRelation}
-                        onChange={(e) => setCompanionRelation(e.target.value)}
-                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] bg-white p-2.5 text-xs text-[#4c2e3d] focus:border-[#a14364] focus:outline-none"
-                      >
-                        <option>Ma sœur</option>
-                        <option>Une amie</option>
-                        <option>Une voisine</option>
-                        <option>Mon mari / conjoint</option>
-                        <option>Ma mère</option>
-                        <option>Autre proche</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-[#5c3c4b]">Numéro (WhatsApp/SMS)</label>
-                      <input
-                        type="tel"
-                        value={companionPhone}
-                        onChange={(e) => setCompanionPhone(e.target.value)}
-                        placeholder="Ex: 70 12 34 56"
-                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2.5 text-xs text-[#4c2e3d] focus:border-[#a14364] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-[#5c3c4b]">Centre de santé choisi ensemble</label>
-                    <select
-                      value={companionCenterId}
-                      onChange={(e) => setCompanionCenterId(Number(e.target.value))}
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] bg-white p-2.5 text-xs text-[#4c2e3d] focus:border-[#a14364] focus:outline-none"
-                    >
-                      {centers.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.shortName} ({c.city}) — {c.statusLabel}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Aperçu du message qui sera envoyé */}
-                <div className="mt-4 rounded-xl bg-[#fbf3f5] p-3 text-xs text-[#6e505f] border border-[#f0dce3]">
-                  <p className="text-[10px] font-bold uppercase text-[#a14364]">Aperçu de l'invitation :</p>
-                  <p className="mt-1 italic">« {generateInvitationText()} »</p>
-                </div>
-
-                {/* Boutons d'envoi WhatsApp et SMS */}
-                <div className="mt-4 flex flex-col gap-2">
-                  <button
-                    onClick={handleSendWhatsApp}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3 text-xs font-bold text-white shadow-sm hover:bg-emerald-700"
-                  >
-                    <MessageCircle size={17} /> Envoyer l'invitation par WhatsApp
-                  </button>
-
-                  <button
-                    onClick={handleSendSMS}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#dfb3c1] bg-white py-2.5 text-xs font-bold text-[#8c3e59] hover:bg-[#faf0f3]"
-                  >
-                    <Share2 size={15} /> Envoyer par SMS classique
-                  </button>
-                </div>
-
-                {/* Option vocale en mooré pour les personnes ne sachant pas lire */}
-                <div className="mt-3 text-center border-t border-[#f2e1e6] pt-3">
-                  <button
-                    onClick={() =>
-                      handlePlayAudio(
-                        `Ne y beogo ${companionName || "baaba"}, Aminata tɩkda fo tɩ y kẽng a yiibu n ges y laafi. Bũmb baa a yembre pa be ye. Wa-y tɩ d kẽng laafi zĩiga.`,
-                        "moore",
-                      )
-                    }
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#963756] hover:underline"
-                  >
-                    <Volume2 size={15} /> Écouter le message vocal en Mooré (pour les proches qui ne lisent pas)
-                  </button>
-                </div>
-              </div>
-
-              {/* Fiche de suivi du binôme actif */}
-              <div className="mt-5 rounded-[26px] bg-[#f9e9ee] p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#a14364]">
-                    Suivi du rendez-vous à deux
-                  </span>
-                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-[#865366]">
-                    Binôme actif
-                  </span>
-                </div>
-
-                <div className="mt-3 flex items-center gap-3">
-                  <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#a14364] text-white">
-                    <UsersRound size={22} />
-                  </span>
-                  <div>
-                    <h3 className="ph-display text-base font-bold text-[#452737]">
-                      Aminata & {companionName || "Fatim"}
-                    </h3>
-                    <p className="text-xs text-[#7e5e6e]">
-                      Rendez-vous prévu le {companionDate}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Rappels configurés */}
-                <div className="mt-3 space-y-1.5 text-xs text-[#6e4e5e]">
-                  <div className="flex items-center gap-2">
-                    <Check size={14} className="text-emerald-600" />
-                    <span>Rappel automatique la veille (18h) par SMS</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check size={14} className="text-emerald-600" />
-                    <span>Rappel le matin même (7h) avec point météo/attente</span>
-                  </div>
-                </div>
-
-                {/* Confirmation "J'y suis allée" */}
-                <div className="mt-4 rounded-2xl bg-white p-3.5 text-center">
-                  <p className="text-xs font-bold text-[#4c2d3c]">
-                    Avez-vous effectué votre visite ?
-                  </p>
-                  <div className="mt-2 flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => {
-                        setHasConfirmedVisit(!hasConfirmedVisit);
-                        notify(
-                          !hasConfirmedVisit
-                            ? "Bravo ! Votre confirmation a été transmise à votre accompagnant(e)."
-                            : "Statut réinitialisé.",
-                        );
-                      }}
-                      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition ${hasConfirmedVisit ? "bg-emerald-600 text-white" : "border border-emerald-400 bg-emerald-50 text-emerald-800"}`}
-                    >
-                      <CheckCircle2 size={16} />
-                      {hasConfirmedVisit ? "Moi : J'y suis allée ✓" : "Confirmer : J'y suis allée"}
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setCompanionConfirmedVisit(!companionConfirmedVisit);
-                        notify(
-                          !companionConfirmedVisit
-                            ? "Votre accompagnant a également confirmé sa visite !"
-                            : "Statut réinitialisé.",
-                        );
-                      }}
-                      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition ${companionConfirmedVisit ? "bg-emerald-600 text-white" : "border border-emerald-400 bg-emerald-50 text-emerald-800"}`}
-                    >
-                      <CheckCircle2 size={16} />
-                      {companionConfirmedVisit ? "Accompagnant : Présent ✓" : "Accompagnant : J'y suis allée"}
-                    </button>
-                  </div>
-
-                  <p className="mt-2.5 text-[10px] leading-4 text-[#8a6f7c]">
-                    🔒 <strong>Règle stricte de confidentialité :</strong> Seule la confirmation de la visite est partagée avec votre accompagnant. Les résultats médicaux restent strictement confidentiels entre vous et votre médecin.
-                  </p>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 5 : SOUTIEN ET NUMÉROS D'ÉCOUTE                              */}
-          {/* ------------------------------------------------------------------ */}
-          {section === "Soutien" && !selectedCenter && (
-            <section className="ph-enter px-5 pt-4">
-              <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-                Entraide & écoute
-              </span>
-              <h1 className="ph-display text-[30px] leading-tight text-[#452637]">
-                À plusieurs, c'est moins lourd.
-              </h1>
-              <p className="mt-1 text-xs leading-5 text-[#795f6d]">
-                Que vous soyez concernée ou proche, il existe des personnes formées pour vous écouter avec douceur.
-              </p>
-
-              {/* Ligne d'urgence nationale */}
-              <div className="mt-4 overflow-hidden rounded-[26px] bg-[#734059] p-5 text-white shadow-md">
-                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/80">
-                  <Phone size={14} /> Numéro vert national
-                </span>
-                <h2 className="ph-display mt-2 text-[26px] font-bold">80 00 11 22</h2>
-                <p className="mt-1 text-xs text-white/80">
-                  Appel gratuit depuis Moov, Orange et Telecel au Burkina Faso. Des psychologues et sages-femmes vous répondent 7j/7.
-                </p>
-                <button
-                  onClick={() => notify("Numéro d'urgence : 80 00 11 22 (gratuit)")}
-                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#734059] shadow-sm hover:bg-white/90"
-                >
-                  <Phone size={14} /> Appeler maintenant
-                </button>
-              </div>
-
-              {/* Idées d'accompagnement quotidien */}
-              <div className="mt-5">
-                <h3 className="ph-display text-base font-bold text-[#452737]">
-                  Actions simples pour aujourd'hui
-                </h3>
-                <div className="mt-2.5 space-y-2.5">
-                  <div className="flex items-start gap-3 rounded-[20px] border border-[#f0dfe4] bg-white p-4">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#f9edf1] text-[#a14364]">
-                      <Heart size={18} />
-                    </span>
-                    <div>
-                      <p className="text-xs font-bold text-[#4c2d3c]">Parler à une personne de confiance</p>
-                      <p className="text-[11px] text-[#866a78]">
-                        Choisissez une proche avec qui vous vous sentez libre d'exprimer vos doutes sans jugement.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-[20px] border border-[#f0dfe4] bg-white p-4">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#f4edf8] text-[#814e8c]">
-                      <Calendar size={18} />
-                    </span>
-                    <div>
-                      <p className="text-xs font-bold text-[#4c2d3c]">Fixer une date avec son accompagnant</p>
-                      <p className="text-[11px] text-[#866a78]">
-                        Utilisez l'onglet L'Accompagnant pour choisir un samedi matin et y aller ensemble.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-[20px] border border-[#f0dfe4] bg-white p-4">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eaf4fb] text-[#3b7da4]">
-                      <BookOpen size={18} />
-                    </span>
-                    <div>
-                      <p className="text-xs font-bold text-[#4c2d3c]">Préparer ses questions écrites</p>
-                      <p className="text-[11px] text-[#866a78]">
-                        Notez sur un papier ce que vous voulez demander à la sage-femme pour ne rien oublier.
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </section>
           )}
         </div>
 
         {/* ==================================================================== */}
-        {/* MODAL RESPONSABLE DE CENTRE (MISE À JOUR SOIGNANT)                    */}
+        {/* MODAL 1 : CONNEXION SIMPLE / CRÉATION DE COMPTE                      */}
         {/* ==================================================================== */}
-        {showAgentModal && (
+        {showAuthModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
             <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl">
               <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
-                <div>
-                  <h3 className="ph-display text-base font-bold text-[#472738]">Espace Responsable de Centre</h3>
-                  <p className="text-[10px] text-[#916b7c]">{showAgentModal.shortName}</p>
+                <div className="flex items-center gap-2">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#f8e7ec] text-[#a14364]">
+                    <User size={18} />
+                  </div>
+                  <h3 className="ph-display text-base font-bold text-[#472738]">
+                    {authMode === "register" ? "Créer mon compte PagLaafi" : "Se connecter"}
+                  </h3>
                 </div>
                 <button
-                  onClick={() => setShowAgentModal(null)}
+                  onClick={() => setShowAuthModal(false)}
                   className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <div className="mt-4 space-y-3 text-xs">
-                <div>
-                  <label className="block font-bold text-[#563746]">Statut en direct de l'appareil</label>
-                  <select
-                    value={showAgentModal.status}
-                    onChange={(e) =>
-                      setShowAgentModal({
-                        ...showAgentModal,
-                        status: e.target.value as CenterStatus,
-                        statusColor:
-                          e.target.value === "available"
-                            ? "bg-emerald-500"
-                            : e.target.value === "busy"
-                              ? "bg-amber-500"
-                              : e.target.value === "maintenance"
-                                ? "bg-rose-500"
-                                : "bg-slate-400",
-                        statusLabel:
-                          e.target.value === "available"
-                            ? "Disponible · Attente fluide"
-                            : e.target.value === "busy"
-                              ? "Forte affluence · Prévoir attente"
-                              : e.target.value === "maintenance"
-                                ? "Appareil en maintenance technique"
-                                : "Non actualisé aujourd'hui",
-                        isApparatusWorking: e.target.value !== "maintenance",
-                      })
-                    }
-                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 focus:border-[#a14364] focus:outline-none"
-                  >
-                    <option value="available">🟢 Vert : Disponible & Attente fluide</option>
-                    <option value="busy">🟠 Orange : Forte affluence (&gt; 1h)</option>
-                    <option value="maintenance">🔴 Rouge : Mammographe en maintenance</option>
-                    <option value="outdated">⚪ Gris : Non mis à jour</option>
-                  </select>
-                </div>
+              <div className="mt-3 flex rounded-xl bg-[#f9edf1] p-1 text-xs">
+                <button
+                  onClick={() => setAuthMode("register")}
+                  className={`flex-1 rounded-lg py-1.5 font-bold transition ${authMode === "register" ? "bg-white text-[#913b5b] shadow-sm" : "text-[#7b5b6a]"}`}
+                >
+                  Inscription
+                </button>
+                <button
+                  onClick={() => setAuthMode("login")}
+                  className={`flex-1 rounded-lg py-1.5 font-bold transition ${authMode === "login" ? "bg-white text-[#913b5b] shadow-sm" : "text-[#7b5b6a]"}`}
+                >
+                  Connexion
+                </button>
+              </div>
 
+              <form onSubmit={handleAuthSubmit} className="mt-3 space-y-2.5 text-xs">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-bold text-[#563746]">Agents en poste</label>
+                    <label className="block font-bold text-[#563746]">Nom *</label>
                     <input
-                      type="number"
-                      value={showAgentModal.agentsPresent}
-                      onChange={(e) =>
-                        setShowAgentModal({ ...showAgentModal, agentsPresent: Number(e.target.value) })
-                      }
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 focus:border-[#a14364] focus:outline-none"
+                      type="text"
+                      required
+                      value={authForm.nom}
+                      onChange={(e) => setAuthForm({ ...authForm, nom: e.target.value })}
+                      placeholder="Ex: Ouedraogo"
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs focus:border-[#a14364] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-[#563746]">Personnes en file</label>
+                    <label className="block font-bold text-[#563746]">Prénom *</label>
                     <input
-                      type="number"
-                      value={showAgentModal.queueCount}
-                      onChange={(e) =>
-                        setShowAgentModal({
-                          ...showAgentModal,
-                          queueCount: Number(e.target.value),
-                          estimatedWait: `~${Number(e.target.value) * 3} min`,
-                        })
-                      }
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 focus:border-[#a14364] focus:outline-none"
+                      type="text"
+                      required
+                      value={authForm.prenom}
+                      onChange={(e) => setAuthForm({ ...authForm, prenom: e.target.value })}
+                      placeholder="Ex: Aminata"
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs focus:border-[#a14364] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#563746]">Message vocal / Message du jour</label>
-                  <textarea
-                    rows={2}
-                    value={showAgentModal.audioMessageFr}
-                    onChange={(e) =>
-                      setShowAgentModal({ ...showAgentModal, audioMessageFr: e.target.value })
-                    }
+                  <label className="block font-bold text-[#563746]">Numéro de téléphone *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={authForm.telephone}
+                    onChange={(e) => setAuthForm({ ...authForm, telephone: e.target.value })}
+                    placeholder="Ex: 70 12 34 56"
+                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs focus:border-[#a14364] focus:outline-none"
+                  />
+                  <p className="text-[9.5px] text-[#937583] mt-0.5">Sert à recevoir vos rappels de rendez-vous et SMS.</p>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#563746]">Mot de passe *</label>
+                  <input
+                    type="password"
+                    required
+                    value={authForm.motDePasse}
+                    onChange={(e) => setAuthForm({ ...authForm, motDePasse: e.target.value })}
+                    placeholder="••••••••"
                     className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs focus:border-[#a14364] focus:outline-none"
                   />
                 </div>
-              </div>
 
-              <div className="mt-5 flex gap-2">
-                <button
-                  onClick={() => setShowAgentModal(null)}
-                  className="flex-1 rounded-xl border border-[#e5ced6] py-2.5 text-xs font-bold text-[#725261]"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={() => handleSaveCenterUpdate(showAgentModal)}
-                  className="flex-1 rounded-xl bg-[#a14364] py-2.5 text-xs font-bold text-white shadow"
-                >
-                  Enregistrer en direct
-                </button>
-              </div>
+                <div className="pt-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAuthModal(false)}
+                    className="flex-1 rounded-xl border border-[#e5ced6] py-2.5 font-bold text-[#725261]"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 rounded-xl bg-[#a14364] py-2.5 font-bold text-white shadow hover:bg-[#8d3955]"
+                  >
+                    {authMode === "register" ? "Valider l'inscription" : "Se connecter"}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
 
         {/* ==================================================================== */}
-        {/* BARRE DE NAVIGATION INFÉRIEURE (MOBILE BOTTOM BAR)                  */}
+        {/* MODAL 2 : SIMULATION API ORANGE MONEY (BURKINA FASO)                  */}
+        {/* ==================================================================== */}
+        {showDonationModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
+            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl border border-orange-200">
+              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#f16e00] text-white font-black text-xs">
+                    OM
+                  </span>
+                  <div>
+                    <h3 className="ph-display text-sm font-bold text-[#3d2430]">Don Solidaire Orange Money</h3>
+                    <p className="text-[10px] text-orange-950 font-semibold">Orange Money Burkina Faso (#144#)</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setShowDonationModal(false); setDonationStep("form"); }}
+                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* ÉTAPE 1 : Choix de l'association et du montant */}
+              {donationStep === "form" && (
+                <div className="mt-3 space-y-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-[#563746]">1. Choisir l'association partenaire :</label>
+                    <select
+                      value={selectedAssociation.id}
+                      onChange={(e) => {
+                        const found = partnerAssociations.find((a) => a.id === Number(e.target.value));
+                        if (found) setSelectedAssociation(found);
+                      }}
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 font-semibold text-[#452737]"
+                    >
+                      {partnerAssociations.map((assoc) => (
+                        <option key={assoc.id} value={assoc.id}>
+                          {assoc.acronym} — {assoc.name} ({assoc.city})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-[10px] text-[#785b6a] italic">
+                      Mission : {selectedAssociation.mission}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#563746]">2. Montant du don solidaire (FCFA) :</label>
+                    <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                      {[1000, 2500, 5000, 10000, 25000].map((amt) => (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => { setDonationAmount(amt); setCustomDonationAmount(""); }}
+                          className={`rounded-xl py-2 font-bold transition text-xs ${donationAmount === amt && !customDonationAmount ? "bg-[#f16e00] text-white shadow-sm" : "border border-[#e7d5dc] bg-[#fffaf8] text-[#563746]"}`}
+                        >
+                          {amt.toLocaleString("fr-FR")} F
+                        </button>
+                      ))}
+                      <input
+                        type="number"
+                        placeholder="Autre..."
+                        value={customDonationAmount}
+                        onChange={(e) => setCustomDonationAmount(e.target.value)}
+                        className={`rounded-xl p-1.5 text-center text-xs font-bold border ${customDonationAmount ? "border-[#f16e00] bg-orange-50 text-orange-900" : "border-[#e7d5dc]"}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#563746]">3. Numéro Orange Money débiteur :</label>
+                    <div className="relative mt-1">
+                      <span className="absolute left-3 top-2.5 font-bold text-[#8c6778]">+226</span>
+                      <input
+                        type="tel"
+                        value={orangeMoneyPhone}
+                        onChange={(e) => setOrangeMoneyPhone(e.target.value)}
+                        placeholder="70 12 34 56"
+                        className="w-full rounded-xl border border-[#e4cfd6] py-2 pl-14 pr-3 font-bold text-[#452737] focus:border-[#f16e00] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleInitiateOrangeMoneyDonation}
+                    className="mt-2 w-full rounded-2xl bg-[#f16e00] py-3 text-xs font-bold text-white shadow-md hover:bg-orange-600 transition"
+                  >
+                    Valider le don de {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA →
+                  </button>
+                </div>
+              )}
+
+              {/* ÉTAPE 2 : Confirmation des détails */}
+              {donationStep === "confirm" && (
+                <div className="mt-3 space-y-3 text-xs">
+                  <div className="rounded-2xl bg-[#fff7f2] border border-orange-200 p-3.5 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-[#7c5b6b]">Bénéficiaire :</span>
+                      <span className="font-bold text-[#452737]">{selectedAssociation.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#7c5b6b]">Montant :</span>
+                      <span className="font-extrabold text-[#f16e00] text-sm">
+                        {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#7c5b6b]">Téléphone Orange :</span>
+                      <span className="font-bold text-[#452737]">+226 {orangeMoneyPhone}</span>
+                    </div>
+                    <div className="flex justify-between text-[10.5px]">
+                      <span className="text-[#7c5b6b]">Frais de transaction :</span>
+                      <span className="font-bold text-emerald-700">0 FCFA (Pris en charge)</span>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-center text-[#7e5f6e]">
+                    En continuant, un message de confirmation USSD Orange Money sera envoyé à votre téléphone.
+                  </p>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setDonationStep("form")}
+                      className="flex-1 rounded-xl border border-[#e5ced6] py-2.5 font-bold text-[#725261]"
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      onClick={handleConfirmOrangeMoney}
+                      className="flex-1 rounded-xl bg-[#f16e00] py-2.5 font-bold text-white shadow hover:bg-orange-600"
+                    >
+                      Confirmer l'envoi
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ÉTAPE 3 : Simulation Push USSD / Code OTP */}
+              {donationStep === "otp" && (
+                <div className="mt-3 space-y-3 text-xs text-center">
+                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-orange-100 text-[#f16e00] ph-pulse">
+                    <Phone size={24} />
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-[#452737]">Validation Orange Money en cours</h4>
+                    <p className="text-[11px] text-[#7c5b6b] mt-1">
+                      Tapez <strong>#144*4*6#</strong> sur votre téléphone ou entrez le code secret/OTP reçu par SMS.
+                    </p>
+                  </div>
+
+                  <div className="mx-auto max-w-[200px]">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value)}
+                      placeholder="Code OTP (ex: 4589)"
+                      className="w-full rounded-xl border-2 border-orange-400 p-2 text-center text-sm font-extrabold tracking-widest text-[#452737]"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleValidateOrangeMoneyOTP}
+                    className="w-full rounded-2xl bg-[#f16e00] py-2.5 font-bold text-white shadow hover:bg-orange-600"
+                  >
+                    Valider et autoriser le débit
+                  </button>
+                </div>
+              )}
+
+              {/* ÉTAPE 4 : Reçu de paiement et succès */}
+              {donationStep === "success" && (
+                <div className="mt-3 space-y-3 text-xs text-center">
+                  <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-sm">
+                    <CheckCircle2 size={32} />
+                  </div>
+
+                  <div>
+                    <h4 className="ph-display text-lg font-bold text-[#452737]">Merci pour votre générosité !</h4>
+                    <p className="text-[11px] text-[#7c5b6b] mt-0.5">
+                      Votre don est intégralement transmis à <strong>{selectedAssociation.acronym}</strong> pour le dépistage des femmes.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-[#f8f9fa] border border-[#e9ecef] p-3 text-left space-y-1 text-[11px]">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Réf Transaction :</span>
+                      <span className="font-mono font-bold text-gray-800">{lastDonationId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Montant débité :</span>
+                      <span className="font-bold text-[#f16e00]">
+                        {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Moyen :</span>
+                      <span className="font-semibold text-gray-700">Orange Money Burkina Faso</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Statut :</span>
+                      <span className="font-bold text-emerald-700">Succès (Validé)</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => { setShowDonationModal(false); setDonationStep("form"); }}
+                    className="w-full rounded-2xl bg-[#a14364] py-2.5 font-bold text-white shadow"
+                  >
+                    Fermer le reçu
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* MODAL 3 : PUBLIER UNE ANNONCE (ASSOCIATION / PARTENAIRE)              */}
+        {/* ==================================================================== */}
+        {showNewAnnouncementModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
+            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
+                <h3 className="ph-display text-base font-bold text-[#472738]">Publier une annonce / événement</h3>
+                <button
+                  onClick={() => setShowNewAnnouncementModal(false)}
+                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handlePublishAnnouncement} className="mt-3 space-y-2.5 text-xs">
+                <div>
+                  <label className="block font-bold text-[#563746]">Titre de l'action / événement *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newAnnouncement.title}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
+                    placeholder="Ex: Journée dépistage gratuit"
+                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 focus:border-[#a14364] focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-bold text-[#563746]">Structure / Association *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newAnnouncement.author}
+                      onChange={(e) => setNewAnnouncement({ ...newAnnouncement, author: e.target.value })}
+                      placeholder="Ex: ABAC, Clinique..."
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-[#563746]">Ville *</label>
+                    <select
+                      value={newAnnouncement.city}
+                      onChange={(e) => setNewAnnouncement({ ...newAnnouncement, city: e.target.value })}
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] bg-white p-2"
+                    >
+                      <option>Ouagadougou</option>
+                      <option>Bobo-Dioulasso</option>
+                      <option>Koudougou</option>
+                      <option>Ouahigouya</option>
+                      <option>Fada N'Gourma</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#563746]">Description détaillée *</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={newAnnouncement.content}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
+                    placeholder="Précisez le lieu exact, l'horaire et si l'examen est gratuit ou payant..."
+                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2"
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewAnnouncementModal(false)}
+                    className="flex-1 rounded-xl border border-[#e5ced6] py-2.5 font-bold text-[#725261]"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 rounded-xl bg-[#a14364] py-2.5 font-bold text-white shadow"
+                  >
+                    Publier l'annonce
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* BARRE DE NAVIGATION INFÉRIEURE AVEC 5 ONGLETS CLÉS                  */}
         {/* ==================================================================== */}
         {!selectedCenter && (
           <nav
@@ -1745,13 +2319,14 @@ export function PinkHubMobile() {
             className="z-20 grid shrink-0 grid-cols-5 border-t border-[#f0dee3] bg-[#fffaf9] px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-1.5"
           >
             {[
-              { label: "Accueil" as Section, icon: Heart },
-              { label: "Centres" as Section, icon: MapPin },
-              { label: "Comprendre" as Section, icon: BookOpen },
-              { label: "Accompagnant" as Section, icon: UserPlus },
-              { label: "Soutien" as Section, icon: HeartHandshake },
-            ].map(({ label, icon: Icon }) => {
+              { label: "Accueil" as Section, icon: Heart, name: "Accueil" },
+              { label: "Centres" as Section, icon: MapPin, name: "Centres" },
+              { label: "RoseIA" as Section, icon: Sparkles, name: "Rose IA" },
+              { label: "Annonces" as Section, icon: Megaphone, name: "Annonces" },
+              { label: "Soutien" as Section, icon: HeartHandshake, name: "Soutien" },
+            ].map(({ label, icon: Icon, name }) => {
               const active = section === label;
+              const isRose = label === "RoseIA";
               return (
                 <button
                   key={label}
@@ -1759,11 +2334,13 @@ export function PinkHubMobile() {
                   aria-current={active ? "page" : undefined}
                   className={`flex min-h-[50px] flex-col items-center justify-center gap-0.5 rounded-2xl transition ${active ? "text-[#a14364]" : "text-[#9d838e] hover:bg-[#fdf4f7] hover:text-[#785062]"}`}
                 >
-                  <span className={`grid h-7 w-8 place-items-center rounded-full transition ${active ? "bg-[#f8e3e9]" : ""}`}>
+                  <span
+                    className={`grid h-7 w-8 place-items-center rounded-full transition ${active ? "bg-[#f8e3e9]" : isRose ? "bg-amber-100/70 text-amber-600" : ""}`}
+                  >
                     <Icon size={18} strokeWidth={active ? 2.4 : 1.8} />
                   </span>
                   <span className={`text-[9.5px] truncate max-w-[65px] ${active ? "font-bold text-[#a14364]" : "font-medium"}`}>
-                    {label === "Accompagnant" ? "Binôme" : label}
+                    {name}
                   </span>
                 </button>
               );
@@ -1772,12 +2349,12 @@ export function PinkHubMobile() {
         )}
 
         {/* ==================================================================== */}
-        {/* TOAST BIENVEILLANT DE NOTIFICATION                                   */}
+        {/* TOAST DE CONFIRMATION                                                */}
         {/* ==================================================================== */}
         {toast && (
           <div
             role="status"
-            className="ph-enter absolute bottom-[82px] left-4 right-4 z-40 flex items-start gap-2.5 rounded-2xl bg-[#4d2d3e] px-4 py-3 text-xs leading-5 text-white shadow-[0_10px_30px_rgba(40,18,30,.25)]"
+            className="ph-enter absolute bottom-[80px] left-4 right-4 z-40 flex items-start gap-2.5 rounded-2xl bg-[#4d2d3e] px-4 py-3 text-xs leading-5 text-white shadow-[0_10px_30px_rgba(40,18,30,.25)]"
           >
             <Check size={16} className="mt-0.5 shrink-0 text-[#f5bed0]" />
             <span className="flex-1">{toast}</span>
