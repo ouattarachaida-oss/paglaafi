@@ -77,15 +77,13 @@ export function PinkHubMobile() {
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior:auto !important; } }
       `}</style>
       <div className="relative mx-auto flex h-[100dvh] w-full max-w-[440px] flex-col overflow-hidden bg-[#fffaf9] shadow-[0_28px_80px_rgba(93,39,61,.15)] sm:h-[min(860px,92dvh)] sm:rounded-[34px] sm:border sm:border-white/80">
-        <header className="z-10 flex shrink-0 items-center justify-between border-b border-[#f2e3e6] bg-[#fffaf9]/95 px-5 py-3.5 backdrop-blur">
-          <button aria-label="Accueil PinkHub" onClick={() => { setSection("Accueil"); setSelectedCenter(null); }} className="flex items-center gap-2.5">
-            <span className="grid h-9 w-9 place-items-center rounded-[14px] bg-[#df6f91] text-white shadow-[0_5px_12px_rgba(202,88,125,.18)]">
-              <Heart size={19} strokeWidth={2.5} fill="currentColor" />
-            </span>
-            <span className="text-left leading-tight">
-              <span className="block text-[17px] font-bold tracking-[-.05em] text-[#462536]">pinkhub<span className="text-[#d45f84]">.</span></span>
-              <span className="block text-[9px] font-semibold uppercase tracking-[.16em] text-[#9d7886]">S’informer · s’orienter</span>
-            </span>
+        <header className="z-10 flex shrink-0 items-center justify-between border-b border-[#f2e3e6] bg-[#fffaf9]/95 px-5 py-1 backdrop-blur">
+          <button aria-label="Accueil PagLaafi" onClick={() => { setSection("Accueil"); setSelectedCenter(null); }} className="flex items-center">
+            <img
+              src="/__mockup/images/pinkhub-mvp-paglaafi.png"
+              alt="Logo PagLaafi, une femme et un ruban rose"
+              className="h-16 w-16 object-contain mix-blend-multiply"
+            />
           </button>
           <button onClick={() => notify("Les informations sont en cours de préparation avec des partenaires locaux.")} aria-label="Informations sur PinkHub" className="grid h-10 w-10 place-items-center rounded-full text-[#805467] transition hover:bg-[#f9edf0]">
             <CircleHelp size={21} />
