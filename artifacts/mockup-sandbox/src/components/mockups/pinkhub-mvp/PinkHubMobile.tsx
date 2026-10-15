@@ -85,7 +85,7 @@ export function PinkHubMobile() {
               className="h-16 w-16 object-contain mix-blend-multiply"
             />
           </button>
-          <button onClick={() => notify("Les informations sont en cours de préparation avec des partenaires locaux.")} aria-label="Informations sur PinkHub" className="grid h-10 w-10 place-items-center rounded-full text-[#805467] transition hover:bg-[#f9edf0]">
+          <button onClick={() => notify("Les informations sont en cours de préparation avec des partenaires locaux.")} aria-label="Informations sur PagLaafi" className="grid h-10 w-10 place-items-center rounded-full text-[#805467] transition hover:bg-[#f9edf0]">
             <CircleHelp size={21} />
           </button>
         </header>
@@ -148,7 +148,7 @@ export function PinkHubMobile() {
 
               <div className="mx-5 mt-5 flex items-start gap-3 rounded-2xl border border-[#efdee3] bg-[#fffdfc] p-4">
                 <span className="mt-0.5 text-[#ab5671]"><ShieldCheck size={18} /></span>
-                <p className="text-[11px] leading-[1.6] text-[#816b75]"><strong className="text-[#5e3b4b]">Un espace de confiance.</strong> Les contenus PinkHub informent et orientent. Ils ne remplacent pas l’avis d’un professionnel de santé.</p>
+                <p className="text-[11px] leading-[1.6] text-[#816b75]"><strong className="text-[#5e3b4b]">Un espace de confiance.</strong> Les contenus PagLaafi informent et orientent. Ils ne remplacent pas l’avis d’un professionnel de santé.</p>
               </div>
             </section>
           ) : section === "Centres" ? (
@@ -231,7 +231,7 @@ export function PinkHubMobile() {
                 })}
               </div>
               <button onClick={() => notify("Les informations de contact seront ajoutées uniquement après vérification.")} className="mt-5 flex w-full items-center justify-between rounded-2xl border border-[#e6c9d2] bg-white p-4 text-left"><span className="flex items-center gap-2 text-sm font-bold text-[#714357]"><CircleHelp size={17} /> Besoin d’une aide immédiate ?</span><ChevronRight size={17} className="text-[#aa6980]" /></button>
-              <p className="mt-3 text-center text-[10px] leading-5 text-[#9a818c]">PinkHub ne fournit pas de diagnostic et ne remplace pas une consultation médicale.</p>
+              <p className="mt-3 text-center text-[10px] leading-5 text-[#9a818c]">PagLaafi ne fournit pas de diagnostic et ne remplace pas une consultation médicale.</p>
             </section>
           )}
         </div>
