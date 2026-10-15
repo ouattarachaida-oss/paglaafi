@@ -97,21 +97,30 @@ function getPreviewExamplePath(): string {
 }
 
 function Gallery() {
+  const availableKeys = Object.keys(discoveredModules).map((k) =>
+    k.replace("./components/mockups/", "").replace(".tsx", "")
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
-      <div className="text-center max-w-md">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-3">
-          Component Preview Server
+    <div className="min-h-screen bg-[#fcf6f8] flex flex-col items-center justify-center p-8">
+      <div className="text-center max-w-md bg-white p-6 rounded-2xl shadow-sm border border-[#f0dfe4]">
+        <h1 className="text-2xl font-bold text-[#472738] mb-2">
+          Maquettes Disponibles
         </h1>
-        <p className="text-gray-500 mb-4">
-          This server renders individual components for the workspace canvas.
+        <p className="text-[#765b67] text-sm mb-5">
+          Choisissez la maquette que vous souhaitez prévisualiser :
         </p>
-        <p className="text-sm text-gray-400">
-          Access component previews at{" "}
-          <code className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">
-            {getPreviewExamplePath()}
-          </code>
-        </p>
+        <div className="space-y-2">
+          {availableKeys.map((name) => (
+            <a
+              key={name}
+              href={`/preview/${name}`}
+              className="block w-full py-3 px-4 bg-[#a74869] text-white font-semibold rounded-xl hover:bg-[#923e5c] transition"
+            >
+              Ouvrir {name.split("/").pop()}
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -135,6 +144,17 @@ function App() {
     return (
       <PreviewRenderer
         componentPath={previewPath}
+        modules={discoveredModules}
+      />
+    );
+  }
+
+  // Chargement automatique de la maquette principale PinkHubMobile si aucune route spécifique n'est fournie
+  const defaultMockup = "pinkhub-mvp/PinkHubMobile";
+  if (discoveredModules[`./components/mockups/${defaultMockup}.tsx`]) {
+    return (
+      <PreviewRenderer
+        componentPath={defaultMockup}
         modules={discoveredModules}
       />
     );

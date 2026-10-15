@@ -80,7 +80,7 @@ export function PinkHubMobile() {
         <header className="z-10 flex shrink-0 items-center justify-between border-b border-[#f2e3e6] bg-[#fffaf9]/95 px-5 py-1 backdrop-blur">
           <button aria-label="Accueil PagLaafi" onClick={() => { setSection("Accueil"); setSelectedCenter(null); }} className="flex items-center">
             <img
-              src="/__mockup/images/pinkhub-mvp-paglaafi.png"
+              src="/images/pinkhub-mvp-paglaafi.png"
               alt="Logo PagLaafi, une femme et un ruban rose"
               className="h-16 w-16 object-contain mix-blend-multiply"
             />
