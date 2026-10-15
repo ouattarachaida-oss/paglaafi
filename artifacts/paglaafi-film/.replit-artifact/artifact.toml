@@ -1,0 +1,29 @@
+kind = "video"
+videoAspectRatio = "16:9"
+previewPath = "/paglaafi-film/"
+title = "PagLaafi — Film de présentation"
+description = "Film d’animation présentant PagLaafi, une plateforme d’information, d’orientation et de soutien autour du cancer du sein, conçue d’abord pour le Burkina Faso."
+version = "1.0.0"
+id = "artifacts/paglaafi-film"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/paglaafi-film/" ]
+localPort = 20733
+
+[services.development]
+run = "pnpm --filter @workspace/paglaafi-film run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/paglaafi-film", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/paglaafi-film/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20733"
+BASE_PATH = "/paglaafi-film/"
