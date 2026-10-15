@@ -139,11 +139,12 @@ interface HealthCenter {
   phone: string;
   address: string;
   lastUpdate: string;
-  coordinates: { x: number; y: number }; // coordonnées pourcentage pour fallback SVG
-  lat: number; // latitude GPS réelle pour OpenStreetMap
-  lng: number; // longitude GPS réelle pour OpenStreetMap
+  coordinates: { x: number; y: number };
+  lat: number;
+  lng: number;
 }
 
+// Annonce avec gestion du cycle de validation Superadmin et mois en cours
 interface PartnerAnnouncement {
   id: number;
   title: string;
@@ -151,11 +152,15 @@ interface PartnerAnnouncement {
   authorType: "Association" | "Partenaire Santé" | "Hôpital";
   city: string;
   date: string;
+  month: string; // ex: "Octobre 2026"
   badge: string;
   badgeColor: string;
   content: string;
   contact: string;
   likes: number;
+  status: "pending_validation" | "approved" | "rejected";
+  submittedBy?: string;
+  submittedAt?: string;
 }
 
 interface PartnerAssociation {
@@ -168,7 +173,6 @@ interface PartnerAssociation {
   beneficiariesCount: string;
 }
 
-// Règle de connaissance médicale validée par les médecins pour Rose IA
 interface MedicalKnowledge {
   id: number;
   doctorName: string;
@@ -177,19 +181,6 @@ interface MedicalKnowledge {
   advice: string;
   date: string;
   verified: boolean;
-}
-
-// Fiche d'orientation médicale d'un patient
-interface PatientOrientation {
-  id: string;
-  patientName: string;
-  patientPhone: string;
-  urgencyLevel: "high" | "medium" | "routine";
-  targetCenterId: number;
-  targetCenterName: string;
-  clinicalObservations: string;
-  doctorName: string;
-  date: string;
 }
 
 /**
@@ -358,7 +349,7 @@ const initialCenters: HealthCenter[] = [
 ];
 
 /**
- * Annonces des associations et soignants au Burkina Faso
+ * Annonces des associations et partenaires de santé au Burkina Faso
  */
 const initialAnnouncements: PartnerAnnouncement[] = [
   {
@@ -368,11 +359,15 @@ const initialAnnouncements: PartnerAnnouncement[] = [
     authorType: "Association",
     city: "Koudougou & Environs",
     date: "Samedi 24 et Dimanche 25 Octobre 2026",
+    month: "Octobre 2026",
     badge: "Gratuit (0 FCFA)",
     badgeColor: "bg-emerald-100 text-emerald-800",
     content: "L'ABAC déploie sa clinique mobile sur la place du Marché de Koudougou. Examen clinique gratuit pour toutes les femmes de 25 à 65 ans. Échographies gratuites sur place en cas de doute.",
     contact: "+226 70 20 11 22",
     likes: 148,
+    status: "approved",
+    submittedBy: "ABAC Burkina",
+    submittedAt: "12/10/2026",
   },
   {
     id: 2,
@@ -381,11 +376,15 @@ const initialAnnouncements: PartnerAnnouncement[] = [
     authorType: "Association",
     city: "Ouagadougou (Maison de la Femme)",
     date: "Vendredi 23 Octobre à 15h00",
+    month: "Octobre 2026",
     badge: "Rencontre & Débat",
     badgeColor: "bg-purple-100 text-purple-800",
     content: "Venez échanger avec nos sages-femmes et des patientes guéries. Explications en français, anglais, mooré et dioula. Rafraîchissements offerts et apprentissage des gestes d'auto-palpation.",
     contact: "+226 76 50 33 44",
     likes: 104,
+    status: "approved",
+    submittedBy: "COBUCAN",
+    submittedAt: "13/10/2026",
   },
   {
     id: 3,
@@ -394,16 +393,37 @@ const initialAnnouncements: PartnerAnnouncement[] = [
     authorType: "Hôpital",
     city: "Ouagadougou",
     date: "Du 15 au 31 Octobre 2026",
+    month: "Octobre 2026",
     badge: "Tarif Spécial",
     badgeColor: "bg-amber-100 text-amber-900",
     content: "Grâce aux donateurs de PagLaafi, 200 mammographies sont subventionnées à 5 000 FCFA (au lieu de 12 000 FCFA) pour les femmes sans revenus.",
     contact: "+226 25 36 30 70",
     likes: 235,
+    status: "approved",
+    submittedBy: "CMA Schiphra",
+    submittedAt: "14/10/2026",
+  },
+  {
+    id: 10,
+    title: "Séance de dépistage subventionnée à 2 000 FCFA à Bobo",
+    author: "Association Espoir & Vie Bobo",
+    authorType: "Association",
+    city: "Bobo-Dioulasso",
+    date: "Mercredi 28 Octobre 2026",
+    month: "Octobre 2026",
+    badge: "En attente validation",
+    badgeColor: "bg-amber-100 text-amber-900",
+    content: "Journée spéciale de dépistage pour 100 commerçantes du Grand Marché de Bobo. Subventionnée grâce aux dons collectés sur PagLaafi.",
+    contact: "+226 70 88 12 34",
+    likes: 0,
+    status: "pending_validation",
+    submittedBy: "Espoir & Vie Bobo",
+    submittedAt: "Aujourd'hui à 11h20",
   },
 ];
 
 /**
- * Associations partenaires éligibles aux dons (incluant Beneere, GenitCare, WomenTech Makers)
+ * Associations partenaires éligibles aux dons
  */
 const partnerAssociations: PartnerAssociation[] = [
   {
@@ -541,43 +561,43 @@ const lessons = [
     summary: "Comment soutenir une sœur, une amie ou une épouse sans jugement et faciliter sa démarche de santé.",
     englishSummary: "How to support a sister, friend or wife without judgment and encourage regular healthcare checkups.",
     fullText:
-      "Faire un dépistage peut susciter de l'inquiétude. Pour une femme, être accompagnée par une sœur, une amie, sa mère ou son conjoint transforme complètement cette expérience. Proposer un covoiturage, patienter ensemble dans la salle d'attente ou simplement lui rappeler avec douceur l'importance de ce geste sont des actes d'amour déterminants. L'application PagLaafi propose la fonction 'Aller à deux' pour envoyer une invitation chaleureuse en un clic sur WhatsApp.",
+      "Faire un dépistage peut susciter de l'inquiétude. Pour une femme, être accompagnée par une sœur, une amie, sa mère ou son conjoint transforme complètement cette expérience. Proposer un covoiturage, patienter ensemble dans la salle d'attente ou simplement lui rappeler avec douceur l'importance de ce geste sont des actes d'amour déterminants. L'application PagLaafi propose la fonction 'Aller à deux' pour envoyer une invitation chaleureuse par SMS direct ou sur WhatsApp.",
     englishFullText:
-      "Undergoing a screening exam can trigger anxiety. For a woman, having a trusted sister, friend or spouse alongside makes all the difference. Offering transportation, waiting together, or gently reminding her of the appointment are true acts of care. The PagLaafi Go-Together module allows sending an invitation in one click.",
+      "Undergoing a screening exam can trigger anxiety. For a woman, having a trusted sister, friend or spouse alongside makes all the difference. Offering transportation, waiting together, or gently reminding her of the appointment are true acts of care. The PagLaafi Go-Together module allows sending an invitation in one click via SMS or WhatsApp.",
     mooreSummary:
-      "Sã n yaa tɩ ned na n tɩ ges a yĩnsa laafi, rabeem tõe n kẽ-a lame. Woto yĩnga, sã n yaa ne a kẽed-n-taag bɩ a ma bɩ a biiga n kẽnd ne-a, zĩigã lebnda noogo. Tʋm-y WhatsApp kaset n bool-a tɩ y kẽng a yiibu.",
+      "Sã n yaa tɩ ned na n tɩ ges a yĩnsa laafi, rabeem tõe n kẽ-a lame. Woto yĩnga, sã n yaa ne a kẽed-n-taag bɩ a ma bɩ a biiga n kẽnd ne-a, zĩigã lebnda noogo. Tʋm-y SMS bɩ WhatsApp kaset n bool-a tɩ y kẽng a yiibu.",
     dioulaSummary:
-      "Ka taga kɛnɛyaso la k'i sin lajɛ, siran bɛ se ka kɛ o la. Ni balimamusow walima furuɲɔgɔn tagara ɲɔgɔn fɛ, hakili bɛ sigi. PagLaafi bɛ dɛmɛ kɛ ka weeleli ci WhatsApp fɛ.",
+      "Ka taga kɛnɛyaso la k'i sin lajɛ, siran bɛ se ka kɛ o la. Ni balimamusow walima furuɲɔgɔn tagara ɲɔgɔn fɛ, hakili bɛ sigi. PagLaafi bɛ dɛmɛ kɛ ka weeleli ci SMS walima WhatsApp fɛ.",
   },
 ];
 
 /**
- * Réponses types de Rose IA avec support 4 langues
+ * Réponses de Rose IA en 4 langues
  */
 const roseKnowledge = {
   mal: {
-    fr: "Rassurez-vous : la mammographie ne fait généralement pas mal. C'est une pression qui dure seulement 5 à 10 secondes par cliché. Pour plus de confort, faites l'examen dans les 10 jours qui suivent vos règles.",
-    en: "Rest assured: mammography is generally not painful. It is a firm compression lasting only 5 to 10 seconds per view. For best comfort, schedule it within 10 days after your menstrual period.",
-    moore: "Da zoe rabeem ye: mammographie masĩnã pa namsd ninsaal wʋsg ye. A rɩkda sekõnd a wãn bal n kaset. Sã n yaa ne yãmba, kẽng-y sã n yaa tɩ y kaset kẽndã saame.",
-    dioula: "I kana siran: masin nin tɛ mɔgɔ dimi kosɛbɛ. A bɛ kɛ sekondi damanin dɔrɔn lo kɔnɔ. Ni ye a kɛ i ka kɛnɛya kalo tɛmɛnen kɔ, a ka nɔgɔn.",
+    fr: "Rassurez-vous : la mammographie ne fait généralement pas mal. C'est une pression de 5 à 10 secondes par cliché. Pour plus de confort, réalisez l'examen dans les 10 jours suivant vos règles.",
+    en: "Rest assured: mammography is generally not painful. It is a firm compression lasting 5 to 10 seconds per view. For best comfort, schedule it within 10 days after your menstrual period.",
+    moore: "Da zoe rabeem ye: mammographie masĩnã pa namsd ninsaal wʋsg ye. A rɩkda sekõnd a wãn bal n kaset.",
+    dioula: "I kana siran: masin nin tɛ mɔgɔ dimi kosɛbɛ. A bɛ kɛ sekondi damanin dɔrɔn lo kɔnɔ.",
   },
   prix: {
-    fr: "Au Burkina Faso, la palpation clinique est GRATUITE (0 FCFA) dans la plupart des centres. L'échographie mammaire coûte entre 6 000 et 7 500 FCFA, et la mammographie entre 10 000 et 12 000 FCFA (subventionnée à 5 000 FCFA à Schiphra).",
-    en: "In Burkina Faso, clinical breast examination is FREE (0 FCFA) in most health centers. Breast ultrasound costs 6,000 to 7,500 FCFA, and mammography 10,000 to 12,000 FCFA (subsidized down to 5,000 FCFA at Schiphra).",
-    moore: "Burkina Faso ka, nus n gesã yaa zaalem (0 FCFA). Échographie yaa 6 000 n ta 7 500 FCFA. Mammographie me yaa 10 000 n ta 12 000 FCFA.",
-    dioula: "Burkina Faso la, bɔlɔkɔrɔ lajɛ sɔngɔ ye fu ye (0 FCFA). Échographie ye 6 000 fo 7 500 FCFA ye. Mammographie ye 10 000 fo 12 000 FCFA ye.",
+    fr: "Au Burkina Faso, la palpation clinique est GRATUITE (0 FCFA) dans la plupart des centres. L'échographie coûte 6 000 à 7 500 FCFA, et la mammographie 10 000 à 12 000 FCFA (subventionnée à 5 000 FCFA à Schiphra).",
+    en: "In Burkina Faso, clinical breast exam is FREE (0 FCFA). Ultrasound is 6,000 to 7,500 FCFA, and mammography 10,000 to 12,000 FCFA (subsidized down to 5,000 FCFA at Schiphra).",
+    moore: "Burkina Faso ka, nus n gesã yaa zaalem (0 FCFA). Échographie yaa 6 000 n ta 7 500 FCFA.",
+    dioula: "Burkina Faso la, bɔlɔkɔrɔ lajɛ sɔngɔ ye fu ye (0 FCFA). Échographie ye 6 000 fo 7 500 FCFA ye.",
   },
   boule: {
-    fr: "Ne paniquez pas : 8 boules sur 10 ne sont PAS cancéreuses (kystes d'eau bénins, adénofibromes). Mais il faut impérativement la faire examiner par un médecin ou une sage-femme sans attendre.",
-    en: "Do not panic: 8 out of 10 lumps are NOT cancerous (often benign fluid cysts or fibroadenomas). However, it is essential to have it checked promptly by a doctor or midwife.",
-    moore: "Da zoe rabeem ye: bõn-kʋds a nii (8) piig pʋgẽ pa bãag ye. La yaa tɩlae tɩ dɔgɔtɔr bɩ sage-femme ges-a n bãng a yelle.",
-    dioula: "I kana jaasi: bõn-kʋdga tan kɔnɔ segin tɛ bana juguman ye. Nka a kɔrɔtanin lo dɔgɔtɔrɔ ka a lajɛ jona.",
+    fr: "Ne paniquez pas : 8 boules sur 10 ne sont PAS un cancer (kystes bénins, fibromes). Mais faites-la impérativement examiner par un soignant sans attendre.",
+    en: "Do not panic: 8 out of 10 lumps are NOT cancerous. However, it is essential to have it examined promptly by a doctor or midwife.",
+    moore: "Da zoe rabeem ye: bõn-kʋds a nii (8) piig pʋgẽ pa bãag ye. La yaa tɩlae tɩ dɔgɔtɔr ges-a.",
+    dioula: "I kana jaasi: bõn-kʋdga tan kɔnɔ segin tɛ bana juguman ye. Nka dɔgɔtɔrɔ k'a lajɛ jona.",
   },
   default: {
-    fr: "Je suis Rose IA, votre compagne de santé. Posez-moi vos questions sur le dépistage, les tarifs, la douleur ou les centres disponibles.",
-    en: "I am Rose AI, your health assistant. Feel free to ask about screenings, costs, breast pain, or nearest available health centers.",
-    moore: "Mam yaa Rose IA. M be n na n sõng yãmba ne laafi kaset. Sok-y maam bũmb ning fãa y sẽn rat n bãngã.",
-    dioula: "Ne ye Rose IA ye. Ne bɛ yan k'aw dɛmɛ kɛnɛya ko la. Aw bɛ se ka nɲininka kuma fɛ walima sɛbɛli fɛ.",
+    fr: "Je suis Rose IA, votre compagne de santé. Posez-moi vos questions sur le dépistage, la douleur, les tarifs ou les centres disponibles.",
+    en: "I am Rose AI, your health assistant. Ask me questions about breast exams, pain, costs, or available centers.",
+    moore: "Mam yaa Rose IA. M be n na n sõng yãmba ne laafi kaset. Sok-y maam bũmb fãa y sẽn rat n bãngã.",
+    dioula: "Ne ye Rose IA ye. Ne bɛ yan k'aw dɛmɛ kɛnɛya ko la. Aw bɛ se ka nɲininka bũmb o bũmb la.",
   },
 };
 
@@ -595,13 +615,15 @@ export function PinkHubMobile() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [toast, setToast] = useState<string>("");
 
-  // 3. Authentification & Profils
+  // 3. Déconnexion directe via l'icône de profil du header
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  // 4. Authentification & Profils (Utilisatrice, Admin Centre, Docteur, Admin Asso, Superadmin)
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Formulaire d'inscription
   const [registerForm, setRegisterForm] = useState({
     nom: "Ouedraogo",
     prenom: "Aminata",
@@ -613,7 +635,6 @@ export function PinkHubMobile() {
     structureName: "",
   });
 
-  // Formulaire de connexion (STRICTEMENT TÉLÉPHONE ET MOT DE PASSE)
   const [loginForm, setLoginForm] = useState({
     telephone: "70 12 34 56",
     motDePasse: "123456",
@@ -628,13 +649,14 @@ export function PinkHubMobile() {
     roleLabel: "Utilisatrice",
   });
 
-  // Superadmin : liste des inscriptions en attente
+  // 5. Superadmin : Modération nationale, Statistiques de trafic & Inscriptions
   const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>(
     initialPendingRegistrations,
   );
   const [showSuperadminModal, setShowSuperadminModal] = useState(false);
+  const [superadminActiveTab, setSuperadminActiveTab] = useState<"stats" | "announcements" | "registrations">("stats");
 
-  // 4. Centres de santé & Carte
+  // 6. Centres de santé & Carte OpenStreetMap Leaflet
   const [centers, setCenters] = useState<HealthCenter[]>(initialCenters);
   const [selectedCenter, setSelectedCenter] = useState<HealthCenter | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -642,25 +664,25 @@ export function PinkHubMobile() {
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
 
-  // Modal de mise à jour du centre (réservé aux admins de centres de santé & médecins)
+  // Modal mise à jour centre (strictement réservé aux admins centres & médecins)
   const [showCenterUpdateModal, setShowCenterUpdateModal] = useState(false);
   const [centerUpdateData, setCenterUpdateData] = useState<HealthCenter | null>(null);
 
-  // 5. Audio & 4 Langues (Français, English, Mooré, Dioula)
+  // 7. Audio & 4 Langues (Français, English, Mooré, Dioula)
   const [activeLesson, setActiveLesson] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [audioProgress, setAudioProgress] = useState<number>(0);
   const [speechLanguage, setSpeechLanguage] = useState<"fr" | "en" | "moore" | "dioula">("fr");
   const audioIntervalRef = useRef<number | null>(null);
 
-  // 6. Assistant Vocal ROSE IA
+  // 8. Assistant Vocal ROSE IA
   const [roseMessages, setRoseMessages] = useState<
     Array<{ sender: "user" | "rose"; text: string; time: string; englishText?: string; mooreText?: string; dioulaText?: string }>
   >([
     {
       sender: "rose",
-      text: "Bonjour ! Je suis Rose IA, votre assistante médicale bienveillante. Une question sur le dépistage, une douleur ou un centre ? Écrivez-moi ou touchez le micro.",
-      englishText: "Hello! I am Rose AI, your caring health assistant. Feel free to ask about screenings, pain, or health centers.",
+      text: "Bonjour ! Je suis Rose IA, votre compagne de santé bienveillante. Une question sur le dépistage, une douleur ou un centre ? Écrivez-moi ou touchez le micro.",
+      englishText: "Hello! I am Rose AI, your caring health assistant. Ask me questions about screenings, pain, or health centers.",
       mooreText: "Ne y beogo ! Mam yaa Rose IA. Sok-y maam bũmb fãa y sẽn rat n bãngã.",
       dioulaText: "I ni sɔgɔma ! Ne ye Rose IA ye. Aw bɛ se ka nɲininka bũmb o bũmb la.",
       time: "Maintenant",
@@ -670,7 +692,7 @@ export function PinkHubMobile() {
   const [isRecordingVoice, setIsRecordingVoice] = useState(false);
   const [roseSpeaking, setRoseSpeaking] = useState(false);
 
-  // 7. Espace Docteur : Entraîner Rose IA
+  // 9. Espace Docteur : Entraîner Rose IA
   const [clinicalKnowledgeList, setClinicalKnowledgeList] = useState<MedicalKnowledge[]>([
     {
       id: 1,
@@ -695,7 +717,7 @@ export function PinkHubMobile() {
   const [doctorTeachTopic, setDoctorTeachTopic] = useState("");
   const [doctorTeachContent, setDoctorTeachContent] = useState("");
 
-  // 8. Espace Agent de santé : Recommander & Orienter un patient selon l'urgence
+  // 10. Espace Soignant : Orientation & Recommandation patiente d'urgence
   const [showOrientationModal, setShowOrientationModal] = useState(false);
   const [orientationForm, setOrientationForm] = useState({
     patientName: "K. Fatoumata",
@@ -707,10 +729,10 @@ export function PinkHubMobile() {
   });
   const [generatedOrientationCode, setGeneratedOrientationCode] = useState<string | null>(null);
 
-  // 9. Tableau de bord Administrateurs (Dons & Statistiques)
+  // 11. Tableau de bord Administrateurs
   const [showAdminDashboardModal, setShowAdminDashboardModal] = useState(false);
 
-  // 10. Calendrier Féminin : Règles, Autopalpation & Rappels
+  // 12. Calendrier Féminin : Règles, Autopalpation & Rappels
   const [lastPeriodDate, setLastPeriodDate] = useState("2026-10-06");
   const [cycleLengthDays, setCycleLengthDays] = useState(28);
   const [autopalpationDoneThisMonth, setAutopalpationDoneThisMonth] = useState(true);
@@ -725,23 +747,26 @@ export function PinkHubMobile() {
   const [newReminderDate, setNewReminderDate] = useState("");
   const [newReminderType, setNewReminderType] = useState<"screening" | "appointment" | "treatment">("appointment");
 
-  // 11. Annonces
+  // 13. Annonces & Événements (avec modération Superadmin et filtre mois en cours)
   const [announcements, setAnnouncements] = useState<PartnerAnnouncement[]>(initialAnnouncements);
+  const [announcementsFilter, setAnnouncementsFilter] = useState<"month" | "all" | "my">("month");
   const [showNewAnnouncementModal, setShowNewAnnouncementModal] = useState(false);
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
     author: "",
     authorType: "Association" as const,
     city: "Ouagadougou",
-    date: "Samedi prochain",
+    date: "Samedi 24 Octobre 2026",
+    month: "Octobre 2026",
     badge: "Sensibilisation",
     badgeColor: "bg-pink-100 text-pink-800",
     content: "",
     contact: "",
   });
 
-  // 12. Faire un Don (Processus Orange Money)
+  // 14. Faire un Don (Orange Money avec Option Don Anonyme Chiffré)
   const [showDonationModal, setShowDonationModal] = useState(false);
+  const [isAnonymousDonation, setIsAnonymousDonation] = useState(false);
   const [selectedAssociation, setSelectedAssociation] = useState<PartnerAssociation>(
     partnerAssociations[0],
   );
@@ -751,6 +776,9 @@ export function PinkHubMobile() {
   const [donationStep, setDonationStep] = useState<"form" | "confirm" | "otp" | "success">("form");
   const [otpCode, setOtpCode] = useState<string>("");
   const [lastDonationId, setLastDonationId] = useState<string>("");
+
+  // Accompagnant : choix de la langue du SMS
+  const [smsLanguage, setSmsLanguage] = useState<"fr" | "moore">("fr");
 
   // Référence conteneur carte OpenStreetMap
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -771,7 +799,7 @@ export function PinkHubMobile() {
   }, []);
 
   /**
-   * Intégration de la carte OpenStreetMap via Leaflet (100% open-source et gratuit)
+   * Intégration de la carte OpenStreetMap via Leaflet
    */
   useEffect(() => {
     if (section !== "Centres" || viewMode !== "map") return;
@@ -783,24 +811,20 @@ export function PinkHubMobile() {
       const L = (window as any).L;
       if (!L) return;
 
-      // Détruire l'ancienne instance si présente
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
 
-      // Centre par défaut : Ouagadougou
       const map = L.map(mapContainerRef.current, {
         zoomControl: true,
         attributionControl: false,
       }).setView([12.3714, -1.5197], 12);
 
-      // Tuiles OpenStreetMap gratuites
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
       }).addTo(map);
 
-      // Ajout des marqueurs interactifs pour chaque centre
       centers.forEach((center) => {
         const markerColor =
           center.status === "available"
@@ -811,7 +835,6 @@ export function PinkHubMobile() {
                 ? "#ef4444"
                 : "#94a3b8";
 
-        // Marqueur HTML personnalisé avec pulse
         const customIcon = L.divIcon({
           className: "custom-osm-pin",
           html: `
@@ -833,7 +856,7 @@ export function PinkHubMobile() {
             <b style="color:#452737; font-size:12px; display:block;">${center.shortName}</b>
             <span style="display:inline-block; font-size:10px; font-weight:bold; color:${markerColor}; margin-top:2px;">${center.statusLabel}</span>
             <div style="font-size:10px; color:#6b4d5d; margin-top:3px;">Attente : <b>${center.estimatedWait}</b></div>
-            <div style="font-size:10px; color:#6b4d5d;">Agents en poste : <b>${center.agentsPresent}</b></div>
+            <div style="font-size:10px; color:#6b4d5d;">Agents : <b>${center.agentsPresent}</b></div>
             <button id="osm-btn-${center.id}" style="margin-top:6px; width:100%; border:none; background:#a14364; color:#ffffff; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:6px; cursor:pointer;">
               Consulter la fiche →
             </button>
@@ -853,7 +876,6 @@ export function PinkHubMobile() {
       mapInstanceRef.current = map;
     };
 
-    // Charger dynamiquement Leaflet CSS et JS si non encore présents
     if (!(window as any).L) {
       if (!document.getElementById("leaflet-css")) {
         const link = document.createElement("link");
@@ -887,7 +909,6 @@ export function PinkHubMobile() {
 
   /**
    * Moteur Audio Multi-langues (Français, English, Mooré, Dioula)
-   * Utilise Web Speech API native avec adaptation acoustique pour langues burkinabè
    */
   const handlePlayAudio = (
     textToSpeak: string,
@@ -919,7 +940,6 @@ export function PinkHubMobile() {
       utterance.rate = 0.95;
       utterance.pitch = 1.05;
     } else {
-      // Mooré et Dioula : articulation phonétique claire et cadence adaptée
       utterance.lang = "fr-FR";
       utterance.rate = 0.88;
       utterance.pitch = 1.05;
@@ -961,7 +981,6 @@ export function PinkHubMobile() {
     const nextPeriodDate = new Date(lastDate);
     nextPeriodDate.setDate(lastDate.getDate() + cycleLengthDays);
 
-    // Fenêtre optimale d'autopalpation : J+7 à J+11 (2 à 5 jours après fin des règles de 5 jours)
     const autopalpStart = new Date(lastDate);
     autopalpStart.setDate(lastDate.getDate() + 7);
     const autopalpEnd = new Date(lastDate);
@@ -1010,7 +1029,6 @@ export function PinkHubMobile() {
       adminType: registerForm.adminType,
     };
 
-    // Si admin : soumis à la validation préalable du Superadmin
     if (registerForm.role === "admin") {
       setPendingRegistrations((prev) => [
         {
@@ -1047,7 +1065,6 @@ export function PinkHubMobile() {
       return;
     }
 
-    // Détection de comptes de démonstration
     if (loginForm.telephone === "78 00 00 00") {
       setCurrentUser({
         nom: "Kaboré",
@@ -1104,7 +1121,6 @@ export function PinkHubMobile() {
     setShowAuthModal(false);
   };
 
-  // Switch direct pour faciliter le test des rôles
   const quickLoginAs = (type: "user" | "center" | "doctor" | "association" | "superadmin") => {
     if (type === "superadmin") {
       setCurrentUser({
@@ -1114,7 +1130,7 @@ export function PinkHubMobile() {
         role: "superadmin",
         roleLabel: "Super-Administrateur National",
       });
-      notify("Profil actif : 🛡️ Superadmin (Modération nationale).");
+      notify("Profil actif : 🛡️ Superadmin (Modération & Tableau de bord national).");
     } else if (type === "center") {
       setCurrentUser({
         nom: "Sawadogo",
@@ -1125,7 +1141,7 @@ export function PinkHubMobile() {
         structureName: "CMA de Schiphra",
         adminType: "center",
       });
-      notify("Profil actif : 🏥 Admin Centre de Santé (Mise à jour directe de la carte).");
+      notify("Profil actif : 🏥 Admin Centre de Santé.");
     } else if (type === "doctor") {
       setCurrentUser({
         nom: "Sanou",
@@ -1148,7 +1164,7 @@ export function PinkHubMobile() {
         structureName: "ABAC Burkina",
         adminType: "association",
       });
-      notify("Profil actif : 🎗️ Admin Association (Tableau de bord dons Orange Money).");
+      notify("Profil actif : 🎗️ Admin Association (Annonces & Dons Orange Money).");
     } else {
       setCurrentUser({
         nom: "Ouedraogo",
@@ -1157,12 +1173,12 @@ export function PinkHubMobile() {
         role: "user",
         roleLabel: "Utilisatrice",
       });
-      notify("Profil actif : 👩 Utilisatrice standard (Suivi du cycle & dépistage).");
+      notify("Profil actif : 👩 Utilisatrice standard.");
     }
     setShowAuthModal(false);
   };
 
-  // Validation Superadmin
+  // Modération Superadmin : structures
   const handleApproveRegistration = (id: number) => {
     setPendingRegistrations((prev) =>
       prev.map((reg) => (reg.id === id ? { ...reg, status: "approved" } : reg)),
@@ -1177,8 +1193,68 @@ export function PinkHubMobile() {
     notify("Demande d'inscription refusée.");
   };
 
+  // Modération Superadmin : annonces
+  const handleApproveAnnouncement = (id: number) => {
+    setAnnouncements((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status: "approved", badge: "Validée ✓", badgeColor: "bg-emerald-100 text-emerald-800" } : a)),
+    );
+    notify("Annonce validée par le Superadmin ! Elle est désormais visible publiquement.");
+  };
+
+  const handleRejectAnnouncement = (id: number) => {
+    setAnnouncements((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status: "rejected", badge: "Refusée", badgeColor: "bg-rose-100 text-rose-800" } : a)),
+    );
+    notify("Annonce refusée.");
+  };
+
   /**
-   * Sauvegarde des modifications du centre de santé sur la carte
+   * Publication d'une annonce par un Admin (en attente de validation Superadmin)
+   */
+  const handlePublishAnnouncementSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAnnouncement.title.trim() || !newAnnouncement.content.trim()) {
+      notify("Veuillez renseigner le titre et le contenu de l'annonce.");
+      return;
+    }
+
+    const created: PartnerAnnouncement = {
+      id: Date.now(),
+      title: newAnnouncement.title,
+      author: currentUser?.structureName || newAnnouncement.author || "Structure Partenaire",
+      authorType: newAnnouncement.authorType,
+      city: newAnnouncement.city,
+      date: newAnnouncement.date,
+      month: newAnnouncement.month || "Octobre 2026",
+      badge: "En attente validation",
+      badgeColor: "bg-amber-100 text-amber-900",
+      content: newAnnouncement.content,
+      contact: newAnnouncement.contact || currentUser?.telephone || "+226 70 00 00 00",
+      likes: 0,
+      status: "pending_validation", // En attente obligatoire de validation du Superadmin
+      submittedBy: currentUser ? `${currentUser.prenom} ${currentUser.nom}` : "Admin",
+      submittedAt: "Aujourd'hui",
+    };
+
+    setAnnouncements((prev) => [created, ...prev]);
+    setShowNewAnnouncementModal(false);
+    setNewAnnouncement({
+      title: "",
+      author: "",
+      authorType: "Association",
+      city: "Ouagadougou",
+      date: "Samedi 24 Octobre 2026",
+      month: "Octobre 2026",
+      badge: "Sensibilisation",
+      badgeColor: "bg-pink-100 text-pink-800",
+      content: "",
+      contact: "",
+    });
+    notify("Annonce soumise ! Elle sera diffusée publiquement dès validation par le Superadmin.");
+  };
+
+  /**
+   * Sauvegarde des modifications du centre de santé
    */
   const handleSaveCenterUpdate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1213,7 +1289,6 @@ export function PinkHubMobile() {
 
     setClinicalKnowledgeList((prev) => [newKnowledge, ...prev]);
 
-    // Ajouter un message de dialogue avec Rose IA
     setRoseMessages((prev) => [
       ...prev,
       {
@@ -1287,7 +1362,7 @@ export function PinkHubMobile() {
   };
 
   /**
-   * Processus Don Orange Money
+   * Processus Don Orange Money (avec support Don Anonyme Chiffré)
    */
   const handleStartDonationProcess = () => {
     const effectiveAmount = customDonationAmount ? Number(customDonationAmount) : donationAmount;
@@ -1308,7 +1383,8 @@ export function PinkHubMobile() {
   };
 
   const handleValidateOrangeMoneyOTP = () => {
-    const ref = `OM-BF-${Math.floor(100000 + Math.random() * 900000)}`;
+    const prefix = isAnonymousDonation ? "OM-ANON" : "OM-BF";
+    const ref = `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
     setLastDonationId(ref);
     setDonationStep("success");
     notify(`Paiement de ${customDonationAmount || donationAmount} FCFA validé. Reçu : ${ref}`);
@@ -1332,6 +1408,21 @@ export function PinkHubMobile() {
       return matchesSearch && matchesStatus && matchesCity;
     });
   }, [centers, searchQuery, statusFilter, cityFilter]);
+
+  /**
+   * Filtrage des annonces selon le mois en cours et le profil
+   */
+  const displayedAnnouncements = useMemo(() => {
+    if (announcementsFilter === "my") {
+      return announcements.filter(
+        (a) => a.submittedBy === currentUser?.structureName || a.submittedBy === `${currentUser?.prenom} ${currentUser?.nom}`,
+      );
+    }
+    if (announcementsFilter === "month") {
+      return announcements.filter((a) => a.month === "Octobre 2026" && a.status === "approved");
+    }
+    return announcements.filter((a) => a.status === "approved");
+  }, [announcements, announcementsFilter, currentUser]);
 
   return (
     <main
@@ -1378,7 +1469,6 @@ export function PinkHubMobile() {
               </p>
             </div>
 
-            {/* Mention exigée : POWERED BY ROSE IA */}
             <div className="pb-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#e8c0ce] bg-white/80 px-4 py-1.5 text-xs font-bold text-[#79344f] shadow-sm">
                 <Sparkles size={15} className="text-amber-500 animate-spin" />
@@ -1395,7 +1485,7 @@ export function PinkHubMobile() {
         )}
 
         {/* ==================================================================== */}
-        {/* BARRE LATÉRALE (SIDEBAR) AVEC GESTION MULTI-PROFILS                 */}
+        {/* BARRE LATÉRALE (SIDEBAR)                                             */}
         {/* ==================================================================== */}
         {sidebarOpen && (
           <div
@@ -1437,11 +1527,12 @@ export function PinkHubMobile() {
                       <button
                         onClick={() => {
                           setCurrentUser(null);
+                          setSidebarOpen(false);
                           notify("Déconnectée.");
                         }}
-                        className="text-[11px] text-rose-600 font-bold hover:underline"
+                        className="text-[11px] text-rose-600 font-bold hover:underline flex items-center gap-1"
                       >
-                        Déconnexion
+                        <LogOut size={13} /> Déconnexion
                       </button>
                     </div>
                     <p className="mt-1 font-bold text-[#472738]">{currentUser.prenom} {currentUser.nom}</p>
@@ -1460,7 +1551,7 @@ export function PinkHubMobile() {
                 )}
               </div>
 
-              {/* Raccourcis pour les Administrateurs & Professionnels */}
+              {/* Raccourci Superadmin National */}
               {currentUser?.role === "superadmin" && (
                 <div className="mt-2.5">
                   <button
@@ -1474,7 +1565,7 @@ export function PinkHubMobile() {
                       <ShieldAlert size={15} className="text-amber-300" /> Panneau Superadmin
                     </span>
                     <span className="rounded-full bg-amber-400 px-1.5 py-0.2 text-[9px] font-extrabold text-purple-950">
-                      {pendingRegistrations.filter((r) => r.status === "pending").length}
+                      {announcements.filter((a) => a.status === "pending_validation").length + pendingRegistrations.filter((r) => r.status === "pending").length}
                     </span>
                   </button>
                 </div>
@@ -1498,7 +1589,7 @@ export function PinkHubMobile() {
                 </div>
               )}
 
-              {/* Entraînement de Rose IA pour les docteurs / agents de santé */}
+              {/* Entraînement de Rose IA pour docteurs */}
               {currentUser?.role === "admin" && currentUser?.adminType === "doctor" && (
                 <div className="mt-2">
                   <button
@@ -1516,7 +1607,7 @@ export function PinkHubMobile() {
                 </div>
               )}
 
-              {/* Orientation & Recommandation patiente pour soignants */}
+              {/* Orientation patiente */}
               {currentUser?.role === "admin" && (currentUser?.adminType === "doctor" || currentUser?.adminType === "center") && (
                 <div className="mt-2">
                   <button
@@ -1589,7 +1680,7 @@ export function PinkHubMobile() {
                   <UserPlus size={17} /> <span>L'Accompagnant (À deux)</span>
                 </button>
 
-                {/* Bouton de mise à jour du centre (UNIQUEMENT pour Admin Centre de santé & Médecin) */}
+                {/* Mise à jour centre : réservé aux Admins Centre & Médecins */}
                 {currentUser?.role === "admin" && (currentUser?.adminType === "center" || currentUser?.adminType === "doctor") && (
                   <div className="pt-2 border-t border-[#f2e1e6]">
                     <button
@@ -1605,7 +1696,7 @@ export function PinkHubMobile() {
                   </div>
                 )}
 
-                {/* Faire un don solidaire : tout en bas comme demandé */}
+                {/* Faire un don solidaire : en bas avec Cœur */}
                 <div className="pt-2 border-t border-[#f2e1e6]">
                   <button
                     onClick={() => {
@@ -1632,7 +1723,7 @@ export function PinkHubMobile() {
         )}
 
         {/* ==================================================================== */}
-        {/* EN-TÊTE FIXE DU SMARTPHONE                                           */}
+        {/* EN-TÊTE FIXE DU SMARTPHONE AVEC DÉCONNEXION DIRECTE SUR L'ICÔNE      */}
         {/* ==================================================================== */}
         <header className="z-30 flex items-center justify-between border-b border-[#f4e2e7] bg-white/95 px-4 py-2.5 backdrop-blur-md">
           <div className="flex items-center gap-2.5">
@@ -1666,20 +1757,77 @@ export function PinkHubMobile() {
               <span>Rose IA</span>
             </button>
 
-            {/* Bouton Compte */}
-            <button
-              onClick={() => setShowAuthModal(true)}
-              className="grid h-9 w-9 place-items-center rounded-full border border-[#eedfe4] bg-white text-[#7d5668] hover:bg-[#faedf1]"
-              title={currentUser ? `${currentUser.prenom} (${currentUser.roleLabel})` : "Connexion"}
-            >
-              {currentUser ? (
-                <span className="text-xs font-bold text-[#a14364]">
-                  {currentUser.prenom[0]}
-                </span>
-              ) : (
-                <User size={17} />
+            {/* ICÔNE DE PROFIL AVEC MENU DÉCONNEXION DIRECTE */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  if (currentUser) {
+                    setShowProfileMenu(!showProfileMenu);
+                  } else {
+                    setShowAuthModal(true);
+                  }
+                }}
+                className="grid h-9 w-9 place-items-center rounded-full border border-[#eedfe4] bg-white text-[#7d5668] hover:bg-[#faedf1] transition"
+                title={currentUser ? `${currentUser.prenom} (${currentUser.roleLabel}) - Cliquez pour gérer` : "Connexion"}
+              >
+                {currentUser ? (
+                  <span className="text-xs font-bold text-[#a14364]">
+                    {currentUser.prenom[0]}
+                  </span>
+                ) : (
+                  <User size={17} />
+                )}
+              </button>
+
+              {/* Menu Popover Déconnexion Directe */}
+              {showProfileMenu && currentUser && (
+                <div
+                  className="ph-enter absolute right-0 top-11 z-50 w-56 rounded-2xl border border-[#ebd4dd] bg-white p-3 shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center gap-2 border-b border-[#f5e4ea] pb-2">
+                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] font-bold text-[#a14364] text-xs">
+                      {currentUser.prenom[0]}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-[#452737] text-xs truncate">
+                        {currentUser.prenom} {currentUser.nom}
+                      </p>
+                      <span className="inline-block rounded-full bg-[#a14364] px-1.5 py-0.2 text-[8.5px] font-bold text-white">
+                        {currentUser.roleLabel}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="mt-1.5 text-[10px] text-[#7a5969]">{currentUser.telephone}</p>
+
+                  <div className="mt-2.5 space-y-1">
+                    {/* BOUTON DÉCONNEXION DIRECTE EXIGÉ */}
+                    <button
+                      onClick={() => {
+                        setCurrentUser(null);
+                        setShowProfileMenu(false);
+                        notify("Vous avez été déconnectée avec succès.");
+                      }}
+                      className="flex w-full items-center gap-2 rounded-xl bg-rose-50 px-2.5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition"
+                    >
+                      <LogOut size={14} className="text-rose-600" />
+                      <span>Se déconnecter</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        setShowAuthModal(true);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-[#5a3b4c] hover:bg-[#faeff2] transition"
+                    >
+                      <User size={13} />
+                      <span>Changer de compte</span>
+                    </button>
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
           </div>
         </header>
 
@@ -1803,11 +1951,11 @@ export function PinkHubMobile() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-purple-900">
-                      <Megaphone size={13} /> {announcements[0].badge}
+                      <Megaphone size={13} /> {announcements[0]?.badge}
                     </span>
-                    <span className="text-[10px] font-semibold text-purple-700">Annonces →</span>
+                    <span className="text-[10px] font-semibold text-purple-700">Annonces ({announcements.filter((a) => a.month === "Octobre 2026").length}) →</span>
                   </div>
-                  <h4 className="mt-1 text-xs font-bold text-purple-950">{announcements[0].title}</h4>
+                  <h4 className="mt-1 text-xs font-bold text-purple-950">{announcements[0]?.title}</h4>
                 </div>
               </div>
 
@@ -1851,7 +1999,7 @@ export function PinkHubMobile() {
                           Faire un don
                         </h4>
                         <p className="text-[10.5px] text-[#7a5867]">
-                          Offrir une mammographie à une femme sans revenus
+                          Offrir une mammographie avec option anonyme chiffrée
                         </p>
                       </div>
                     </div>
@@ -1865,7 +2013,7 @@ export function PinkHubMobile() {
           )}
 
           {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 2 : CARTE DES SOINS AVEC VRAIE CARTE OPENSTREETMAP LEAFLET  */}
+          {/* ONGLET 2 : CARTE DES SOINS (OPENSTREETMAP LEAFLET)                 */}
           {/* ------------------------------------------------------------------ */}
           {section === "Centres" && !selectedCenter && (
             <section className="ph-enter px-5 pt-4">
@@ -1965,7 +2113,6 @@ export function PinkHubMobile() {
                   <div className="relative h-[280px] w-full overflow-hidden rounded-[24px] border-2 border-[#e5d0d8] bg-[#f8edf1] shadow-inner">
                     <div ref={mapContainerRef} className="h-full w-full z-10" />
 
-                    {/* Légende rapide en surimpression */}
                     <div className="absolute bottom-2 left-2 z-20 flex items-center gap-2 rounded-xl bg-white/90 px-2.5 py-1 text-[9px] font-bold text-[#452737] shadow backdrop-blur-xs">
                       <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Dispo</span>
                       <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-500" /> Affluence</span>
@@ -2032,7 +2179,7 @@ export function PinkHubMobile() {
           )}
 
           {/* ------------------------------------------------------------------ */}
-          {/* ONGLET NOUVEAU : CALENDRIER, RÈGLES, AUTOPALPATION & RAPPELS       */}
+          {/* ONGLET : CALENDRIER, RÈGLES, AUTOPALPATION & RAPPELS               */}
           {/* ------------------------------------------------------------------ */}
           {section === "Calendrier" && !selectedCenter && (
             <section className="ph-enter px-5 pt-4">
@@ -2046,7 +2193,7 @@ export function PinkHubMobile() {
                 Suivez vos règles, sachez le moment idéal pour observer vos seins et programmez vos rappels médicaux.
               </p>
 
-              {/* 1. Suivi des règles & cycle */}
+              {/* Suivi des règles & cycle */}
               <div className="mt-3.5 rounded-[24px] border border-[#f0d4df] bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between border-b border-[#f6e6ec] pb-2.5">
                   <div className="flex items-center gap-2">
@@ -2095,7 +2242,7 @@ export function PinkHubMobile() {
                 </div>
               </div>
 
-              {/* 2. Fenêtre d'autopalpation recommandée par l'OMS */}
+              {/* Fenêtre d'autopalpation recommandée par l'OMS */}
               <div className="mt-3.5 rounded-[24px] border-2 border-emerald-300 bg-gradient-to-br from-[#f2fbf6] to-[#e7f7ee] p-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[9.5px] font-bold text-white shadow-xs">
@@ -2110,10 +2257,9 @@ export function PinkHubMobile() {
                   Fenêtre d'autopalpation : {cycleInfo.autopalpWindowStr}
                 </h3>
                 <p className="mt-1 text-xs text-[#39614c] leading-relaxed">
-                  Le meilleur moment pour observer et palper vos seins est <strong>2 à 5 jours après la fin des règles</strong>, quand les tissus mammaires sont souples et non douloureux.
+                  Le meilleur moment pour observer vos seins est <strong>2 à 5 jours après la fin des règles</strong>, quand les tissus mammaires sont souples et non douloureux.
                 </p>
 
-                {/* 4 gestes d'autopalpation guidée */}
                 <div className="mt-3 space-y-1.5 text-xs">
                   <div className="rounded-xl bg-white/90 p-2 border border-emerald-200">
                     <b>1. Devant le miroir :</b> Observez bras le long du corps, puis levés (recherchez une fossette ou un pli).
@@ -2141,7 +2287,7 @@ export function PinkHubMobile() {
                 </button>
               </div>
 
-              {/* 3. Rappels personnalisés : Dépistage, Traitement & Rendez-vous */}
+              {/* Rappels personnalisés */}
               <div className="mt-3.5 rounded-[24px] border border-[#f0d4df] bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between border-b border-[#f6e6ec] pb-2.5">
                   <div className="flex items-center gap-2">
@@ -2199,7 +2345,7 @@ export function PinkHubMobile() {
                         }}
                         className="flex-1 rounded-xl bg-[#a14364] py-1.5 font-bold text-white text-xs"
                       >
-                        Enregistrer le rappel
+                        Enregistrer
                       </button>
                     </div>
                   </div>
@@ -2248,7 +2394,6 @@ export function PinkHubMobile() {
                   <span className="inline-flex items-center gap-1 font-bold uppercase tracking-wider">
                     <Headphones size={13} /> Lecteur Audio PagLaafi
                   </span>
-                  {/* Sélecteur 4 Langues exigé */}
                   <div className="flex rounded-full bg-white/15 p-0.5">
                     <button
                       onClick={() => setSpeechLanguage("fr")}
@@ -2414,7 +2559,6 @@ export function PinkHubMobile() {
                   </button>
                 </div>
 
-                {/* Bouton d'entraînement docteur si connecté en praticien */}
                 {currentUser?.role === "admin" && currentUser?.adminType === "doctor" && (
                   <button
                     onClick={() => setShowDoctorTrainModal(true)}
@@ -2425,7 +2569,6 @@ export function PinkHubMobile() {
                 )}
               </div>
 
-              {/* Suggestions rapides */}
               <div className="ph-scroll mt-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
                 {["Est-ce que ça fait mal ?", "Combien coûte le dépistage ?", "J'ai senti une petite boule"].map((q) => (
                   <button
@@ -2438,7 +2581,6 @@ export function PinkHubMobile() {
                 ))}
               </div>
 
-              {/* Discussion */}
               <div className="mt-3 space-y-2.5 flex-1 overflow-y-auto">
                 {roseMessages.map((msg, i) => (
                   <div key={i} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
@@ -2484,7 +2626,6 @@ export function PinkHubMobile() {
                 ))}
               </div>
 
-              {/* Saisie & Micro vocal */}
               <div className="mt-2.5 rounded-2xl border border-[#e5ccd5] bg-white p-2 shadow-sm">
                 <div className="flex items-center gap-2">
                   <button
@@ -2520,7 +2661,7 @@ export function PinkHubMobile() {
           )}
 
           {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 5 : FAIRE UN DON (SUIT AUTOMATIQUEMENT ORANGE MONEY)         */}
+          {/* ONGLET 5 : FAIRE UN DON (AVEC OPTION ANONYME CHIFFRÉE)             */}
           {/* ------------------------------------------------------------------ */}
           {section === "FaireUnDon" && !selectedCenter && (
             <section className="ph-enter px-5 pt-4">
@@ -2534,10 +2675,9 @@ export function PinkHubMobile() {
                 Votre contribution finance directement le dépistage et les soins de femmes sans revenus au Burkina Faso.
               </p>
 
-              {/* Carte principale de déclenchement du don avec icône CŒUR */}
               <div className="mt-3.5 rounded-[26px] border-2 border-rose-300 bg-gradient-to-br from-[#fff7f9] to-[#ffedf3] p-5 shadow-sm">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#a14364] px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
-                  <Heart size={13} className="fill-white" /> 100% Solidaire
+                  <Heart size={13} className="fill-white" /> 100% Solidaire & Sécurisé
                 </span>
 
                 <h3 className="ph-display mt-2 text-lg font-bold text-[#3d2430]">
@@ -2557,7 +2697,6 @@ export function PinkHubMobile() {
                 </div>
               </div>
 
-              {/* Liste des 7 associations bénéficiaires */}
               <div className="mt-4">
                 <h3 className="ph-display text-sm font-bold text-[#452737]">Associations partenaires éligibles</h3>
                 <div className="mt-2 space-y-2">
@@ -2585,7 +2724,7 @@ export function PinkHubMobile() {
           )}
 
           {/* ------------------------------------------------------------------ */}
-          {/* ONGLET ANNONCES                                                    */}
+          {/* ONGLET ANNONCES (CONSULTATION MOIS EN COURS & PUBLICATION ADMIN)   */}
           {/* ------------------------------------------------------------------ */}
           {section === "Annonces" && !selectedCenter && (
             <section className="ph-enter px-5 pt-4">
@@ -2598,29 +2737,69 @@ export function PinkHubMobile() {
                     Annonces
                   </h1>
                 </div>
+                {/* Bouton de publication pour les partenaires et soignants */}
+                {(currentUser?.role === "admin" || currentUser?.role === "superadmin") && (
+                  <button
+                    onClick={() => setShowNewAnnouncementModal(true)}
+                    className="rounded-full bg-[#a14364] px-3.5 py-1 text-xs font-bold text-white shadow hover:bg-[#8e3856]"
+                  >
+                    + Publier
+                  </button>
+                )}
+              </div>
+
+              {/* FILTRES D'ANNONCES : MOIS EN COURS / TOUTES / MES ANNONCES (ADMIN) */}
+              <div className="mt-3 flex items-center gap-1.5 text-[11px]">
                 <button
-                  onClick={() => setShowNewAnnouncementModal(true)}
-                  className="rounded-full bg-[#a14364] px-3 py-1 text-xs font-bold text-white"
+                  onClick={() => setAnnouncementsFilter("month")}
+                  className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "month" ? "bg-[#a14364] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
-                  + Publier
+                  📅 Mois en cours (Octobre 2026)
                 </button>
+                <button
+                  onClick={() => setAnnouncementsFilter("all")}
+                  className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "all" ? "bg-[#a14364] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                >
+                  Toutes ({announcements.filter((a) => a.status === "approved").length})
+                </button>
+                {(currentUser?.role === "admin" || currentUser?.role === "superadmin") && (
+                  <button
+                    onClick={() => setAnnouncementsFilter("my")}
+                    className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "my" ? "bg-[#a14364] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  >
+                    Mes soumissions ({announcements.filter((a) => a.submittedBy === currentUser?.structureName || a.submittedBy === `${currentUser?.prenom} ${currentUser?.nom}`).length})
+                  </button>
+                )}
               </div>
 
               <div className="mt-3 space-y-2.5">
-                {announcements.map((a) => (
-                  <div key={a.id} className="rounded-2xl border border-[#efdfe4] bg-white p-3.5 text-xs shadow-sm">
-                    <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${a.badgeColor}`}>{a.badge}</span>
-                    <h3 className="ph-display mt-1 text-sm font-bold text-[#452737]">{a.title}</h3>
-                    <p className="text-[11px] text-[#8c405c] mt-0.5">{a.author}</p>
-                    <p className="mt-1 text-[#6d4f5e]">{a.content}</p>
+                {displayedAnnouncements.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-[#dfb3c1] bg-[#fffafb] p-6 text-center text-xs text-[#815569]">
+                    Aucune annonce dans cette catégorie pour le moment.
                   </div>
-                ))}
+                ) : (
+                  displayedAnnouncements.map((a) => (
+                    <div key={a.id} className="rounded-2xl border border-[#efdfe4] bg-white p-3.5 text-xs shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${a.badgeColor}`}>{a.badge}</span>
+                        <span className="text-[10px] text-[#8e6878] font-semibold">{a.month}</span>
+                      </div>
+                      <h3 className="ph-display mt-1 text-sm font-bold text-[#452737]">{a.title}</h3>
+                      <p className="text-[11px] text-[#8c405c] mt-0.5 font-semibold">{a.author} · {a.city}</p>
+                      <p className="mt-1 text-[#6d4f5e] leading-relaxed">{a.content}</p>
+                      <div className="mt-2 flex items-center justify-between border-t border-[#f7e8ee] pt-2 text-[10px] text-[#8b6375]">
+                        <span>📞 {a.contact}</span>
+                        <span>{a.date}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </section>
           )}
 
           {/* ------------------------------------------------------------------ */}
-          {/* ONGLET L'ACCOMPAGNANT                                              */}
+          {/* ONGLET L'ACCOMPAGNANT (WHATSAPP + SMS SIMPLE EXIGÉ)                */}
           {/* ------------------------------------------------------------------ */}
           {section === "Accompagnant" && !selectedCenter && (
             <section className="ph-enter px-5 pt-4">
@@ -2631,18 +2810,63 @@ export function PinkHubMobile() {
                 L'Accompagnant
               </h1>
               <p className="mt-1 text-xs text-[#795f6d]">
-                Aller faire son dépistage, c'est plus facile à deux. Invitez une proche par WhatsApp ou SMS.
+                Aller faire son dépistage, c'est plus facile à deux. Invitez une proche par WhatsApp ou directement par SMS simple (sans connexion internet requise).
               </p>
-              <div className="mt-3 rounded-2xl bg-white border border-[#ebd6dc] p-4 text-xs">
+
+              {/* Choix de la langue de message d'accompagnement */}
+              <div className="mt-3.5 rounded-2xl bg-white border border-[#ebd6dc] p-3 text-xs">
+                <label className="block font-bold text-[#543644] mb-1.5">Langue de l'invitation :</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSmsLanguage("fr")}
+                    className={`flex-1 rounded-xl py-1.5 font-bold transition text-xs ${smsLanguage === "fr" ? "bg-[#a14364] text-white" : "border border-[#e5ccd5] text-[#714f5e]"}`}
+                  >
+                    Français
+                  </button>
+                  <button
+                    onClick={() => setSmsLanguage("moore")}
+                    className={`flex-1 rounded-xl py-1.5 font-bold transition text-xs ${smsLanguage === "moore" ? "bg-[#a14364] text-white" : "border border-[#e5ccd5] text-[#714f5e]"}`}
+                  >
+                    Mooré
+                  </button>
+                </div>
+
+                <div className="mt-3 rounded-xl bg-[#fdf5f8] border border-[#f5dfeb] p-2.5 text-[11px] italic text-[#6f4b5d]">
+                  « {smsLanguage === "fr"
+                    ? "Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : http://localhost:5173/"
+                    : "Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : http://localhost:5173/"} »
+                </div>
+
+                {/* 1. BOUTON ENVOI PAR WHATSAPP */}
                 <button
                   onClick={() => {
-                    const text = encodeURIComponent("Bonjour ma sœur, Aminata t'invite à faire ton dépistage avec elle sur PagLaafi : http://localhost:5173/");
+                    const text = encodeURIComponent(
+                      smsLanguage === "fr"
+                        ? "Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : http://localhost:5173/"
+                        : "Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : http://localhost:5173/",
+                    );
                     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
                     notify("Invitation WhatsApp prête à l'envoi.");
                   }}
-                  className="w-full rounded-2xl bg-emerald-600 py-2.5 font-bold text-white text-center flex items-center justify-center gap-2"
+                  className="mt-3 w-full rounded-2xl bg-emerald-600 py-2.5 font-bold text-white text-center flex items-center justify-center gap-2 shadow hover:bg-emerald-700 transition"
                 >
                   <MessageCircle size={16} /> Inviter mon accompagnant(e) par WhatsApp
+                </button>
+
+                {/* 2. BOUTON ENVOI PAR SMS SIMPLE (EXIGÉ) */}
+                <button
+                  onClick={() => {
+                    const text = encodeURIComponent(
+                      smsLanguage === "fr"
+                        ? "Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : http://localhost:5173/"
+                        : "Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : http://localhost:5173/",
+                    );
+                    window.open(`sms:?body=${text}`, "_blank");
+                    notify("Application SMS ouverte pour envoi direct.");
+                  }}
+                  className="mt-2 w-full rounded-2xl border-2 border-emerald-600 bg-white py-2.5 font-bold text-emerald-800 text-center flex items-center justify-center gap-2 hover:bg-emerald-50 transition"
+                >
+                  <Phone size={16} /> Envoyer par SMS simple (Sans connexion Internet)
                 </button>
               </div>
             </section>
@@ -2780,584 +3004,328 @@ export function PinkHubMobile() {
         </nav>
 
         {/* ==================================================================== */}
-        {/* MODAL 1 : AUTHENTIFICATION AVEC 3 PROFILS & ŒILLETS DE MOT DE PASSE  */}
+        {/* MODAL : NOUVELLE ANNONCE (AVEC PROCESSUS EN ATTENTE DE VALIDATION)   */}
         {/* ==================================================================== */}
-        {showAuthModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
-            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#f8e7ec] text-[#a14364]">
-                    <User size={18} />
-                  </div>
-                  <div>
-                    <h3 className="ph-display text-base font-bold text-[#472738]">
-                      {authMode === "login" ? "Connexion" : "Créer un compte"}
-                    </h3>
-                    <p className="text-[10px] text-[#8a5b70]">PagLaafi · Burkina Faso</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowAuthModal(false)}
-                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Bascule Connexion / Inscription */}
-              <div className="mt-3 flex rounded-xl bg-[#f9edf1] p-1 text-xs">
-                <button
-                  onClick={() => setAuthMode("login")}
-                  className={`flex-1 rounded-lg py-1.5 font-bold transition ${authMode === "login" ? "bg-white text-[#913b5b] shadow-sm" : "text-[#7b5b6a]"}`}
-                >
-                  Connexion
-                </button>
-                <button
-                  onClick={() => setAuthMode("register")}
-                  className={`flex-1 rounded-lg py-1.5 font-bold transition ${authMode === "register" ? "bg-white text-[#913b5b] shadow-sm" : "text-[#7b5b6a]"}`}
-                >
-                  Inscription
-                </button>
-              </div>
-
-              {/* Raccourcis de test des 3 rôles demandés */}
-              <div className="mt-3 rounded-xl bg-[#fcf4f7] border border-[#f2dbe2] p-2 text-[10px]">
-                <p className="font-bold text-[#863752] mb-1">Comptes de test (1 clic) :</p>
-                <div className="flex flex-wrap gap-1">
-                  <button
-                    onClick={() => quickLoginAs("user")}
-                    className="rounded-lg bg-white px-2 py-1 font-semibold text-[#543444] border border-[#ebd0d9] hover:bg-[#faedf1]"
-                  >
-                    👩 Utilisatrice
-                  </button>
-                  <button
-                    onClick={() => quickLoginAs("center")}
-                    className="rounded-lg bg-white px-2 py-1 font-semibold text-[#543444] border border-[#ebd0d9] hover:bg-[#faedf1]"
-                  >
-                    🏥 Admin Centre (Schiphra)
-                  </button>
-                  <button
-                    onClick={() => quickLoginAs("doctor")}
-                    className="rounded-lg bg-white px-2 py-1 font-semibold text-[#543444] border border-[#ebd0d9] hover:bg-[#faedf1]"
-                  >
-                    🩺 Docteur (Sanou)
-                  </button>
-                  <button
-                    onClick={() => quickLoginAs("association")}
-                    className="rounded-lg bg-white px-2 py-1 font-semibold text-[#543444] border border-[#ebd0d9] hover:bg-[#faedf1]"
-                  >
-                    🎗️ Admin Asso (ABAC)
-                  </button>
-                  <button
-                    onClick={() => quickLoginAs("superadmin")}
-                    className="rounded-lg bg-purple-900 px-2 py-1 font-bold text-white shadow-xs"
-                  >
-                    🛡️ Superadmin
-                  </button>
-                </div>
-              </div>
-
-              {/* FORMULAIRE CONNEXION : NUMÉRO DE TÉLÉPHONE ET MOT DE PASSE AVEC OEILLET */}
-              {authMode === "login" && (
-                <form onSubmit={handleLoginSubmit} className="mt-3 space-y-3 text-xs">
-                  <div>
-                    <label className="block font-bold text-[#563746]">Numéro de téléphone *</label>
-                    <input
-                      type="tel"
-                      required
-                      value={loginForm.telephone}
-                      onChange={(e) => setLoginForm({ ...loginForm, telephone: e.target.value })}
-                      placeholder="Ex: 70 12 34 56"
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2.5 text-xs font-semibold focus:border-[#a14364] focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-[#563746]">Mot de passe *</label>
-                    <div className="relative mt-1">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        required
-                        value={loginForm.motDePasse}
-                        onChange={(e) => setLoginForm({ ...loginForm, motDePasse: e.target.value })}
-                        placeholder="••••••••"
-                        className="w-full rounded-xl border border-[#e4cfd6] p-2.5 pr-10 text-xs font-semibold focus:border-[#a14364] focus:outline-none"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-2.5 text-[#8f6476] hover:text-[#522b3e]"
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full rounded-xl bg-[#a14364] py-2.5 font-bold text-white shadow hover:bg-[#8d3955]"
-                  >
-                    Se connecter
-                  </button>
-                </form>
-              )}
-
-              {/* FORMULAIRE INSCRIPTION : AVEC CONFIRMATION DU MOT DE PASSE ET ŒILLETS */}
-              {authMode === "register" && (
-                <form onSubmit={handleRegisterSubmit} className="mt-3 space-y-2.5 text-xs">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block font-bold text-[#563746]">Nom *</label>
-                      <input
-                        type="text"
-                        required
-                        value={registerForm.nom}
-                        onChange={(e) => setRegisterForm({ ...registerForm, nom: e.target.value })}
-                        placeholder="Ouedraogo"
-                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-bold text-[#563746]">Prénom *</label>
-                      <input
-                        type="text"
-                        required
-                        value={registerForm.prenom}
-                        onChange={(e) => setRegisterForm({ ...registerForm, prenom: e.target.value })}
-                        placeholder="Aminata"
-                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-[#563746]">Type de compte *</label>
-                    <select
-                      value={registerForm.role}
-                      onChange={(e) => setRegisterForm({ ...registerForm, role: e.target.value as UserRole })}
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] bg-white p-2 text-xs font-semibold"
-                    >
-                      <option value="user">Utilisatrice / Patient</option>
-                      <option value="admin">Administrateur / Professionnel (Validation Superadmin requise)</option>
-                    </select>
-                  </div>
-
-                  {registerForm.role === "admin" && (
-                    <>
-                      <div>
-                        <label className="block font-bold text-[#563746]">Catégorie administrative *</label>
-                        <select
-                          value={registerForm.adminType}
-                          onChange={(e) => setRegisterForm({ ...registerForm, adminType: e.target.value as AdminType })}
-                          className="mt-1 w-full rounded-xl border border-[#e4cfd6] bg-white p-2 text-xs font-semibold"
-                        >
-                          <option value="center">Centre de santé (Mise à jour de la carte)</option>
-                          <option value="doctor">Docteur / Praticien (Entraînement de Rose IA & Orientation)</option>
-                          <option value="association">Association / ONG (Annonces & Dons Orange Money)</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block font-bold text-[#563746]">Nom de la structure / hôpital *</label>
-                        <input
-                          type="text"
-                          required
-                          value={registerForm.structureName}
-                          onChange={(e) => setRegisterForm({ ...registerForm, structureName: e.target.value })}
-                          placeholder="Ex: CMA Schiphra, ABAC, CHU Bogodogo..."
-                          className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  <div>
-                    <label className="block font-bold text-[#563746]">Numéro de téléphone *</label>
-                    <input
-                      type="tel"
-                      required
-                      value={registerForm.telephone}
-                      onChange={(e) => setRegisterForm({ ...registerForm, telephone: e.target.value })}
-                      placeholder="Ex: 70 12 34 56"
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-                    />
-                  </div>
-
-                  {/* Mot de passe avec œillet */}
-                  <div>
-                    <label className="block font-bold text-[#563746]">Mot de passe *</label>
-                    <div className="relative mt-1">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        required
-                        value={registerForm.motDePasse}
-                        onChange={(e) => setRegisterForm({ ...registerForm, motDePasse: e.target.value })}
-                        placeholder="••••••••"
-                        className="w-full rounded-xl border border-[#e4cfd6] p-2 pr-9 text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-2.5 top-2 text-[#8f6476]"
-                      >
-                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Confirmer le mot de passe avec œillet */}
-                  <div>
-                    <label className="block font-bold text-[#563746]">Confirmer le mot de passe *</label>
-                    <div className="relative mt-1">
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        required
-                        value={registerForm.confirmerMotDePasse}
-                        onChange={(e) => setRegisterForm({ ...registerForm, confirmerMotDePasse: e.target.value })}
-                        placeholder="••••••••"
-                        className="w-full rounded-xl border border-[#e4cfd6] p-2 pr-9 text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-2.5 top-2 text-[#8f6476]"
-                      >
-                        {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full rounded-xl bg-[#a14364] py-2.5 font-bold text-white shadow"
-                  >
-                    Valider l'inscription
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ==================================================================== */}
-        {/* MODAL 2 : MISE À JOUR DU CENTRE DE SANTÉ (ADMIN CENTRE & DOCTEUR)   */}
-        {/* ==================================================================== */}
-        {showCenterUpdateModal && centerUpdateData && (
+        {showNewAnnouncementModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
-            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl max-h-[90vh] overflow-y-auto border-2 border-[#a14364]">
               <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-100 text-emerald-800">
-                    <Edit3 size={18} />
-                  </div>
+                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] text-[#a14364]">
+                    <Megaphone size={18} />
+                  </span>
                   <div>
-                    <h3 className="ph-display text-sm font-bold text-[#351c2a]">Mettre à jour mon centre</h3>
-                    <p className="text-[10px] text-emerald-800 font-bold">{centerUpdateData.shortName}</p>
+                    <h3 className="ph-display text-sm font-bold text-[#452737]">Publier une annonce</h3>
+                    <p className="text-[10px] text-amber-800 font-bold">Soumise à validation Superadmin</p>
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowCenterUpdateModal(false)}
+                  onClick={() => setShowNewAnnouncementModal(false)}
                   className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <form onSubmit={handleSaveCenterUpdate} className="mt-3 space-y-3 text-xs">
+              <form onSubmit={handlePublishAnnouncementSubmit} className="mt-3 space-y-2.5 text-xs">
                 <div>
-                  <label className="block font-bold text-[#563746]">Statut de disponibilité actuel :</label>
-                  <select
-                    value={centerUpdateData.status}
-                    onChange={(e) => {
-                      const st = e.target.value as CenterStatus;
-                      setCenterUpdateData({
-                        ...centerUpdateData,
-                        status: st,
-                        statusLabel:
-                          st === "available"
-                            ? "Disponible · Attente fluide"
-                            : st === "busy"
-                              ? "Forte affluence · Prévoir attente"
-                              : st === "maintenance"
-                                ? "Appareil en maintenance technique"
-                                : "Non actualisé",
-                        statusColor:
-                          st === "available"
-                            ? "bg-emerald-500"
-                            : st === "busy"
-                              ? "bg-amber-500"
-                              : st === "maintenance"
-                                ? "bg-rose-500"
-                                : "bg-slate-400",
-                      });
-                    }}
-                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs font-bold"
-                  >
-                    <option value="available">🟢 Disponible / Fluide</option>
-                    <option value="busy">🟠 Forte affluence</option>
-                    <option value="maintenance">🔴 Appareil en panne / maintenance</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#563746]">État de l'équipement (Mammographe) :</label>
+                  <label className="block font-bold text-[#563746]">Titre de l'événement / caravane *</label>
                   <input
                     type="text"
-                    value={centerUpdateData.apparatus}
-                    onChange={(e) => setCenterUpdateData({ ...centerUpdateData, apparatus: e.target.value })}
+                    required
+                    placeholder="Ex: Dépistage gratuit au marché..."
+                    value={newAnnouncement.title}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-bold text-[#563746]">Nombre d'agents :</label>
+                    <label className="block font-bold text-[#563746]">Ville / Localité :</label>
                     <input
-                      type="number"
-                      value={centerUpdateData.agentsPresent}
-                      onChange={(e) => setCenterUpdateData({ ...centerUpdateData, agentsPresent: Number(e.target.value) })}
+                      type="text"
+                      value={newAnnouncement.city}
+                      onChange={(e) => setNewAnnouncement({ ...newAnnouncement, city: e.target.value })}
                       className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-[#563746]">File d'attente (pers.) :</label>
-                    <input
-                      type="number"
-                      value={centerUpdateData.queueCount}
-                      onChange={(e) => setCenterUpdateData({ ...centerUpdateData, queueCount: Number(e.target.value) })}
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-                    />
+                    <label className="block font-bold text-[#563746]">Mois concerné :</label>
+                    <select
+                      value={newAnnouncement.month}
+                      onChange={(e) => setNewAnnouncement({ ...newAnnouncement, month: e.target.value })}
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs font-semibold"
+                    >
+                      <option value="Octobre 2026">Octobre 2026 (En cours)</option>
+                      <option value="Novembre 2026">Novembre 2026</option>
+                      <option value="Décembre 2026">Décembre 2026</option>
+                    </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#563746]">Temps d'attente estimé :</label>
+                  <label className="block font-bold text-[#563746]">Date & Heure :</label>
                   <input
                     type="text"
-                    value={centerUpdateData.estimatedWait}
-                    onChange={(e) => setCenterUpdateData({ ...centerUpdateData, estimatedWait: e.target.value })}
+                    value={newAnnouncement.date}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, date: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#563746]">Message vocal du jour (Français) :</label>
-                  <textarea
-                    rows={2}
-                    value={centerUpdateData.audioMessageFr}
-                    onChange={(e) => setCenterUpdateData({ ...centerUpdateData, audioMessageFr: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full rounded-xl bg-emerald-600 py-2.5 font-bold text-white shadow"
-                >
-                  Publier la mise à jour en direct
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* ==================================================================== */}
-        {/* MODAL 3 : ENTRAÎNER ROSE IA (RÉSERVÉ AUX MÉDECINS / DOCTEURS)         */}
-        {/* ==================================================================== */}
-        {showDoctorTrainModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
-            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl max-h-[90vh] overflow-y-auto border-2 border-blue-900">
-              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-blue-950 text-white">
-                    <GraduationCap size={18} className="text-amber-400" />
-                  </div>
-                  <div>
-                    <h3 className="ph-display text-sm font-bold text-[#351c2a]">Entraîner Rose IA</h3>
-                    <p className="text-[10px] text-blue-900 font-bold">Espace Supervision Praticien</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowDoctorTrainModal(false)}
-                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <form onSubmit={handleDoctorTeachAI} className="mt-3 space-y-2.5 text-xs">
-                <div>
-                  <label className="block font-bold text-[#563746]">Sujet clinique / Protocole :</label>
+                  <label className="block font-bold text-[#563746]">Badge de mise en avant :</label>
                   <input
                     type="text"
-                    required
-                    placeholder="Ex: Permanence kystes douloureux, subvention..."
-                    value={doctorTeachTopic}
-                    onChange={(e) => setDoctorTeachTopic(e.target.value)}
+                    value={newAnnouncement.badge}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, badge: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#563746]">Instructions médicales transmises à Rose IA :</label>
+                  <label className="block font-bold text-[#563746]">Description détaillée de l'événement *</label>
                   <textarea
                     rows={3}
                     required
-                    placeholder="Expliquez la consigne que Rose IA doit intégrer pour conseiller ou orienter les patientes..."
-                    value={doctorTeachContent}
-                    onChange={(e) => setDoctorTeachContent(e.target.value)}
+                    placeholder="Précisez le lieu exact, les bénéficiaires, la gratuité ou les subventions..."
+                    value={newAnnouncement.content}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
                   />
                 </div>
 
+                <div>
+                  <label className="block font-bold text-[#563746]">Contact téléphonique public :</label>
+                  <input
+                    type="text"
+                    placeholder="+226 70 00 00 00"
+                    value={newAnnouncement.contact}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, contact: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
+                  />
+                </div>
+
+                <div className="rounded-xl bg-amber-50 border border-amber-200 p-2 text-[10.5px] text-amber-900 leading-tight">
+                  ℹ️ <strong>Règle de publication :</strong> Pour garantir la véracité des informations médicales, votre annonce sera examinée et validée par le Superadmin National avant diffusion.
+                </div>
+
                 <button
                   type="submit"
-                  className="w-full rounded-xl bg-blue-900 py-2.5 font-bold text-white shadow"
+                  className="w-full rounded-xl bg-[#a14364] py-2.5 font-bold text-white shadow hover:bg-[#8e3856]"
                 >
-                  Enseigner à Rose IA
+                  Soumettre pour validation Superadmin
                 </button>
               </form>
-
-              {/* Historique des connaissances enseignées */}
-              <div className="mt-4 border-t border-[#f2e1e6] pt-3 text-xs">
-                <p className="font-bold text-[#452737] mb-2">Connaissances médicales actives ({clinicalKnowledgeList.length}) :</p>
-                <div className="space-y-2 max-h-[160px] overflow-y-auto">
-                  {clinicalKnowledgeList.map((k) => (
-                    <div key={k.id} className="rounded-xl border border-blue-200 bg-blue-50/60 p-2.5 text-[11px]">
-                      <div className="flex justify-between font-bold text-blue-950">
-                        <span>{k.topic}</span>
-                        <span className="text-[9px] text-blue-800">{k.date}</span>
-                      </div>
-                      <p className="mt-1 text-[#4a3442]">{k.advice}</p>
-                      <p className="mt-1 text-[9.5px] text-[#735163] italic">Validé par : {k.doctorName} ({k.speciality})</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         )}
 
         {/* ==================================================================== */}
-        {/* MODAL 4 : ORIENTER UNE PATIENTE SELON L'URGENCE (SOIGNANTS)          */}
+        {/* MODAL : TABLEAU DE BORD SUPERADMIN COMPLET (STATISTIQUES & VALIDATION)*/}
         {/* ==================================================================== */}
-        {showOrientationModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
-            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl max-h-[90vh] overflow-y-auto border-2 border-emerald-800">
+        {showSuperadminModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
+            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl border-2 border-purple-900 max-h-[92vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-800 text-white">
-                    <FileText size={18} />
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-purple-950 text-white">
+                    <ShieldCheck size={20} className="text-amber-400" />
                   </div>
                   <div>
-                    <h3 className="ph-display text-sm font-bold text-[#351c2a]">Orienter une patiente</h3>
-                    <p className="text-[10px] text-emerald-800 font-bold">Fiche de transfert prioritaire</p>
+                    <h3 className="ph-display text-sm font-bold text-[#351c2a]">Superadmin National</h3>
+                    <p className="text-[10px] text-purple-900 font-bold">Modération & Statistiques Nationales</p>
                   </div>
                 </div>
                 <button
-                  onClick={() => { setShowOrientationModal(false); setGeneratedOrientationCode(null); }}
+                  onClick={() => setShowSuperadminModal(false)}
                   className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              {!generatedOrientationCode ? (
-                <form onSubmit={handleCreatePatientOrientation} className="mt-3 space-y-2.5 text-xs">
+              {/* 3 ONGLETS DU SUPERADMIN */}
+              <div className="mt-3 flex rounded-xl bg-[#f5eaf0] p-1 text-[11px] font-bold">
+                <button
+                  onClick={() => setSuperadminActiveTab("stats")}
+                  className={`flex-1 rounded-lg py-1.5 transition ${superadminActiveTab === "stats" ? "bg-purple-950 text-white shadow-xs" : "text-purple-900"}`}
+                >
+                  📊 Trafic & Stats
+                </button>
+                <button
+                  onClick={() => setSuperadminActiveTab("announcements")}
+                  className={`flex-1 rounded-lg py-1.5 transition relative ${superadminActiveTab === "announcements" ? "bg-purple-950 text-white shadow-xs" : "text-purple-900"}`}
+                >
+                  📢 Annonces ({announcements.filter((a) => a.status === "pending_validation").length})
+                </button>
+                <button
+                  onClick={() => setSuperadminActiveTab("registrations")}
+                  className={`flex-1 rounded-lg py-1.5 transition ${superadminActiveTab === "registrations" ? "bg-purple-950 text-white shadow-xs" : "text-purple-900"}`}
+                >
+                  🏥 Inscriptions ({pendingRegistrations.filter((r) => r.status === "pending").length})
+                </button>
+              </div>
+
+              {/* ONGLET 1 : STATISTIQUES DE VISITES DU SITE & TABLEAU DE BORD COMPLET */}
+              {superadminActiveTab === "stats" && (
+                <div className="mt-3.5 space-y-3 text-xs ph-enter">
                   <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block font-bold text-[#563746]">Nom / Initiales *</label>
-                      <input
-                        type="text"
-                        required
-                        value={orientationForm.patientName}
-                        onChange={(e) => setOrientationForm({ ...orientationForm, patientName: e.target.value })}
-                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-                      />
+                    <div className="rounded-2xl bg-purple-50 border border-purple-200 p-3">
+                      <span className="text-[9.5px] font-bold text-purple-800 uppercase">Visites totales</span>
+                      <p className="text-lg font-extrabold text-purple-950 mt-0.5">48 320</p>
+                      <p className="text-[9px] text-emerald-700 font-bold">▲ +31% ce mois</p>
                     </div>
-                    <div>
-                      <label className="block font-bold text-[#563746]">Téléphone *</label>
-                      <input
-                        type="tel"
-                        required
-                        value={orientationForm.patientPhone}
-                        onChange={(e) => setOrientationForm({ ...orientationForm, patientPhone: e.target.value })}
-                        className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-                      />
+                    <div className="rounded-2xl bg-pink-50 border border-pink-200 p-3">
+                      <span className="text-[9.5px] font-bold text-[#a14364] uppercase">Femmes uniques</span>
+                      <p className="text-lg font-extrabold text-[#742d45] mt-0.5">14 210</p>
+                      <p className="text-[9px] text-[#742d45]">Utilisatrices actives</p>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block font-bold text-[#563746]">Degré d'urgence médicale *</label>
-                    <select
-                      value={orientationForm.urgencyLevel}
-                      onChange={(e) => setOrientationForm({ ...orientationForm, urgencyLevel: e.target.value as any })}
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs font-bold"
-                    >
-                      <option value="high">🔴 Urgence Haute (Sous 24h - Signe d'alerte / masse fixée)</option>
-                      <option value="medium">🟠 Urgence Moyenne (Sous 48h - Nodule suspect)</option>
-                      <option value="routine">🟢 Routine / Dépistage préventif</option>
-                    </select>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3">
+                      <span className="text-[9.5px] font-bold text-amber-900 uppercase">Rose IA Vocale</span>
+                      <p className="text-lg font-extrabold text-amber-950 mt-0.5">9 430</p>
+                      <p className="text-[9px] text-amber-800">Questions traitées</p>
+                    </div>
+                    <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3">
+                      <span className="text-[9.5px] font-bold text-emerald-900 uppercase">Dons collectés</span>
+                      <p className="text-lg font-extrabold text-emerald-950 mt-0.5">14,8 M F</p>
+                      <p className="text-[9px] text-emerald-700 font-bold">Via Orange Money</p>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block font-bold text-[#563746]">Centre de santé destinataire *</label>
-                    <select
-                      value={orientationForm.targetCenterId}
-                      onChange={(e) => setOrientationForm({ ...orientationForm, targetCenterId: Number(e.target.value) })}
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs font-semibold"
-                    >
-                      {centers.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.shortName} ({c.city})
-                        </option>
-                      ))}
-                    </select>
+                  {/* Répartition géographique des visites au Burkina */}
+                  <div className="rounded-2xl border border-[#ebd6dc] bg-[#fffafc] p-3 space-y-2">
+                    <span className="font-bold text-[#452737] block">Répartition des visites par région :</span>
+                    <div className="space-y-1.5 text-[11px]">
+                      <div>
+                        <div className="flex justify-between text-[#5f4150]">
+                          <span>Centre (Ouagadougou & environs)</span>
+                          <span className="font-bold">57%</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                          <div className="h-full bg-[#a14364]" style={{ width: "57%" }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-[#5f4150]">
+                          <span>Hauts-Bassins (Bobo-Dioulasso)</span>
+                          <span className="font-bold">25%</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                          <div className="h-full bg-emerald-600" style={{ width: "25%" }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-[#5f4150]">
+                          <span>Centre-Ouest (Koudougou)</span>
+                          <span className="font-bold">12%</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                          <div className="h-full bg-amber-500" style={{ width: "12%" }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-[#5f4150]">
+                          <span>Autres provinces (Nord, Sahel, Est)</span>
+                          <span className="font-bold">6%</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                          <div className="h-full bg-blue-500" style={{ width: "6%" }} />
+                        </div>
+                      </div>
+                    </div>
                   </div>
+                </div>
+              )}
 
-                  <div>
-                    <label className="block font-bold text-[#563746]">Observations cliniques :</label>
-                    <textarea
-                      rows={2}
-                      value={orientationForm.clinicalObservations}
-                      onChange={(e) => setOrientationForm({ ...orientationForm, clinicalObservations: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-                    />
-                  </div>
+              {/* ONGLET 2 : MODÉRATION DES ANNONCES (SEUL LE SUPERADMIN PEUT VALIDER) */}
+              {superadminActiveTab === "announcements" && (
+                <div className="mt-3.5 space-y-2 text-xs ph-enter">
+                  <p className="font-bold text-[#452737]">
+                    Annonces en attente de modération ({announcements.filter((a) => a.status === "pending_validation").length}) :
+                  </p>
 
-                  <button
-                    type="submit"
-                    className="w-full rounded-xl bg-emerald-800 py-2.5 font-bold text-white shadow"
-                  >
-                    Générer la fiche d'orientation
-                  </button>
-                </form>
-              ) : (
-                <div className="mt-3 space-y-3 text-xs text-center">
-                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-emerald-100 text-emerald-800">
-                    <CheckCircle2 size={28} />
-                  </div>
-                  <div>
-                    <h4 className="ph-display text-base font-bold text-[#452737]">Fiche d'orientation prête</h4>
-                    <p className="font-mono font-extrabold text-sm text-emerald-800 mt-1">{generatedOrientationCode}</p>
-                  </div>
+                  {announcements.filter((a) => a.status === "pending_validation").length === 0 ? (
+                    <div className="rounded-xl border border-[#ebd6dc] p-4 text-center text-[#825b6d]">
+                      Toutes les annonces sont à jour et validées.
+                    </div>
+                  ) : (
+                    announcements
+                      .filter((a) => a.status === "pending_validation")
+                      .map((ann) => (
+                        <div key={ann.id} className="rounded-2xl border-2 border-amber-300 bg-amber-50/70 p-3 text-xs space-y-1.5">
+                          <div className="flex justify-between items-start">
+                            <span className="font-bold text-[#452737] text-[12px]">{ann.title}</span>
+                            <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[9px] font-bold text-amber-900">
+                              En attente
+                            </span>
+                          </div>
+                          <p className="text-[10.5px] text-[#863e58] font-semibold">{ann.author} · {ann.city} ({ann.date})</p>
+                          <p className="text-[11px] text-[#553b49] leading-relaxed">{ann.content}</p>
+                          <p className="text-[10px] text-[#7d5d6d]">Contact public : {ann.contact}</p>
 
-                  <div className="rounded-xl bg-[#fdfafb] border border-[#ebdbe2] p-3 text-left space-y-1 text-[11px]">
-                    <div><b>Patiente :</b> {orientationForm.patientName} ({orientationForm.patientPhone})</div>
-                    <div><b>Urgence :</b> {orientationForm.urgencyLevel === "high" ? "🔴 Sous 24h" : orientationForm.urgencyLevel === "medium" ? "🟠 Sous 48h" : "🟢 Routine"}</div>
-                    <div><b>Centre :</b> {centers.find((c) => c.id === orientationForm.targetCenterId)?.name}</div>
-                  </div>
+                          <div className="pt-2 flex gap-2">
+                            <button
+                              onClick={() => handleApproveAnnouncement(ann.id)}
+                              className="flex-1 rounded-xl bg-emerald-600 py-1.5 font-bold text-white shadow-xs text-center hover:bg-emerald-700"
+                            >
+                              Valider & Publier ✓
+                            </button>
+                            <button
+                              onClick={() => handleRejectAnnouncement(ann.id)}
+                              className="rounded-xl border border-rose-300 bg-white px-3 py-1.5 font-bold text-rose-700 hover:bg-rose-50"
+                            >
+                              Refuser
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                  )}
+                </div>
+              )}
 
-                  <button
-                    onClick={() => {
-                      const msg = encodeURIComponent(`Fiche d'orientation PagLaafi (${generatedOrientationCode}) : Chère ${orientationForm.patientName}, vous êtes orientée vers ${centers.find((c) => c.id === orientationForm.targetCenterId)?.shortName} pour examen prioritaire.`);
-                      window.open(`https://api.whatsapp.com/send?phone=226${orientationForm.patientPhone.replace(/\s/g, "")}&text=${msg}`, "_blank");
-                    }}
-                    className="w-full rounded-2xl bg-emerald-600 py-2.5 font-bold text-white shadow flex items-center justify-center gap-2"
-                  >
-                    <MessageCircle size={16} /> Transmettre par WhatsApp à la patiente
-                  </button>
+              {/* ONGLET 3 : DEMANDES D'ADHÉSION DES STRUCTURES */}
+              {superadminActiveTab === "registrations" && (
+                <div className="mt-3.5 space-y-2 text-xs ph-enter">
+                  <p className="font-bold text-[#452737]">
+                    Demandes d'adhésion en attente ({pendingRegistrations.filter((r) => r.status === "pending").length}) :
+                  </p>
+
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {pendingRegistrations.map((reg) => (
+                      <div key={reg.id} className="rounded-xl border border-[#ebd6dc] bg-[#fffafc] p-3 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#472738]">{reg.structure}</span>
+                          <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${reg.status === "pending" ? "bg-amber-100 text-amber-900" : reg.status === "approved" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
+                            {reg.status === "pending" ? "En attente" : reg.status === "approved" ? "Validé ✓" : "Refusé"}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#735765] mt-0.5">Resp. : {reg.responsable} · {reg.telephone}</p>
+                        <p className="text-[10px] text-[#916b7c]">{reg.ville} · {reg.type}</p>
+
+                        {reg.status === "pending" && (
+                          <div className="mt-2 flex gap-2">
+                            <button
+                              onClick={() => handleApproveRegistration(reg.id)}
+                              className="flex-1 rounded-lg bg-emerald-600 py-1 text-center font-bold text-white shadow-xs"
+                            >
+                              Valider l'inscription
+                            </button>
+                            <button
+                              onClick={() => handleRejectRegistration(reg.id)}
+                              className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1 font-bold text-rose-700"
+                            >
+                              Refuser
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -3365,7 +3333,7 @@ export function PinkHubMobile() {
         )}
 
         {/* ==================================================================== */}
-        {/* MODAL 5 : TABLEAU DE BORD STATISTIQUE ADMIN (POUR TOUS LES ADMINS)   */}
+        {/* MODAL : TABLEAU DE BORD ADMIN (DONS ORANGE MONEY & STATISTIQUES)     */}
         {/* ==================================================================== */}
         {showAdminDashboardModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
@@ -3388,7 +3356,6 @@ export function PinkHubMobile() {
                 </button>
               </div>
 
-              {/* Indicateurs clés */}
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3">
                   <p className="text-[9.5px] font-bold text-rose-800 uppercase">Dons collectés (OM)</p>
@@ -3402,7 +3369,6 @@ export function PinkHubMobile() {
                 </div>
               </div>
 
-              {/* Transactions récentes Orange Money */}
               <div className="mt-3.5 border-t border-[#f2e1e6] pt-3 text-xs">
                 <div className="flex items-center justify-between mb-2">
                   <p className="font-bold text-[#452737]">Dernières collectes Orange Money :</p>
@@ -3411,9 +3377,9 @@ export function PinkHubMobile() {
 
                 <div className="space-y-1.5 max-h-[180px] overflow-y-auto">
                   {[
-                    { id: "OM-BF-904123", donor: "Donatrice anonyme", amount: 10000, date: "Aujourd'hui 17h42", assoc: "ABAC" },
+                    { id: "OM-ANON-904123", donor: "Donatrice anonyme (Chiffré AES)", amount: 10000, date: "Aujourd'hui 17h42", assoc: "ABAC" },
                     { id: "OM-BF-893102", donor: "Ouedraogo A.", amount: 5000, date: "Aujourd'hui 15h18", assoc: "ABAC" },
-                    { id: "OM-BF-872291", donor: "Kaboré M.", amount: 25000, date: "Hier 19h10", assoc: "Beneere For A Cause" },
+                    { id: "OM-ANON-872291", donor: "Donatrice anonyme (Chiffré AES)", amount: 25000, date: "Hier 19h10", assoc: "Beneere For A Cause" },
                     { id: "OM-BF-861109", donor: "Traoré S.", amount: 2500, date: "14/10/2026", assoc: "GenitCare" },
                     { id: "OM-BF-850012", donor: "Association WTM", amount: 50000, date: "13/10/2026", assoc: "WomenTech Makers" },
                   ].map((tx) => (
@@ -3432,72 +3398,7 @@ export function PinkHubMobile() {
         )}
 
         {/* ==================================================================== */}
-        {/* MODAL 6 : PANNEAU SUPERADMIN (VALIDATION DES STRUCTURES)             */}
-        {/* ==================================================================== */}
-        {showSuperadminModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
-            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl border-2 border-purple-900">
-              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-purple-950 text-white">
-                    <ShieldCheck size={20} className="text-amber-400" />
-                  </div>
-                  <div>
-                    <h3 className="ph-display text-sm font-bold text-[#351c2a]">Panneau Superadmin</h3>
-                    <p className="text-[10px] text-purple-900 font-bold">Validation des inscriptions nationales</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowSuperadminModal(false)}
-                  className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="mt-3 space-y-2 text-xs">
-                <p className="font-bold text-[#452737]">
-                  Demandes d'adhésion en attente ({pendingRegistrations.filter((r) => r.status === "pending").length}) :
-                </p>
-
-                <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                  {pendingRegistrations.map((reg) => (
-                    <div key={reg.id} className="rounded-xl border border-[#ebd6dc] bg-[#fffafc] p-3 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-[#472738]">{reg.structure}</span>
-                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${reg.status === "pending" ? "bg-amber-100 text-amber-900" : reg.status === "approved" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
-                          {reg.status === "pending" ? "En attente" : reg.status === "approved" ? "Validé ✓" : "Refusé"}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-[#735765] mt-0.5">Resp. : {reg.responsable} · {reg.telephone}</p>
-                      <p className="text-[10px] text-[#916b7c]">{reg.ville} · {reg.type}</p>
-
-                      {reg.status === "pending" && (
-                        <div className="mt-2 flex gap-2">
-                          <button
-                            onClick={() => handleApproveRegistration(reg.id)}
-                            className="flex-1 rounded-lg bg-emerald-600 py-1 text-center font-bold text-white shadow-xs"
-                          >
-                            Valider l'inscription
-                          </button>
-                          <button
-                            onClick={() => handleRejectRegistration(reg.id)}
-                            className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1 font-bold text-rose-700"
-                          >
-                            Refuser
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ==================================================================== */}
-        {/* MODAL 7 : PROCESSUS OFFICIEL ORANGE MONEY                            */}
+        {/* MODAL : PROCESSUS OFFICIEL ORANGE MONEY (AVEC DON ANONYME CHIFFRÉ)   */}
         {/* ==================================================================== */}
         {showDonationModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
@@ -3509,7 +3410,7 @@ export function PinkHubMobile() {
                   </span>
                   <div>
                     <h3 className="ph-display text-sm font-bold text-[#3d2430]">Faire un don solidaire</h3>
-                    <p className="text-[10px] text-orange-950 font-semibold">Validation Orange Money Burkina Faso</p>
+                    <p className="text-[10px] text-orange-950 font-semibold">Orange Money Burkina Faso (#144#)</p>
                   </div>
                 </div>
                 <button
@@ -3520,7 +3421,7 @@ export function PinkHubMobile() {
                 </button>
               </div>
 
-              {/* ÉTAPE 1 : Choix de l'association et du montant */}
+              {/* ÉTAPE 1 : Choix de l'association, montant et option anonyme */}
               {donationStep === "form" && (
                 <div className="mt-3 space-y-3 text-xs">
                   <div>
@@ -3578,6 +3479,26 @@ export function PinkHubMobile() {
                     </div>
                   </div>
 
+                  {/* OPTION DON ANONYME & CHIFFRÉ (EXIGÉE) */}
+                  <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50/60 p-3">
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isAnonymousDonation}
+                        onChange={(e) => setIsAnonymousDonation(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <div>
+                        <span className="font-bold text-[#20432f] text-xs flex items-center gap-1.5">
+                          <ShieldCheck size={14} className="text-emerald-700" /> Don 100% Anonyme & Chiffré
+                        </span>
+                        <p className="text-[10px] text-[#476a56] leading-tight mt-0.5">
+                          Vos coordonnées (nom, prénom et numéro) sont chiffrées et masquées pour l'association. Seul un reçu officiel anonymisé est émis.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+
                   <button
                     onClick={handleStartDonationProcess}
                     className="mt-2 w-full rounded-2xl bg-[#f16e00] py-3 text-xs font-bold text-white shadow-md hover:bg-orange-600 transition"
@@ -3602,8 +3523,16 @@ export function PinkHubMobile() {
                       </span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-[#7c5b6b]">Donateur :</span>
+                      <span className="font-bold text-[#452737]">
+                        {isAnonymousDonation ? "Donatrice anonyme (Chiffré AES-256)" : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-[#7c5b6b]">Numéro débité :</span>
-                      <span className="font-bold text-[#452737]">+226 {orangeMoneyPhone}</span>
+                      <span className="font-bold text-[#452737]">
+                        {isAnonymousDonation ? `+226 70 ** ** ${orangeMoneyPhone.slice(-2)}` : `+226 ${orangeMoneyPhone}`}
+                      </span>
                     </div>
                   </div>
 
@@ -3675,6 +3604,12 @@ export function PinkHubMobile() {
                     <div className="flex justify-between">
                       <span className="text-gray-500">Réf Transaction :</span>
                       <span className="font-mono font-bold text-gray-800">{lastDonationId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Donateur :</span>
+                      <span className="font-semibold text-gray-700">
+                        {isAnonymousDonation ? "Donatrice Anonyme (Chiffrement AES)" : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Montant :</span>

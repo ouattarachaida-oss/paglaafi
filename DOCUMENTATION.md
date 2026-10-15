@@ -87,15 +87,23 @@ pnpm run dev:mobile
    - Accès à l'outil **"Orienter une patiente"** pour générer une fiche de transfert prioritaire selon l'urgence (Haute 24h, Moyenne 48h, Routine) et l'envoyer par WhatsApp.
 4. **🎗️ Admin Association** :
    - Responsable d'une ONG partenaire (ABAC, COBUCAN, Beneere For A Cause, GenitCare, WomenTech Makers, etc.).
-   - Accès au Tableau de bord des collectes Orange Money (#144#) et à la publication d'annonces.
+   - Accès au Tableau de bord des collectes Orange Money (#144#) et à la gestion de ses annonces.
+   - **Consultation des annonces du mois en cours** ("Octobre 2026") avec filtre dédié.
+   - **Publication sécurisée** : toute annonce soumise est placée en statut `En attente de validation` jusqu'à l'approbation formelle du Superadmin.
    - *Pas d'accès à la modification des centres de santé.*
 5. **🛡️ Superadmin National** :
-   - Validation ou refus des inscriptions des nouvelles structures de santé et associations partenaires.
+   - **Tableau de bord statistique complet** : suivi des visites du site et de l'application (visiteurs uniques, sessions, répartition régionale Ouaga/Bobo/Koudougou/Provinces, utilisation vocale de Rose IA, total des collectes de dons FCFA).
+   - **Modération exclusive des annonces** : seul habilité à valider (`Valider & Publier ✓`) ou refuser (`Refuser ✕`) les annonces soumises par les partenaires.
+   - **Validation des inscriptions** des structures de santé et des ONG.
+6. **👥 Fonctionnalités Transverses (Tous Profils)** :
+   - **Déconnexion directe 1-clic** : accessible instantanément en touchant l'icône de profil dans l'en-tête (menu contextuel avec détails du profil et bouton de déconnexion).
+   - **Don Solidaire Anonyme & Chiffré** : option permettant de faire un don Orange Money avec chiffrement des informations personnelles (nom masqué en `Donatrice Anonyme`, numéro masqué sous la forme `+226 70 ** ** XX`, reçu `OM-ANON-XXXXXX`).
+   - **L'Accompagnant - SMS Simple GSM** : lien direct `sms:?body=...` permettant d'envoyer une invitation d'accompagnement par SMS standard sans connexion internet, disponible en Français et en Mooré.
 
 ---
 
 ## 5. Maintenance & Standards Techniques
-- **Point de contrôle Git** : Tag `backup-checkpoint-avant-maj` créé avant la refonte.
+- **Point de contrôle Git** : Tag `backup-checkpoint-avant-maj` et commits de suivi pas-à-pas.
 - **Encodage** : Fichiers encodés en **UTF-8 sans BOM**.
 - **Langue des commentaires** : Rédigés en français pédagogique.
 - **Stack** : 100% TypeScript, React, Leaflet/OpenStreetMap, HTML5, CSS et Web Speech API (zéro Python).
