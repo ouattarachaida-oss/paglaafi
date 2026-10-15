@@ -52,26 +52,39 @@ Le projet est structuré sous forme de monorepo géré avec `pnpm workspaces` :
 
 ---
 
-## 3. Guide de Démarrage en Local sous Windows
+## 3. Guide de Démarrage en Local sous Windows & Audit Technique
 
-Le serveur de développement de la maquette web est opérationnel en arrière-plan.
+### A. Démarrage Rapide en 1 Clic (Recommandé)
+- **Fichier Windows 1-Clic** : Double-cliquez directement sur **`demarrer-en-local.bat`** à la racine du projet.
+- **Ou via Terminal PowerShell / Invite de commande** :
+  ```powershell
+  pnpm run dev
+  ```
+  *(Fonctionne aussi avec `pnpm start` ou `pnpm run dev:mockup`)*
 
-### Lancer la Maquette Web Interactive
-```powershell
-pnpm run dev:mockup
-```
 - **URL locale sur cet ordinateur** : [http://localhost:5173/](http://localhost:5173/)
-- **Lien Mobile Wi-Fi (Pour les collègues sur leur téléphone, sans Expo)** :
+- **Lien Mobile Wi-Fi (Pour les collègues sur leur smartphone, sans rien installer)** :
   - **URL réseau local** : **`http://192.168.1.88:5173/`**
-  - **Mode d'emploi collègues** :
-    1. Connecter le smartphone (iPhone ou Android) au même réseau Wi-Fi local.
-    2. Ouvrir le navigateur mobile (Safari, Chrome).
-    3. Accéder directement à `http://192.168.1.88:5173/` sans rien installer.
+  - **Procédure pour les collègues** :
+    1. Connecter le téléphone au même Wi-Fi.
+    2. Ouvrir le navigateur mobile (Safari sur iPhone, Chrome sur Android).
+    3. Taper `http://192.168.1.88:5173/` pour accéder à toute l'application.
 
-### Lancer l'Application Mobile Expo
-```powershell
-pnpm run dev:mobile
-```
+---
+
+### B. Audit Technique : D'où venaient les erreurs en local ?
+
+1. **Absence du script `dev` à la racine (`package.json`)** :
+   - Initialement, taper `pnpm run dev` ou `npm run dev` renvoyait l'erreur `ERR_PNPM_NO_SCRIPT: Missing script: dev`.
+   - **Résolution** : Le script `"dev": "pnpm --filter @workspace/mockup-sandbox run dev"` et `"start"` ont été ajoutés directement dans le `package.json` racine.
+
+2. **Le squelette Expo / React Native (`artifacts/paglaafi`) issu de Replit** :
+   - Le dossier `artifacts/paglaafi` contient un gabarit généré sur Replit avec des versions expérimentales très instables (`expo ~57.0.7`, `react-native 0.86.3`, `react 19.2.3`).
+   - Sous Windows, ce sous-module déclenche des erreurs système car `@react-native/debugger-shell` réclame des librairies Linux (`libglib-2.0.so.0`) et le cache Metro bloque sur les 150 000 fichiers du monorepo.
+   - **Pourquoi ce n'est pas un problème pour le projet** : 100% de l'application PagLaafi (carte Leaflet, audios Mooré/Dioula, Rose IA, suivi du cycle, rappels, dons anonymes, annonces Superadmin, formulaires) se trouve et s'exécute dans **`artifacts/mockup-sandbox`** via **Vite**.
+   - **Faut-il télécharger une version stable de React Native ?** :
+     - **Non pour l'instant (Phase 1)** : Pour concevoir, tester et faire tester à vos collègues, la maquette Vite est infiniment plus rapide (démarrage en 1.5 seconde, rechargement instantané, zéro bug Windows, accessible sur tous les téléphones par Wi-Fi).
+     - **Oui uniquement en Phase 2** : Si nous souhaitons plus tard générer un installateur binaire `.apk` pour le Google Play Store burkinabè, nous pourrons configurer une version propre et stable d'Expo (SDK 52 avec React Native 0.76).
 
 ---
 

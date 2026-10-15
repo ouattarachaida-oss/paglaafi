@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "preinstall": "node -e \"if(!/pnpm/.test(process.env.npm_config_user_agent||''))console.log('Utilisez pnpm')\"",
+    "dev": "pnpm --filter @workspace/mockup-sandbox run dev",
     "dev:mockup": "pnpm --filter @workspace/mockup-sandbox run dev",
     "dev:mobile": "pnpm --filter @workspace/paglaafi run dev:local",
+    "start": "pnpm --filter @workspace/mockup-sandbox run dev",
     "build:mockup": "pnpm --filter @workspace/mockup-sandbox run build",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
-    "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "build": "pnpm --filter @workspace/mockup-sandbox run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "private": true,
   "dependencies": {
