@@ -60,7 +60,13 @@ Le serveur de développement de la maquette web est opérationnel en arrière-pl
 ```powershell
 pnpm run dev:mockup
 ```
-- **URL locale** : [http://localhost:5173/](http://localhost:5173/) ou [http://localhost:5173/preview/pinkhub-mvp/PinkHubMobile](http://localhost:5173/preview/pinkhub-mvp/PinkHubMobile)
+- **URL locale sur cet ordinateur** : [http://localhost:5173/](http://localhost:5173/)
+- **Lien Mobile Wi-Fi (Pour les collègues sur leur téléphone, sans Expo)** :
+  - **URL réseau local** : **`http://192.168.1.88:5173/`**
+  - **Mode d'emploi collègues** :
+    1. Connecter le smartphone (iPhone ou Android) au même réseau Wi-Fi local.
+    2. Ouvrir le navigateur mobile (Safari, Chrome).
+    3. Accéder directement à `http://192.168.1.88:5173/` sans rien installer.
 
 ### Lancer l'Application Mobile Expo
 ```powershell
@@ -73,37 +79,45 @@ pnpm run dev:mobile
 
 ### Les Profils Utilisateurs & Permissions
 1. **👩 Utilisatrice / Patiente (Standard)** :
+   - Icône de profil : Cœur rose fuschia avec badge rose pastel.
    - Inscription avec Nom, Prénom, Téléphone, Mot de passe et confirmation.
-   - Connexion stricte avec Téléphone et Mot de passe uniquement.
+   - Connexion avec Téléphone et Mot de passe (avec œillet d'affichage).
    - Accès au Calendrier du cycle menstruel, à la fenêtre idéale d'autopalpation et aux rappels.
-   - Accès au don solidaire (icône Cœur, en bas de la liste à l'accueil).
+   - Accès au don solidaire Orange Money avec option anonyme chiffrée AES.
    - *Le bouton "Mettre à jour mon centre" est complètement masqué.*
 2. **🏥 Admin Centre de Santé** :
+   - Icône de profil : Électrocardiogramme / Activité médicale vert émeraude.
    - Gestionnaire d'un établissement médical (ex : CMA Schiphra).
    - Accès exclusif au bouton **"Mettre à jour mon centre sur la carte"** (état du mammographe, file d'attente, agents présents, vocal du jour).
    - Accès au Tableau de bord statistique (fréquentation, uptime).
 3. **🩺 Docteur / Agent de santé** :
+   - Icône de profil : Stéthoscope bleu clinique avec caducée.
    - Accès au mode **"Entraîner Rose IA"** pour transmettre des protocoles et consignes cliniques à l'IA.
    - Accès à l'outil **"Orienter une patiente"** pour générer une fiche de transfert prioritaire selon l'urgence (Haute 24h, Moyenne 48h, Routine) et l'envoyer par WhatsApp.
 4. **🎗️ Admin Association** :
+   - Icône de profil : Mains de solidarité pourpres.
    - Responsable d'une ONG partenaire (ABAC, COBUCAN, Beneere For A Cause, GenitCare, WomenTech Makers, etc.).
    - Accès au Tableau de bord des collectes Orange Money (#144#) et à la gestion de ses annonces.
    - **Consultation des annonces du mois en cours** ("Octobre 2026") avec filtre dédié.
    - **Publication sécurisée** : toute annonce soumise est placée en statut `En attente de validation` jusqu'à l'approbation formelle du Superadmin.
    - *Pas d'accès à la modification des centres de santé.*
 5. **🛡️ Superadmin National** :
+   - Icône de profil : Bouclier doré avec dégradé violet / or d'autorité.
    - **Tableau de bord statistique complet** : suivi des visites du site et de l'application (visiteurs uniques, sessions, répartition régionale Ouaga/Bobo/Koudougou/Provinces, utilisation vocale de Rose IA, total des collectes de dons FCFA).
    - **Modération exclusive des annonces** : seul habilité à valider (`Valider & Publier ✓`) ou refuser (`Refuser ✕`) les annonces soumises par les partenaires.
    - **Validation des inscriptions** des structures de santé et des ONG.
 6. **👥 Fonctionnalités Transverses (Tous Profils)** :
+   - **Page Générale de Connexion & Inscription** : s'affiche dès qu'un utilisateur clique sur "Se déconnecter" ou n'est pas authentifié. Propose les formulaires complets (avec œillets), 5 boutons d'accès démo rapide (1-clic) et un mode consultation libre.
    - **Déconnexion directe 1-clic** : accessible instantanément en touchant l'icône de profil dans l'en-tête (menu contextuel avec détails du profil et bouton de déconnexion).
+   - **Menu déroulant gauche épuré** : affiche un bouton direct et bien visible **"Se déconnecter"** dès qu'un compte est connecté.
    - **Don Solidaire Anonyme & Chiffré** : option permettant de faire un don Orange Money avec chiffrement des informations personnelles (nom masqué en `Donatrice Anonyme`, numéro masqué sous la forme `+226 70 ** ** XX`, reçu `OM-ANON-XXXXXX`).
    - **L'Accompagnant - SMS Simple GSM** : lien direct `sms:?body=...` permettant d'envoyer une invitation d'accompagnement par SMS standard sans connexion internet, disponible en Français et en Mooré.
+   - **Partage Wi-Fi Local (Sans Expo)** : modal et bouton direct d'information avec l'adresse IP `http://192.168.1.88:5173/` et bouton Copier pour les collègues.
 
 ---
 
 ## 5. Maintenance & Standards Techniques
-- **Point de contrôle Git** : Tag `backup-checkpoint-avant-maj` et commits de suivi pas-à-pas.
+- **Point de contrôle Git** : Tags `backup-checkpoint-avant-maj`, `backup-connexion-wifi-local` et commits pas-à-pas.
 - **Encodage** : Fichiers encodés en **UTF-8 sans BOM**.
 - **Langue des commentaires** : Rédigés en français pédagogique.
 - **Stack** : 100% TypeScript, React, Leaflet/OpenStreetMap, HTML5, CSS et Web Speech API (zéro Python).

@@ -649,6 +649,97 @@ export function PinkHubMobile() {
     roleLabel: "Utilisatrice",
   });
 
+  // Modal Partage Wi-Fi local sans Expo pour les collègues
+  const [showWifiModal, setShowWifiModal] = useState(false);
+
+  // Fonction universelle de déconnexion
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setShowProfileMenu(false);
+    setSidebarOpen(false);
+    notify("Vous avez été déconnecté(e) avec succès.");
+  };
+
+  // Identité visuelle et icône personnalisée selon chaque profil
+  const getProfileIdentity = (user: UserProfile | null) => {
+    if (!user) {
+      return {
+        icon: <User size={18} className="text-slate-600" />,
+        bg: "bg-slate-100",
+        text: "text-slate-600",
+        border: "border-slate-300",
+        badgeText: "Non connecté",
+        badgeBg: "bg-slate-500 text-white",
+        dotColor: "bg-slate-400",
+        label: "Invité / Visiteur",
+      };
+    }
+
+    if (user.role === "superadmin") {
+      return {
+        icon: <ShieldCheck size={18} className="text-amber-300" />,
+        bg: "bg-gradient-to-tr from-purple-950 via-purple-900 to-indigo-950",
+        text: "text-amber-300",
+        border: "border-amber-400",
+        badgeText: "Superadmin",
+        badgeBg: "bg-gradient-to-r from-amber-400 to-amber-500 text-purple-950 font-black",
+        dotColor: "bg-amber-400",
+        label: "Super-Administrateur National",
+      };
+    }
+
+    if (user.role === "admin" && user.adminType === "center") {
+      return {
+        icon: <Activity size={18} className="text-white" />,
+        bg: "bg-emerald-600",
+        text: "text-white",
+        border: "border-emerald-400",
+        badgeText: "Centre de Santé",
+        badgeBg: "bg-emerald-700 text-white",
+        dotColor: "bg-emerald-400",
+        label: "Admin Centre Médical",
+      };
+    }
+
+    if (user.role === "admin" && user.adminType === "doctor") {
+      return {
+        icon: <Stethoscope size={18} className="text-white" />,
+        bg: "bg-blue-600",
+        text: "text-white",
+        border: "border-blue-400",
+        badgeText: "Docteur / Praticien",
+        badgeBg: "bg-blue-700 text-white",
+        dotColor: "bg-blue-400",
+        label: "Docteur / Praticien de Santé",
+      };
+    }
+
+    if (user.role === "admin" && user.adminType === "association") {
+      return {
+        icon: <HeartHandshake size={18} className="text-white" />,
+        bg: "bg-purple-700",
+        text: "text-white",
+        border: "border-purple-300",
+        badgeText: "Association ONG",
+        badgeBg: "bg-purple-800 text-white",
+        dotColor: "bg-purple-400",
+        label: "Admin Association Partenaire",
+      };
+    }
+
+    // Utilisatrice standard
+    return {
+      icon: <Heart size={17} className="text-white fill-white" />,
+      bg: "bg-gradient-to-tr from-[#943657] to-[#ba486e]",
+      text: "text-white",
+      border: "border-rose-300",
+      badgeText: "Utilisatrice",
+      badgeBg: "bg-[#943657] text-white",
+      dotColor: "bg-pink-400",
+      label: "Utilisatrice / Patiente",
+    };
+  };
+
   // 5. Superadmin : Modération nationale, Statistiques de trafic & Inscriptions
   const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>(
     initialPendingRegistrations,
@@ -1516,40 +1607,38 @@ export function PinkHubMobile() {
                 </button>
               </div>
 
-              {/* Statut de profil dans le menu */}
-              <div className="mt-3 rounded-2xl bg-[#f9edf1] p-3 text-xs">
-                {currentUser ? (
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="rounded-full bg-[#a14364] px-2 py-0.5 text-[9px] font-bold text-white">
-                        {currentUser.roleLabel}
-                      </span>
+              {/* Statut de profil dans le menu avec icône adaptée */}
+              {(() => {
+                const drawerIdentity = getProfileIdentity(currentUser);
+                return (
+                  <div className="mt-3 rounded-2xl bg-[#f9edf1] p-3 text-xs border border-[#f0d8e1]">
+                    {currentUser ? (
+                      <div className="flex items-center gap-3">
+                        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${drawerIdentity.bg} ${drawerIdentity.text} border ${drawerIdentity.border} shadow-xs`}>
+                          {drawerIdentity.icon}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className={`inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${drawerIdentity.badgeBg}`}>
+                            {currentUser.roleLabel}
+                          </span>
+                          <p className="mt-0.5 font-bold text-[#472738] truncate">{currentUser.prenom} {currentUser.nom}</p>
+                          <p className="text-[10px] text-[#7d5d6c] truncate">{currentUser.telephone}</p>
+                        </div>
+                      </div>
+                    ) : (
                       <button
-                        onClick={() => {
-                          setCurrentUser(null);
-                          setSidebarOpen(false);
-                          notify("Déconnectée.");
-                        }}
-                        className="text-[11px] text-rose-600 font-bold hover:underline flex items-center gap-1"
+                        onClick={() => { setSidebarOpen(false); setAuthMode("login"); }}
+                        className="flex w-full items-center justify-between font-bold text-[#913b5b]"
                       >
-                        <LogOut size={13} /> Déconnexion
+                        <span className="flex items-center gap-2">
+                          <User size={16} /> Se connecter / Créer un compte
+                        </span>
+                        <ChevronRight size={16} />
                       </button>
-                    </div>
-                    <p className="mt-1 font-bold text-[#472738]">{currentUser.prenom} {currentUser.nom}</p>
-                    <p className="text-[10px] text-[#7d5d6c]">{currentUser.telephone}</p>
+                    )}
                   </div>
-                ) : (
-                  <button
-                    onClick={() => { setSidebarOpen(false); setShowAuthModal(true); }}
-                    className="flex w-full items-center justify-between font-bold text-[#913b5b]"
-                  >
-                    <span className="flex items-center gap-2">
-                      <User size={16} /> Se connecter / Créer un compte
-                    </span>
-                    <ChevronRight size={16} />
-                  </button>
-                )}
-              </div>
+                );
+              })()}
 
               {/* Raccourci Superadmin National */}
               {currentUser?.role === "superadmin" && (
@@ -1711,10 +1800,39 @@ export function PinkHubMobile() {
                     <span className="text-[10px] text-rose-800">Solidarité</span>
                   </button>
                 </div>
+
+                {/* BOUTON SE DÉCONNECTER DU MENU DÉROULANT GAUCHE EXIGÉ */}
+                {currentUser && (
+                  <div className="pt-2 border-t border-[#f2e1e6]">
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-50 border border-rose-200 px-3.5 py-2.5 font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
+                    >
+                      <LogOut size={16} className="text-rose-600" />
+                      <span>Se déconnecter</span>
+                    </button>
+                  </div>
+                )}
               </nav>
 
+              {/* Bouton Partage Wi-Fi pour les collègues */}
+              <div className="mt-2">
+                <button
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    setShowWifiModal(true);
+                  }}
+                  className="flex w-full items-center justify-between rounded-xl bg-slate-800 px-3 py-2 text-xs font-bold text-emerald-400 hover:bg-slate-700 transition"
+                >
+                  <span className="flex items-center gap-2">
+                    <Globe size={14} className="text-emerald-400" /> Partage Wi-Fi Collègues
+                  </span>
+                  <span className="text-[10px] text-slate-300">Sans Expo</span>
+                </button>
+              </div>
+
               {/* Ligne d'urgence */}
-              <div className="mt-auto rounded-2xl bg-[#734059] p-3 text-white">
+              <div className="mt-2 rounded-2xl bg-[#734059] p-3 text-white">
                 <p className="text-[11px] font-bold">Numéro vert national gratuit</p>
                 <p className="text-base font-extrabold tracking-wide">80 00 11 22</p>
               </div>
@@ -1748,6 +1866,16 @@ export function PinkHubMobile() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Bouton direct Partage Wi-Fi local sans Expo */}
+            <button
+              onClick={() => setShowWifiModal(true)}
+              className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-800 transition hover:bg-emerald-100 shadow-2xs"
+              title="Lien Mobile Wi-Fi (Sans Expo)"
+            >
+              <Globe size={12} className="text-emerald-600" />
+              <span>Wi-Fi</span>
+            </button>
+
             {/* Bouton direct Rose IA */}
             <button
               onClick={() => setSection("RoseIA")}
@@ -1757,77 +1885,68 @@ export function PinkHubMobile() {
               <span>Rose IA</span>
             </button>
 
-            {/* ICÔNE DE PROFIL AVEC MENU DÉCONNEXION DIRECTE */}
-            <div className="relative">
-              <button
-                onClick={() => {
-                  if (currentUser) {
-                    setShowProfileMenu(!showProfileMenu);
-                  } else {
-                    setShowAuthModal(true);
-                  }
-                }}
-                className="grid h-9 w-9 place-items-center rounded-full border border-[#eedfe4] bg-white text-[#7d5668] hover:bg-[#faedf1] transition"
-                title={currentUser ? `${currentUser.prenom} (${currentUser.roleLabel}) - Cliquez pour gérer` : "Connexion"}
-              >
-                {currentUser ? (
-                  <span className="text-xs font-bold text-[#a14364]">
-                    {currentUser.prenom[0]}
-                  </span>
-                ) : (
-                  <User size={17} />
-                )}
-              </button>
+            {/* ICÔNE DE PROFIL PERSONNALISÉE POUR TOUS AVEC DÉCONNEXION DIRECTE */}
+            {(() => {
+              const headerProfileIdentity = getProfileIdentity(currentUser);
+              return (
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      if (currentUser) {
+                        setShowProfileMenu(!showProfileMenu);
+                      } else {
+                        setAuthMode("login");
+                        setShowProfileMenu(false);
+                      }
+                    }}
+                    className={`relative grid h-10 w-10 place-items-center rounded-full border-2 ${headerProfileIdentity.border} ${headerProfileIdentity.bg} ${headerProfileIdentity.text} shadow-md transition hover:scale-105`}
+                    title={currentUser ? `${currentUser.prenom} (${currentUser.roleLabel}) - Cliquez pour gérer` : "Connexion"}
+                  >
+                    {headerProfileIdentity.icon}
+                    <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white ${headerProfileIdentity.dotColor}`} />
+                  </button>
 
-              {/* Menu Popover Déconnexion Directe */}
-              {showProfileMenu && currentUser && (
-                <div
-                  className="ph-enter absolute right-0 top-11 z-50 w-56 rounded-2xl border border-[#ebd4dd] bg-white p-3 shadow-2xl"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex items-center gap-2 border-b border-[#f5e4ea] pb-2">
-                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] font-bold text-[#a14364] text-xs">
-                      {currentUser.prenom[0]}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-[#452737] text-xs truncate">
-                        {currentUser.prenom} {currentUser.nom}
-                      </p>
-                      <span className="inline-block rounded-full bg-[#a14364] px-1.5 py-0.2 text-[8.5px] font-bold text-white">
-                        {currentUser.roleLabel}
-                      </span>
+                  {/* Menu Popover Déconnexion Directe */}
+                  {showProfileMenu && currentUser && (
+                    <div
+                      className="ph-enter absolute right-0 top-12 z-50 w-64 rounded-2xl border border-[#ebd4dd] bg-white p-3.5 shadow-2xl"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center gap-3 border-b border-[#f5e4ea] pb-3">
+                        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${headerProfileIdentity.bg} ${headerProfileIdentity.text} border ${headerProfileIdentity.border} shadow-xs`}>
+                          {headerProfileIdentity.icon}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-[#452737] text-xs truncate">
+                            {currentUser.prenom} {currentUser.nom}
+                          </p>
+                          <span className={`inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${headerProfileIdentity.badgeBg}`}>
+                            {currentUser.roleLabel}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-[10.5px] text-[#7a5969] space-y-0.5">
+                        <p className="flex items-center gap-1.5"><Phone size={12} className="text-[#a14364]" /> {currentUser.telephone}</p>
+                        {currentUser.structureName && (
+                          <p className="flex items-center gap-1.5"><MapPin size={12} className="text-[#a14364]" /> {currentUser.structureName}</p>
+                        )}
+                      </div>
+
+                      <div className="mt-3 pt-2 border-t border-[#f7e6ec] space-y-1.5">
+                        {/* BOUTON DÉCONNEXION DIRECTE EXIGÉ */}
+                        <button
+                          onClick={handleLogout}
+                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 border border-rose-200 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
+                        >
+                          <LogOut size={14} className="text-rose-600" />
+                          <span>Se déconnecter</span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <p className="mt-1.5 text-[10px] text-[#7a5969]">{currentUser.telephone}</p>
-
-                  <div className="mt-2.5 space-y-1">
-                    {/* BOUTON DÉCONNEXION DIRECTE EXIGÉ */}
-                    <button
-                      onClick={() => {
-                        setCurrentUser(null);
-                        setShowProfileMenu(false);
-                        notify("Vous avez été déconnectée avec succès.");
-                      }}
-                      className="flex w-full items-center gap-2 rounded-xl bg-rose-50 px-2.5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition"
-                    >
-                      <LogOut size={14} className="text-rose-600" />
-                      <span>Se déconnecter</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setShowProfileMenu(false);
-                        setShowAuthModal(true);
-                      }}
-                      className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-[#5a3b4c] hover:bg-[#faeff2] transition"
-                    >
-                      <User size={13} />
-                      <span>Changer de compte</span>
-                    </button>
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
           </div>
         </header>
 
@@ -1836,10 +1955,352 @@ export function PinkHubMobile() {
         {/* ==================================================================== */}
         <div className="ph-scroll flex-1 overflow-y-auto pb-6">
 
-          {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 1 : ACCUEIL                                                 */}
-          {/* ------------------------------------------------------------------ */}
-          {section === "Accueil" && !selectedCenter && (
+          {/* ================================================================== */}
+          {/* PAGE GÉNÉRALE DE CONNEXION & INSCRIPTION (SI NON CONNECTÉ)        */}
+          {/* ================================================================== */}
+          {!currentUser ? (
+            <section className="ph-enter px-4 py-5 space-y-4">
+              {/* Branding En-tête */}
+              <div className="text-center rounded-3xl bg-gradient-to-b from-[#fdf2f5] to-white p-5 border border-[#f3d7e0] shadow-2xs">
+                <div className="relative mx-auto mb-3 flex h-20 w-20 items-center justify-center rounded-3xl bg-white p-3 shadow-md border border-[#edd1dc]">
+                  <img
+                    src="/images/pinkhub-mvp-paglaafi.png"
+                    alt="Logo PagLaafi"
+                    className="h-full w-full object-contain mix-blend-multiply"
+                  />
+                </div>
+                <h2 className="ph-display text-2xl font-bold text-[#452737]">PagLaafi</h2>
+                <p className="text-xs text-[#82445e] font-semibold mt-0.5">
+                  Plateforme Nationale de Dépistage & Solidarité Cancer du Sein
+                </p>
+                <div className="mt-2.5 inline-flex items-center gap-2 rounded-full border border-[#e8c0ce] bg-white px-3 py-1 text-[11px] font-bold text-[#79344f] shadow-2xs">
+                  <Sparkles size={13} className="text-amber-500" />
+                  <span>Burkina Faso · Powered by Rose IA</span>
+                </div>
+              </div>
+
+              {/* Sélecteur Onglet : Connexion vs Inscription */}
+              <div className="grid grid-cols-2 rounded-2xl bg-[#f5e3e8] p-1 text-xs font-bold">
+                <button
+                  onClick={() => setAuthMode("login")}
+                  className={`rounded-xl py-2.5 transition ${authMode === "login" ? "bg-white text-[#a14364] shadow-sm" : "text-[#7b5364]"}`}
+                >
+                  Se connecter
+                </button>
+                <button
+                  onClick={() => setAuthMode("register")}
+                  className={`rounded-xl py-2.5 transition ${authMode === "register" ? "bg-white text-[#a14364] shadow-sm" : "text-[#7b5364]"}`}
+                >
+                  Créer un compte
+                </button>
+              </div>
+
+              {/* SI ONGLET CONNEXION */}
+              {authMode === "login" && (
+                <div className="space-y-4">
+                  <form onSubmit={handleLoginSubmit} className="space-y-3 rounded-3xl bg-white p-4 border border-[#edd6df] shadow-xs">
+                    <div>
+                      <label className="text-[11px] font-bold text-[#452737] block mb-1">
+                        Numéro de téléphone (+226)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2.5 text-xs font-bold text-gray-500">
+                          🇧🇫 +226
+                        </span>
+                        <input
+                          type="tel"
+                          required
+                          value={loginForm.telephone}
+                          onChange={(e) => setLoginForm({ ...loginForm, telephone: e.target.value })}
+                          placeholder="70 12 34 56"
+                          className="w-full rounded-xl border border-[#d6a9b9] py-2.5 pl-20 pr-3 text-xs font-semibold text-[#452737] focus:border-[#a14364] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-bold text-[#452737] block mb-1">
+                        Mot de passe
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          required
+                          value={loginForm.motDePasse}
+                          onChange={(e) => setLoginForm({ ...loginForm, motDePasse: e.target.value })}
+                          placeholder="Votre mot de passe"
+                          className="w-full rounded-xl border border-[#d6a9b9] p-2.5 pr-10 text-xs text-[#452737] focus:border-[#a14364] focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-700"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full rounded-2xl bg-[#a14364] py-3 text-xs font-bold text-white shadow-md hover:bg-[#8f3956] transition"
+                    >
+                      Se connecter à mon compte
+                    </button>
+                  </form>
+
+                  {/* Accès Démo Rapide (1-Clic) pour tester chaque profil */}
+                  <div className="rounded-3xl bg-[#fdf5f7] border border-[#f0d4de] p-4">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#9a4564] mb-2.5 flex items-center justify-between">
+                      <span>Accès Rapide Démo (1-Clic)</span>
+                      <span className="text-[9px] font-normal lowercase bg-pink-100 text-[#a14364] px-2 py-0.5 rounded-full">sélectionnez un profil</span>
+                    </p>
+
+                    <div className="grid grid-cols-1 gap-2">
+                      {[
+                        {
+                          type: "user" as const,
+                          title: "Aminata Ouedraogo",
+                          role: "Utilisatrice standard",
+                          desc: "Cycle menstruel, autopalpation & dons anonymes",
+                          profile: { role: "user" as const, roleLabel: "Utilisatrice" },
+                        },
+                        {
+                          type: "center" as const,
+                          title: "Mme Mariam Sawadogo",
+                          role: "Admin Centre (CMA Schiphra)",
+                          desc: "Mettre à jour le centre sur la carte & stats",
+                          profile: { role: "admin" as const, adminType: "center" as const, roleLabel: "Admin Centre" },
+                        },
+                        {
+                          type: "doctor" as const,
+                          title: "Dr. Ibrahim Sanou",
+                          role: "Docteur (CHU Bogodogo)",
+                          desc: "Entraîner Rose IA & Orientation urgente",
+                          profile: { role: "admin" as const, adminType: "doctor" as const, roleLabel: "Docteur" },
+                        },
+                        {
+                          type: "association" as const,
+                          title: "Dr. Salif Sawadogo",
+                          role: "Admin Association (ABAC)",
+                          desc: "Annonces du mois en cours & suivi des dons",
+                          profile: { role: "admin" as const, adminType: "association" as const, roleLabel: "Admin Asso" },
+                        },
+                        {
+                          type: "superadmin" as const,
+                          title: "Alimata Kaboré",
+                          role: "Superadmin National",
+                          desc: "Modération des annonces & Stats de visites",
+                          profile: { role: "superadmin" as const, roleLabel: "Superadmin" },
+                        },
+                      ].map((p) => {
+                        const ident = getProfileIdentity(p.profile as any);
+                        return (
+                          <button
+                            key={p.type}
+                            onClick={() => quickLoginAs(p.type)}
+                            className="flex items-center gap-3 rounded-2xl bg-white p-2.5 text-left border border-[#ecd5de] hover:border-[#a14364] hover:shadow-2xs transition"
+                          >
+                            <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${ident.bg} ${ident.text} border ${ident.border} shadow-2xs`}>
+                              {ident.icon}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs font-bold text-[#452737] truncate">{p.title}</p>
+                                <span className={`text-[8.5px] font-bold px-1.5 py-0.2 rounded-full ${ident.badgeBg}`}>
+                                  {ident.badgeText}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-[#7d5668] truncate">{p.desc}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Bouton pour tester sans compte */}
+                  <div className="text-center pt-1">
+                    <button
+                      onClick={() => {
+                        setCurrentUser({
+                          nom: "Visiteur",
+                          prenom: "Invité",
+                          telephone: "Mode Découverte",
+                          role: "user",
+                          roleLabel: "Visiteur libre",
+                        });
+                        notify("Bienvenue en mode découverte libre !");
+                      }}
+                      className="text-xs font-bold text-[#a14364] hover:underline inline-flex items-center gap-1.5"
+                    >
+                      <span>Explorer l'application sans compte (Mode Découverte)</span>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* SI ONGLET INSCRIPTION */}
+              {authMode === "register" && (
+                <form onSubmit={handleRegisterSubmit} className="space-y-3 rounded-3xl bg-white p-4 border border-[#edd6df] shadow-xs">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[11px] font-bold text-[#452737] block mb-1">Prénom</label>
+                      <input
+                        type="text"
+                        required
+                        value={registerForm.prenom}
+                        onChange={(e) => setRegisterForm({ ...registerForm, prenom: e.target.value })}
+                        className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#452737] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-[#452737] block mb-1">Nom</label>
+                      <input
+                        type="text"
+                        required
+                        value={registerForm.nom}
+                        onChange={(e) => setRegisterForm({ ...registerForm, nom: e.target.value })}
+                        className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#452737] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-[#452737] block mb-1">Numéro de téléphone (+226)</label>
+                    <input
+                      type="tel"
+                      required
+                      value={registerForm.telephone}
+                      onChange={(e) => setRegisterForm({ ...registerForm, telephone: e.target.value })}
+                      placeholder="70 12 34 56"
+                      className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#452737] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-[#452737] block mb-1">Type de profil</label>
+                    <select
+                      value={registerForm.role === "user" ? "user" : registerForm.adminType}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "user") {
+                          setRegisterForm({ ...registerForm, role: "user" });
+                        } else {
+                          setRegisterForm({
+                            ...registerForm,
+                            role: "admin",
+                            adminType: val as AdminType,
+                          });
+                        }
+                      }}
+                      className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#452737] bg-white focus:outline-none"
+                    >
+                      <option value="user">👩 Utilisatrice / Patiente</option>
+                      <option value="association">🎗️ Association / ONG Partenaire</option>
+                      <option value="center">🏥 Centre de Santé</option>
+                      <option value="doctor">🩺 Médecin / Docteur</option>
+                    </select>
+                  </div>
+
+                  {registerForm.role === "admin" && (
+                    <div>
+                      <label className="text-[11px] font-bold text-[#452737] block mb-1">
+                        Nom de la structure / Établissement
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={registerForm.structureName}
+                        onChange={(e) => setRegisterForm({ ...registerForm, structureName: e.target.value })}
+                        placeholder="Ex: ABAC Burkina, CMA Schiphra..."
+                        className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#452737] focus:outline-none"
+                      />
+                      <p className="text-[10px] text-amber-700 bg-amber-50 p-2 rounded-xl mt-1.5 border border-amber-200">
+                        ℹ️ Ce profil requiert une validation du Superadmin avant activation complète.
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="text-[11px] font-bold text-[#452737] block mb-1">Mot de passe</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        value={registerForm.motDePasse}
+                        onChange={(e) => setRegisterForm({ ...registerForm, motDePasse: e.target.value })}
+                        className="w-full rounded-xl border border-[#d6a9b9] p-2 pr-10 text-xs text-[#452737] focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-2 text-gray-400 hover:text-gray-700"
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-[#452737] block mb-1">Confirmer le mot de passe</label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        required
+                        value={registerForm.confirmerMotDePasse}
+                        onChange={(e) => setRegisterForm({ ...registerForm, confirmerMotDePasse: e.target.value })}
+                        className="w-full rounded-xl border border-[#d6a9b9] p-2 pr-10 text-xs text-[#452737] focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-2 text-gray-400 hover:text-gray-700"
+                      >
+                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl bg-[#a14364] py-3 text-xs font-bold text-white shadow-md hover:bg-[#8f3956] transition"
+                  >
+                    Créer mon compte
+                  </button>
+                </form>
+              )}
+
+              {/* CARTE PARTAGE WI-FI LOCAL POUR LES COLLÈGUES */}
+              <div className="rounded-3xl bg-slate-900 text-white p-4 shadow-lg border border-slate-700">
+                <div className="flex items-center gap-2 text-amber-400 text-xs font-bold">
+                  <Globe size={15} />
+                  <span>Lien Mobile Local (Sans Expo)</span>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-300">
+                  Vos collègues sur le même réseau Wi-Fi peuvent tester l'application directement dans Safari ou Chrome sur leur téléphone :
+                </p>
+                <div className="mt-2.5 flex items-center justify-between rounded-xl bg-slate-800 p-2 border border-slate-700">
+                  <span className="font-mono text-xs font-bold text-emerald-400 select-all">http://192.168.1.88:5173/</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard?.writeText("http://192.168.1.88:5173/");
+                      notify("Lien local copié dans le presse-papier !");
+                    }}
+                    className="rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
+                  >
+                    Copier
+                  </button>
+                </div>
+              </div>
+            </section>
+          ) : (
+            <>
+              {/* ------------------------------------------------------------------ */}
+              {/* ONGLET 1 : ACCUEIL                                                 */}
+              {/* ------------------------------------------------------------------ */}
+              {section === "Accueil" && !selectedCenter && (
             <section className="ph-enter">
               <div className="relative overflow-hidden bg-[#f9e9ed] px-5 pb-6 pt-5">
                 <div className="pointer-events-none absolute -right-6 -top-8 h-44 w-44 rounded-full border-[20px] border-[#f0d0db] opacity-60" />
@@ -2930,78 +3391,82 @@ export function PinkHubMobile() {
               </div>
             </section>
           )}
+            </>
+          )}
         </div>
 
         {/* ==================================================================== */}
-        {/* BARRE DE NAVIGATION INFÉRIEURE : 5 ONGLETS AVEC ICÔNE CŒUR POUR DON */}
+        {/* BARRE DE NAVIGATION INFÉRIEURE : AFFICHÉE UNIQUEMENT QUAND CONNECTÉ */}
         {/* ==================================================================== */}
-        <nav
-          aria-label="Navigation principale"
-          className="z-30 shrink-0 border-t border-[#f0dee3] bg-white/95 backdrop-blur-md px-1 pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-8px_25px_rgba(75,30,50,.07)]"
-        >
-          <div className="grid grid-cols-5 items-end">
-            {[
-              { label: "Accueil" as Section, icon: Heart, name: "Accueil" },
-              { label: "Centres" as Section, icon: MapPin, name: "Centres" },
-              { label: "RoseIA" as Section, icon: Sparkles, name: "Rose IA", isCentral: true },
-              { label: "Comprendre" as Section, icon: BookOpen, name: "Comprendre" },
-              { label: "FaireUnDon" as Section, icon: Heart, name: "Faire un don" },
-            ].map(({ label, icon: Icon, name, isCentral }) => {
-              const active = section === label;
+        {currentUser && (
+          <nav
+            aria-label="Navigation principale"
+            className="z-30 shrink-0 border-t border-[#f0dee3] bg-white/95 backdrop-blur-md px-1 pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-8px_25px_rgba(75,30,50,.07)]"
+          >
+            <div className="grid grid-cols-5 items-end">
+              {[
+                { label: "Accueil" as Section, icon: Heart, name: "Accueil" },
+                { label: "Centres" as Section, icon: MapPin, name: "Centres" },
+                { label: "RoseIA" as Section, icon: Sparkles, name: "Rose IA", isCentral: true },
+                { label: "Comprendre" as Section, icon: BookOpen, name: "Comprendre" },
+                { label: "FaireUnDon" as Section, icon: Heart, name: "Faire un don" },
+              ].map(({ label, icon: Icon, name, isCentral }) => {
+                const active = section === label;
 
-              if (isCentral) {
+                if (isCentral) {
+                  return (
+                    <button
+                      key={label}
+                      onClick={() => {
+                        setSection(label);
+                        setSelectedCenter(null);
+                      }}
+                      aria-current={active ? "page" : undefined}
+                      className="group relative -mt-4 flex flex-col items-center justify-center focus:outline-none"
+                    >
+                      <span
+                        className={`flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-white shadow-[0_6px_18px_rgba(161,67,100,.35)] transition-all duration-300 group-hover:scale-105 ${active ? "bg-gradient-to-tr from-[#8a3350] via-[#a14364] to-[#cf5d83] text-white ring-2 ring-[#a14364]/30" : "bg-gradient-to-tr from-[#9c3e5d] to-[#be5377] text-white"}`}
+                      >
+                        <Sparkles size={21} className="text-amber-300 animate-pulse" />
+                      </span>
+                      <span
+                        className={`mt-0.5 text-[9.5px] tracking-tight font-extrabold transition ${active ? "text-[#a14364]" : "text-[#7b5465]"}`}
+                      >
+                        Rose IA
+                      </span>
+                    </button>
+                  );
+                }
+
                 return (
                   <button
                     key={label}
                     onClick={() => {
                       setSection(label);
                       setSelectedCenter(null);
+                      if (label === "FaireUnDon") {
+                        setShowDonationModal(true);
+                      }
                     }}
                     aria-current={active ? "page" : undefined}
-                    className="group relative -mt-4 flex flex-col items-center justify-center focus:outline-none"
+                    className={`flex min-h-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl transition ${active ? "text-[#a14364]" : "text-[#9d838e] hover:text-[#785062]"}`}
                   >
                     <span
-                      className={`flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-white shadow-[0_6px_18px_rgba(161,67,100,.35)] transition-all duration-300 group-hover:scale-105 ${active ? "bg-gradient-to-tr from-[#8a3350] via-[#a14364] to-[#cf5d83] text-white ring-2 ring-[#a14364]/30" : "bg-gradient-to-tr from-[#9c3e5d] to-[#be5377] text-white"}`}
+                      className={`grid h-7 w-9 place-items-center rounded-full transition-all duration-200 ${active ? "bg-[#fbe7ed] text-[#a14364] shadow-xs" : ""}`}
                     >
-                      <Sparkles size={21} className="text-amber-300 animate-pulse" />
+                      <Icon size={18} strokeWidth={active ? 2.5 : 1.8} className={label === "FaireUnDon" && active ? "fill-[#a14364]" : ""} />
                     </span>
                     <span
-                      className={`mt-0.5 text-[9.5px] tracking-tight font-extrabold transition ${active ? "text-[#a14364]" : "text-[#7b5465]"}`}
+                      className={`text-[9.5px] tracking-tight transition ${active ? "font-bold text-[#a14364]" : "font-medium text-[#9d838e]"}`}
                     >
-                      Rose IA
+                      {name}
                     </span>
                   </button>
                 );
-              }
-
-              return (
-                <button
-                  key={label}
-                  onClick={() => {
-                    setSection(label);
-                    setSelectedCenter(null);
-                    if (label === "FaireUnDon") {
-                      setShowDonationModal(true);
-                    }
-                  }}
-                  aria-current={active ? "page" : undefined}
-                  className={`flex min-h-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl transition ${active ? "text-[#a14364]" : "text-[#9d838e] hover:text-[#785062]"}`}
-                >
-                  <span
-                    className={`grid h-7 w-9 place-items-center rounded-full transition-all duration-200 ${active ? "bg-[#fbe7ed] text-[#a14364] shadow-xs" : ""}`}
-                  >
-                    <Icon size={18} strokeWidth={active ? 2.5 : 1.8} className={label === "FaireUnDon" && active ? "fill-[#a14364]" : ""} />
-                  </span>
-                  <span
-                    className={`text-[9.5px] tracking-tight transition ${active ? "font-bold text-[#a14364]" : "font-medium text-[#9d838e]"}`}
-                  >
-                    {name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </nav>
+              })}
+            </div>
+          </nav>
+        )}
 
         {/* ==================================================================== */}
         {/* MODAL : NOUVELLE ANNONCE (AVEC PROCESSUS EN ATTENTE DE VALIDATION)   */}
@@ -3631,6 +4096,82 @@ export function PinkHubMobile() {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* MODAL : LIEN MOBILE LOCAL WI-FI (POUR LES COLLÈGUES SANS EXPO)       */}
+        {/* ==================================================================== */}
+        {showWifiModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]"
+            onClick={() => setShowWifiModal(false)}
+          >
+            <div
+              className="ph-enter w-full max-w-sm rounded-[28px] bg-slate-900 p-5 text-white shadow-2xl border border-slate-700"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-slate-800 text-emerald-400">
+                    <Globe size={18} />
+                  </div>
+                  <div>
+                    <h3 className="ph-display text-sm font-bold text-white">Lien Mobile Local</h3>
+                    <p className="text-[10px] text-emerald-400 font-bold">Sans passer par Expo</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowWifiModal(false)}
+                  className="rounded-full p-1 text-slate-400 hover:bg-slate-800"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="mt-3.5 space-y-3 text-xs">
+                <p className="text-slate-300 text-[11.5px] leading-relaxed">
+                  Vos collègues connectés au même réseau Wi-Fi peuvent ouvrir l'application directement dans le navigateur de leur smartphone (Safari, Chrome) :
+                </p>
+
+                <div className="rounded-2xl bg-slate-800/90 p-3 border border-slate-700 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>Adresse URL sur le Wi-Fi local :</span>
+                    <span className="text-[10px] text-emerald-400 font-bold">En direct</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 rounded-xl bg-slate-950 p-2.5 border border-slate-800">
+                    <span className="font-mono text-xs font-bold text-emerald-400 select-all">
+                      http://192.168.1.88:5173/
+                    </span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard?.writeText("http://192.168.1.88:5173/");
+                        notify("Lien http://192.168.1.88:5173/ copié !");
+                      }}
+                      className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-500 shadow-sm"
+                    >
+                      Copier
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 text-[11px] text-slate-300 rounded-xl bg-slate-800/40 p-3 border border-slate-800">
+                  <p className="font-bold text-amber-300">Procédure simple en 3 étapes :</p>
+                  <ol className="list-decimal list-inside space-y-1 text-slate-300 text-[10.5px]">
+                    <li>Connecter le téléphone au même réseau Wi-Fi.</li>
+                    <li>Ouvrir le navigateur (Safari sur iPhone, Chrome sur Android).</li>
+                    <li>Taper ou coller <strong className="text-emerald-400">http://192.168.1.88:5173/</strong></li>
+                  </ol>
+                </div>
+
+                <button
+                  onClick={() => setShowWifiModal(false)}
+                  className="w-full rounded-2xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-500 transition"
+                >
+                  Fermer
+                </button>
+              </div>
             </div>
           </div>
         )}
