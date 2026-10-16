@@ -51,3 +51,6 @@ Thumbs.db
 # Media records
 *.mp4
 
+# Binaires locaux
+cloudflared.exe
+*.exe

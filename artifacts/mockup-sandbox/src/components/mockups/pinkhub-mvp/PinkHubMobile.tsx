@@ -144,12 +144,12 @@ interface HealthCenter {
   lng: number;
 }
 
-// Annonce avec gestion du cycle de validation Superadmin et mois en cours
+// Annonce avec gestion du cycle de validation Superadmin, mois en cours et veille Rose IA
 interface PartnerAnnouncement {
   id: number;
   title: string;
   author: string;
-  authorType: "Association" | "Partenaire Santé" | "Hôpital";
+  authorType: "Association" | "Partenaire Santé" | "Hôpital" | "Veille Web Rose IA";
   city: string;
   date: string;
   month: string; // ex: "Octobre 2026"
@@ -161,6 +161,15 @@ interface PartnerAnnouncement {
   status: "pending_validation" | "approved" | "rejected";
   submittedBy?: string;
   submittedAt?: string;
+  isRoseAIDetected?: boolean; // Détecté par Rose IA sur internet / réseaux sociaux
+  sourceWebUrl?: string; // Source repérée (ex: Page Facebook Ministère de la Santé)
+  aiConfidence?: string; // Taux de fiabilité pré-validé par Rose IA
+  pushMessageFr?: string; // Message push bienveillant en français
+  pushMessageMoore?: string; // Message push en Mooré
+  pushMessageDioula?: string; // Message push en Dioula
+  pushSent?: boolean; // Statut d'envoi du push après validation Superadmin
+  imageUrl?: string; // Photo ou affiche officielle de l'événement
+  imageCaption?: string; // Légende ou descriptif de l'affiche
 }
 
 interface PartnerAssociation {
@@ -354,140 +363,176 @@ const initialCenters: HealthCenter[] = [
 const initialAnnouncements: PartnerAnnouncement[] = [
   {
     id: 1,
-    title: "Caravane Mobile : Dépistages et Échographies 100% Gratuits",
-    author: "Association Burkinabè d'Action contre le Cancer (ABAC)",
+    title: "Grande Caravane Santé & Dépistage Féminin 100% Gratuit",
+    author: "BE NEERE FOR CAUSE",
     authorType: "Association",
-    city: "Koudougou & Environs",
-    date: "Samedi 24 et Dimanche 25 Octobre 2026",
+    city: "Ouagadougou, Bobo & Koudougou",
+    date: "Du 1er au 31 Octobre 2026",
     month: "Octobre 2026",
-    badge: "Gratuit (0 FCFA)",
+    badge: "Campagne Officielle (0 FCFA)",
     badgeColor: "bg-emerald-100 text-emerald-800",
-    content: "L'ABAC déploie sa clinique mobile sur la place du Marché de Koudougou. Examen clinique gratuit pour toutes les femmes de 25 à 65 ans. Échographies gratuites sur place en cas de doute.",
-    contact: "+226 70 20 11 22",
-    likes: 148,
+    imageUrl: "/images/affiche-evenement-beneere.jpg",
+    imageCaption: "Affiche officielle de la Caravane Santé BE NEERE FOR CAUSE déployée au Burkina Faso",
+    content: "L'organisation BE NEERE FOR CAUSE déploie ses unités mobiles de santé : dépistage gratuit du cancer du sein et du col de l'utérus, ateliers d'autopalpation guidée, conseils nutritionnels et orientation médicale immédiate pour toutes les femmes.",
+    contact: "+226 70 20 11 22 / info@beneere.org",
+    likes: 312,
     status: "approved",
-    submittedBy: "ABAC Burkina",
+    submittedBy: "BE NEERE FOR CAUSE BF",
     submittedAt: "12/10/2026",
   },
   {
     id: 2,
-    title: "Grande Causerie Éducative : Démystifier le Cancer du Sein",
-    author: "Coalition Burkinabè contre le Cancer (COBUCAN)",
+    title: "Hackathon E-Santé Féminine & Ateliers Numériques de Sensibilisation",
+    author: "WOMENTECHMAKERS & ORANGE DIGITAL CENTER",
     authorType: "Association",
-    city: "Ouagadougou (Maison de la Femme)",
-    date: "Vendredi 23 Octobre à 15h00",
+    city: "Ouagadougou (Siège Orange Digital Center)",
+    date: "Vendredi 23 et Samedi 24 Octobre 2026",
     month: "Octobre 2026",
-    badge: "Rencontre & Débat",
-    badgeColor: "bg-purple-100 text-purple-800",
-    content: "Venez échanger avec nos sages-femmes et des patientes guéries. Explications en français, anglais, mooré et dioula. Rafraîchissements offerts et apprentissage des gestes d'auto-palpation.",
-    contact: "+226 76 50 33 44",
-    likes: 104,
+    badge: "Tech & E-Santé",
+    badgeColor: "bg-purple-100 text-purple-900 border border-purple-200",
+    imageUrl: "/images/affiche-wtm-odc.jpg",
+    imageCaption: "Affiche WomenTechmakers & Orange Digital Center Burkina Faso : Innovating for Women's Health",
+    content: "Women Techmakers et Orange Digital Center Burkina Faso mobilisent les développeuses, soignantes et innovatrices pour concevoir des outils numériques d'impact : apprentissage de l'autopalpation sur mobile, diffusion d'alertes en langues locales et inclusion numérique des femmes.",
+    contact: "+226 76 50 33 44 / contact@wtmouaga.bf",
+    likes: 278,
     status: "approved",
-    submittedBy: "COBUCAN",
+    submittedBy: "WomenTechmakers / ODC",
     submittedAt: "13/10/2026",
   },
   {
     id: 3,
+    title: "Journées Cliniques : Bilan Gynécologique & Dépistage Subventionné",
+    author: "GENIT CARE BURKINA",
+    authorType: "Partenaire Santé",
+    city: "Ouagadougou (Clinique GENIT CARE)",
+    date: "Du 19 au 31 Octobre 2026",
+    month: "Octobre 2026",
+    badge: "Santé de la Femme",
+    badgeColor: "bg-teal-100 text-teal-900 border border-teal-200",
+    imageUrl: "/images/affiche-genit-care.jpg",
+    imageCaption: "Affiche Clinique GENIT CARE Burkina : Votre partenaire d'excellence pour la santé gynécologique et le dépistage précoce",
+    content: "La clinique GENIT CARE accueille les femmes du lundi au samedi pour un bilan complet : consultation gynécologique bienveillante, palpation mammaire experte, échographie, frottis et accompagnement des troubles du cycle et de l'endométriose à tarif hautement subventionné.",
+    contact: "+226 25 30 10 10 / www.genitcarebf.org",
+    likes: 245,
+    status: "approved",
+    submittedBy: "GENIT CARE Burkina",
+    submittedAt: "14/10/2026",
+  },
+  {
+    id: 4,
     title: "Opération Mammographies Subventionnées à 5 000 FCFA",
     author: "CMA de Schiphra & Partenaires Internationaux",
     authorType: "Hôpital",
-    city: "Ouagadougou",
+    city: "Ouagadougou (Tanghin)",
     date: "Du 15 au 31 Octobre 2026",
     month: "Octobre 2026",
-    badge: "Tarif Spécial",
+    badge: "Tarif Spécial 5 000 F",
     badgeColor: "bg-amber-100 text-amber-900",
-    content: "Grâce aux donateurs de PagLaafi, 200 mammographies sont subventionnées à 5 000 FCFA (au lieu de 12 000 FCFA) pour les femmes sans revenus.",
+    content: "Grâce aux donateurs de PagLaafi, 200 mammographies numériques sont subventionnées à 5 000 FCFA (au lieu de 12 000 FCFA) pour les femmes sans couverture sanitaire.",
     contact: "+226 25 36 30 70",
-    likes: 235,
+    likes: 195,
     status: "approved",
     submittedBy: "CMA Schiphra",
     submittedAt: "14/10/2026",
   },
   {
-    id: 10,
-    title: "Séance de dépistage subventionnée à 2 000 FCFA à Bobo",
-    author: "Association Espoir & Vie Bobo",
-    authorType: "Association",
-    city: "Bobo-Dioulasso",
-    date: "Mercredi 28 Octobre 2026",
+    id: 21,
+    title: "Caravane Nationale Gratuite : Dépistage Seins & Col à Saaba",
+    author: "Ministère de la Santé & Hygiène Publique BF",
+    authorType: "Veille Web Rose IA",
+    city: "Ouagadougou (Saaba)",
+    date: "Samedi 24 Octobre 2026 dès 07h30",
     month: "Octobre 2026",
-    badge: "En attente validation",
-    badgeColor: "bg-amber-100 text-amber-900",
-    content: "Journée spéciale de dépistage pour 100 commerçantes du Grand Marché de Bobo. Subventionnée grâce aux dons collectés sur PagLaafi.",
-    contact: "+226 70 88 12 34",
+    badge: "🤖 Détecté par Rose IA",
+    badgeColor: "bg-purple-100 text-purple-900 border border-purple-300",
+    content: "Rose IA a détecté cette publication officielle sur les réseaux sociaux : Grande caravane de dépistage 100% gratuit du cancer du sein et du col de l'utérus (test IVA) au CSPS de Saaba avec échographies sur place.",
+    contact: "+226 25 39 80 00 (Standard Ministère)",
     likes: 0,
     status: "pending_validation",
-    submittedBy: "Espoir & Vie Bobo",
-    submittedAt: "Aujourd'hui à 11h20",
+    isRoseAIDetected: true,
+    sourceWebUrl: "Page Facebook Officielle Ministère Santé BF",
+    aiConfidence: "98% (Certifié Ministère)",
+    submittedBy: "Rose IA Radar Web",
+    submittedAt: "Détecté il y a 25 min",
+    pushMessageFr: "🌸 Rose IA : Dépistage seins & col 100% gratuit ce samedi au CSPS de Saaba ! Confirmé par le Ministère de la Santé.",
+    pushMessageMoore: "🌸 Rose IA : Laafi tʋʋma Saaba CSPS pʋgẽ rũndã zaalem ! Dɔgɔtɔr dãmb na n ges yãmba.",
+    pushMessageDioula: "🌸 Rose IA : Dɔgɔtɔrɔba kɛnɛya Saaba la bi fu ! Minisiriso bɛ bisimila kɛ musow ye.",
+    pushSent: false,
+  },
+  {
+    id: 22,
+    title: "Journée Porte Ouverte & Consultations Gynécologiques Gratuites",
+    author: "Collectif Femmes Solidaires Bobo",
+    authorType: "Veille Web Rose IA",
+    city: "Bobo-Dioulasso",
+    date: "Dimanche 25 Octobre 2026",
+    month: "Octobre 2026",
+    badge: "🤖 Détecté par Rose IA",
+    badgeColor: "bg-purple-100 text-purple-900 border border-purple-300",
+    content: "Repéré sur WhatsApp & Facebook : Journée de solidarité pour les femmes des Secteurs 24 et 25 de Bobo-Dioulasso avec autopalpation guidée, sensibilisation à la nutrition sahélienne et dépistage précoce.",
+    contact: "+226 71 44 55 66",
+    likes: 0,
+    status: "pending_validation",
+    isRoseAIDetected: true,
+    sourceWebUrl: "Groupe Facebook 'Bobo Infos & Solidarité Féminine'",
+    aiConfidence: "92% (Source associative vérifiée)",
+    submittedBy: "Rose IA Radar Web",
+    submittedAt: "Détecté il y a 1h",
+    pushMessageFr: "🌸 Rose IA : Journée de santé et dépistage gratuit ce dimanche pour les femmes de Bobo-Dioulasso !",
+    pushMessageMoore: "🌸 Rose IA : Bobo pagbã laafi dahare rũndã ! Wa-y tɩ b ges yãmba zaalem.",
+    pushMessageDioula: "🌸 Rose IA : Bobo musow ka kɛnɛya don ye bi ! Aw ye na kɛnɛyaso la.",
+    pushSent: false,
   },
 ];
 
 /**
- * Associations partenaires éligibles aux dons
+ * Associations partenaires officielles éligibles aux dons & actions terrain
  */
 const partnerAssociations: PartnerAssociation[] = [
   {
     id: 1,
-    name: "Association Burkinabè d'Action contre le Cancer",
-    acronym: "ABAC",
-    mission: "Financement de cliniques mobiles et dépistages gratuits dans les villages et provinces.",
-    city: "Ouagadougou",
+    name: "BE NEERE FOR CAUSE",
+    acronym: "BE NEERE",
+    mission: "Organisation burkinabè pionnière : cliniques mobiles de dépistage gratuit, sensibilisation de proximité et prise en charge des femmes en milieu rural et périurbain.",
+    city: "Ouagadougou, Bobo & Centre-Nord",
     verified: true,
-    beneficiariesCount: "1 450 femmes dépistées en 2026",
+    beneficiariesCount: "2 800 femmes dépistées et accompagnées",
   },
   {
     id: 2,
-    name: "Coalition Burkinabè contre le Cancer",
-    acronym: "COBUCAN",
-    mission: "Aide financière directe pour l'achat de médicaments et chimio pour patientes vulnérables.",
-    city: "National (Burkina Faso)",
+    name: "WOMENTECHMAKERS & ORANGE DIGITAL CENTER",
+    acronym: "WTM / ODC",
+    mission: "Synergie d'innovation numérique et sociale : développement de solutions e-santé locales, vulgarisation technologique contre le cancer et ateliers de sensibilisation pour les femmes.",
+    city: "Ouagadougou & Bobo-Dioulasso",
     verified: true,
-    beneficiariesCount: "320 traitements pris en charge",
+    beneficiariesCount: "1 950 femmes formées et orientées",
   },
   {
     id: 3,
-    name: "Fonds de Solidarité Patientes Vulnérables — Schiphra",
-    acronym: "Fonds Schiphra",
-    mission: "Subvention immédiate des mammographies et biopsies pour les femmes sans revenus.",
+    name: "GENIT CARE BURKINA",
+    acronym: "GENIT CARE",
+    mission: "Centre de référence en santé génésique de la femme : consultations gynécologiques bienveillantes, dépistage précoce, bilans sénologiques et prise en charge de l'endométriose.",
     city: "Ouagadougou",
     verified: true,
-    beneficiariesCount: "580 examens financés",
+    beneficiariesCount: "3 200 examens et bilans réalisés",
   },
   {
     id: 4,
-    name: "Association Espoir & Vie Bobo",
-    acronym: "Espoir & Vie",
-    mission: "Hébergement solidaire et soutien psychologique des patientes venues de province.",
-    city: "Bobo-Dioulasso",
+    name: "Fonds de Solidarité Patientes — CMA de Schiphra",
+    acronym: "Fonds Schiphra",
+    mission: "Subvention immédiate des mammographies, échographies et biopsies pour les patientes démunies adressées avec fiche d'orientation.",
+    city: "Ouagadougou (Tanghin)",
     verified: true,
-    beneficiariesCount: "190 femmes hébergées",
+    beneficiariesCount: "620 examens pris en charge",
   },
   {
     id: 5,
-    name: "Beneere For A Cause",
-    acronym: "Beneere",
-    mission: "Campagnes de dépistage précoce et prise en charge des femmes en milieu rural et périurbain.",
-    city: "Ouagadougou & Centre-Nord",
-    verified: true,
-    beneficiariesCount: "410 femmes accompagnées",
-  },
-  {
-    id: 6,
-    name: "GenitCare Burkina",
-    acronym: "GenitCare",
-    mission: "Plateforme de santé gynécologique intégrée, sensibilisation digitale et diagnostic précoce.",
+    name: "Association Burkinabè d'Action contre le Cancer",
+    acronym: "ABAC",
+    mission: "Sensibilisation communautaire et plaidoyer pour l'accès universel aux traitements oncologiques au Burkina Faso.",
     city: "Ouagadougou",
     verified: true,
-    beneficiariesCount: "290 dépistages subventionnés",
-  },
-  {
-    id: 7,
-    name: "Association WomenTech Makers Burkina",
-    acronym: "WomenTech Makers",
-    mission: "Mobilisation des technologies numériques et solidarité active des femmes contre le cancer.",
-    city: "Ouagadougou & Bobo",
-    verified: true,
-    beneficiariesCount: "350 femmes formées et orientées",
+    beneficiariesCount: "1 450 femmes touchées",
   },
 ];
 
@@ -572,32 +617,155 @@ const lessons = [
 ];
 
 /**
- * Réponses de Rose IA en 4 langues
+ * Modèle pour les Pensées & Conseils Santé Bienveillants de Rose IA
+ * En 4 langues (Français, Mooré, Dioula, English)
+ */
+interface RoseDailyTip {
+  id: number;
+  category: "hygiene" | "nutrition" | "mental" | "cycle" | "prevention";
+  categoryLabel: string;
+  categoryColor: string;
+  titleFr: string;
+  fr: string;
+  en: string;
+  moore: string;
+  dioula: string;
+}
+
+const roseDailyTips: RoseDailyTip[] = [
+  {
+    id: 1,
+    category: "nutrition",
+    categoryLabel: "💧 Hydratation & Climat Sahélien",
+    categoryColor: "bg-blue-100 text-blue-900 border-blue-200",
+    titleFr: "Boire de l'eau en abondance",
+    fr: "Prends soin de ton corps ma sœur : avec la chaleur du Burkina, bois au moins 2 à 3 litres d'eau aujourd'hui. L'eau purifie tes reins, prévient les infections urinaires et donne de l'éclat à ta peau.",
+    en: "Take care of your body my sister: in this Sahelian heat, drink at least 2 to 3 liters of clean water today. Water cleanses your kidneys, prevents urinary infections and brightens your skin.",
+    moore: "Koom yaa vɩɩm m maaso. Ne tʋʋlgã wɛɛngẽ, nyũ koom wʋsg rũndã (litr a yiibu n ta a tãabo). Koomã sõngda fo yĩnsa la a gɩdgd bãase.",
+    dioula: "Ji ye ɲɛnamaya ye n ma muso. Funteni na, ji min kosɛbɛ bi (litiri fila fo saba). Ji bɛ kɛnɛya d'i ma k'i yɛrɛ lakatoloban bana juguw ma.",
+  },
+  {
+    id: 2,
+    category: "nutrition",
+    categoryLabel: "🌿 Trésors Locaux : Moringa & Baobab",
+    categoryColor: "bg-emerald-100 text-emerald-900 border-emerald-200",
+    titleFr: "Le pouvoir fortifiant du Moringa & Baobab",
+    fr: "Nourris ta vitalité avec la richesse de notre terre burkinabè : les feuilles de Moringa sont une mine de fer contre la fatigue et l'anémie, et la pulpe de Baobab regorge de vitamine C. Ajoute-les à tes repas pour fortifier ton immunité.",
+    en: "Nourish your vitality with local superfoods: Moringa leaves provide natural iron against anemia, and Baobab fruit powder is packed with vitamin C. Add them to your meals to boost immunity.",
+    moore: "Moringa la zɩt-yɩla yaa arzɛka kãsenga d tẽngẽ. A kẽesda pãng fo yĩngẽ n tõog zɩ-komlemã. Rɩ-b sõma fo laafi yĩnga.",
+    dioula: "Moringa jiri-buluw ani sira-den mugu ye nafolo ye. U bɛ jolidɛmɛ kɛ ani ka fanga di faso musow ma. U don i ka dumunifɛnw na.",
+  },
+  {
+    id: 3,
+    category: "hygiene",
+    categoryLabel: "🌸 Hygiène Intime Bienveillante",
+    categoryColor: "bg-pink-100 text-pink-900 border-pink-200",
+    titleFr: "Douceur et respect de la flore intime",
+    fr: "Un conseil d'amour pour ton intimité : lave uniquement la partie extérieure à l'eau propre. Le vagin se nettoie tout seul, évite les douches vaginales internes ou produits parfumés décapants qui détruisent sa flore protectrice.",
+    en: "Gentle intimate hygiene: wash only the external area with clean water. The vagina cleanses itself; avoid internal douching or scented products that harm natural defenses.",
+    moore: "Yĩn-sõngr wɛɛngẽ: rɩk ko-sõma n peeg fo meng yĩng zĩ-kẽemã yell bal. Da rɩk tɩɩm dãmb n dʋg fo pʋgẽ ye. Sã n mik tɩ yãmb wʋmda yĩn-wẽk, kẽng-y dɔgɔtɔr nengẽ.",
+    dioula: "I yɛrɛ saniya ko la: ji saniya dɔrɔn de kɛ kɔkan. Kana fɛn gɛlɛnw don kɔnɔna na. Ni fɛn dɔ y'i gɛlɛya, taga dɔgɔtɔrɔmuso fɛ sabali.",
+  },
+  {
+    id: 4,
+    category: "mental",
+    categoryLabel: "🧘‍♀️ Sérénité & Amour de Soi",
+    categoryColor: "bg-purple-100 text-purple-900 border-purple-200",
+    titleFr: "Tu as le droit de te reposer",
+    fr: "Ma sœur, tu portes souvent le fardeau de toute la famille. N'oublie jamais que ton bien-être passe en premier : accorde-toi 15 minutes de calme et de repos aujourd'hui. Tu es précieuse, aimée et ton repos est légitime.",
+    en: "My sister, you often carry the weight of the family. Never forget your well-being matters: take 15 minutes of calm and rest today. You are precious, loved, and rest is your right.",
+    moore: "Yãmb tʋmda tʋʋm wʋsg zakã pʋgẽ. Da yĩm tɩ y meng laafi yaa tɩlae ye. Vʋʋsm-y bilfu rũndã. Yãmb yaa arzɛka kãsenga.",
+    dioula: "I bɛ baara caman kɛ somɔgɔw ye. Kana ɲinɛ i yɛrɛ laafi kɔ. Lafiɲɛ dɔrɔn kɛ bi. I kɛnɛya kɔrɔtanin lo an bɛɛ fɛ.",
+  },
+  {
+    id: 5,
+    category: "cycle",
+    categoryLabel: "🩸 Cycle & Règles Paisibles",
+    categoryColor: "bg-rose-100 text-rose-900 border-rose-200",
+    titleFr: "Apaiser les crampes et règles douloureuses",
+    fr: "Si ton ventre te fait souffrir pendant tes règles : pose un linge tiède sur ton bas-ventre, bois une infusion tiède de gingembre ou de kinkeliba, et marche doucement. Si la douleur est insupportable, n'hésite jamais à consulter un soignant.",
+    en: "If you experience menstrual cramps: place a warm cloth on your lower abdomen, sip warm ginger or kinkeliba tea, and take gentle walks. If severe, consult a healthcare worker.",
+    moore: "Sã n mik tɩ pʋg-tõor namsda yãmba pʋg-peelgã wakato : ning-y bõn-tʋʋlga y pʋgẽ, nyũ-y gingembre ko-tʋʋlga. Yãmb pa segd n nams ye.",
+    dioula: "Ni kɔnɔdimi b'i la i ka kalo-sira la: fɛn kaliman bila i kɔnɔ la, jinɛbɛrɛ-ji sumana min. Ni dimi ka bon kojugu, an k'a fɔ dɔgɔtɔrɔ ye.",
+  },
+  {
+    id: 6,
+    category: "prevention",
+    categoryLabel: "🩺 Prévention Globale & Dépistage",
+    categoryColor: "bg-amber-100 text-amber-900 border-amber-200",
+    titleFr: "Le geste d'amour pour ton avenir",
+    fr: "Le dépistage précoce (col de l'utérus et seins) n'est pas une sentence, c'est un bouclier d'amour pour toi et tes enfants. Le test IVA et l'autopalpation mensuelle sauvent des vies chaque jour au Burkina Faso.",
+    en: "Early screening (cervix and breast) is not a diagnosis, it is a shield of love for yourself and family. VIA test and monthly self-exams save lives daily in Burkina Faso.",
+    moore: "Laafi baoob pa bãag ye, yaa gɩdgre ninsaal ne a kamba yĩnga. D ges d seensã la d pʋgã kɛnɛya sõma n gɩdg bã-kãsengã.",
+    dioula: "Kɛnɛyaso tagali tɛ bana ye, a ye lakana ye. Sinw bɔlɔkɔrɔ lajɛ ani kalo-kɔnɔ lajɛ bɛ denw baminaw kisi bana juguw ma.",
+  },
+];
+
+/**
+ * Base de connaissances holistique & éthique de Rose IA en 4 langues
+ * Couvre : Hygiène intime, Nutrition sahélienne, Cycle menstruel, Bien-être mental,
+ * Col de l'utérus, Maternité, Ménopause et Santé mammaire.
  */
 const roseKnowledge = {
+  hygiene_intime: {
+    fr: "Ma sœur, ton intimité est précieuse et délicate. La règle d'or des soignants est simple : lave uniquement la partie extérieure (la vulve) à l'eau propre ou avec un savon doux sans parfum. Ne fais JAMAIS de douche vaginale interne ni n'introduis de poudres ou produits décapants : le vagin possède son propre système d'auto-nettoyage et ces produits détruisent ses défenses naturelles. Porte des sous-vêtements en coton pour laisser respirer ta peau avec la chaleur. Si tu as des démangeaisons, une sensation de brûlure ou des pertes odorantes, viens sans aucune honte consulter une sage-femme.",
+    en: "My sister, your intimate health is precious. Wash only the external area (the vulva) with clean water or mild unscented soap. NEVER practice internal vaginal douching or use harsh astringents: the vagina cleanses itself naturally. Wear breathable cotton underwear. If you experience itching, burning, or unusual discharge, visit a midwife with confidence and no shame.",
+    moore: "M maaso, fo yĩng sõngr yaa tɩlae wʋsg. Rɩk koom sõma bal n peeg fo meng yĩng zĩ-kẽemã yell bal. Da rɩk tɩɩm dãmb n kẽes fo pʋgẽ ye, bala a sãamda fo yĩnsa laafi. Yeelg fu-kõbdo sẽn yaa koton. Sã n mik tɩ yĩn-wẽk bee fo laafɩ wɛɛngẽ, kẽng n ges dɔgɔtɔr-pʋgbo.",
+    dioula: "N ma muso, i yɛrɛ saniya ko ka kɔrɔtanin kosɛbɛ. Ji saniya dɔrɔn de kɛ kɔkan, kana fɛn juguw don kɔnɔna na abada. Saniya fɛnw bɛ kɛnɛya tiɲɛ. Koton faniw don funteni senfɛ. Ni fɛn dɔ y'i gɛlɛya walima ka dimi, taga dɔgɔtɔrɔmuso fɛ sabali.",
+  },
+  nutrition_locale: {
+    fr: "Pour préserver ta vitalité et ta santé au Burkina Faso, la nature nous a offert des trésors extraordinaires : les feuilles de Moringa (véritable 'arbre de vie') regorgent de fer contre la fatigue et l'anémie, la pulpe de Baobab (pain de singe) est un concentré de vitamine C et d'antioxydants, et le Soumbala traditionnel protège le cœur et la tension. Évite les bouillons cubes industriels trop salés qui fatiguent les reins, et bois au moins 2 à 3 litres d'eau propre par jour pour compenser la chaleur sahélienne.",
+    en: "To boost your vitality in our Sahelian climate, local foods are true superfoods: Moringa leaves provide abundant iron against anemia, Baobab fruit (pain de singe) is rich in vitamin C and antioxidants, and authentic Soumbala supports heart health. Reduce salty industrial seasoning cubes, and drink 2 to 3 liters of clean water daily to stay well hydrated.",
+    moore: "Burkina Faso ka, Wẽnd kõ-d-la rɩɩb sõma wʋsg: moringa vaadã kẽesda pãng fo zɩlem pʋgẽ n gɩdg zɩ-komlem, tɔɔd bɩ zɩt-yɩla waoogda pãng, la sumbala sõngda sũurã laafi. Gɩdg yĩn-kũud tɩɩm dãmb sẽn tar yaalem wʋsg, la nyũ-y ko-sõma litr a yiibu n ta a tãabo dahar fãa.",
+    dioula: "An ka faso la, kɛnɛya dumunifɛnw caman bɛ yen: moringa buluw bɛ fanga di joliko la, sira-den bɛ kɛnɛya gansan di, ani sumbala bɛ dusu mara. Maggi cube ka caya tɛ kɛnɛya ye, ji min litiri fila fo saba don o don funteni senfɛ.",
+  },
+  regles_douleurs: {
+    fr: "Je te comprends tellement, les douleurs de règles peuvent être très éprouvantes. Voici des gestes doux et naturels pour t'apaiser : applique un linge ou une bouillotte tiède sur ton bas-ventre, bois une infusion chaude de gingembre ou de kinkeliba, masse doucement ton ventre avec un peu de beurre de karité, et repose-toi. Prends du paracétamol si nécessaire, mais si les douleurs sont si intenses qu'elles t'empêchent de te lever ou de travailler, cela peut être le signe d'une affection comme l'endométriose : parle-en à un gynécologue.",
+    en: "I hear you, menstrual pain can be genuinely debilitating. To soothe cramps naturally: apply a warm cloth to your lower belly, drink warm ginger or kinkeliba tea, gently massage with shea butter, and take rest. If cramps are severe and prevent your normal activities, consult a gynecologist to check for conditions like endometriosis.",
+    moore: "Pʋg-tõor namsda pagb wʋsg. Bõn-sõma n tõe n koms-a: ning-y fu-tʋʋlga y pʋgẽ, nyũ-y gingembre koom bɩ kinkeliba ko-tʋʋlga, rɩk karité kam n so y pʋgã bilfu, la y vʋʋse. Sã n mik tɩ pʋg-tõorã yɩɩ kãsenga wʋsg hal n pa tõe n yĩk, kẽng n ges dɔgɔtɔrã.",
+    dioula: "Kalo-sira dimi bɛ muso caman tɔɔrɔ. Walasa k'a dɔgɔya: fɛn kaliman bila i kɔnɔ la, jinɛbɛrɛ-ji sumana min, si-tulu dɔoni kɛ i kɔnɔ la ka lafiɲɛ kɛ. Ni dimi ka bon kojugu fo i tɛ se ka wuli, taga dɔgɔtɔrɔ fɛ k'a sɛgɛsɛgɛ.",
+  },
+  bien_etre_mental: {
+    fr: "Ma sœur, pose ce fardeau quelques instants et écoute ton cœur : tu passes tes journées à prendre soin des autres, de la famille et du foyer, mais qui prend soin de toi ? Ton esprit et ton corps ont besoin de douceur. Respire profondément trois fois en fermant les yeux. Tu as le droit d'être fatiguée, tu as le droit de dire non, tu as le droit de te reposer. Tu n'es pas seule, je suis là pour veiller sur toi avec toute ma tendresse.",
+    en: "My sister, set down your burden for a moment: you spend your days caring for everyone else, but who cares for you? Your mind and body deserve gentle kindness. Take three deep breaths. You have the right to feel tired, to say no, and to rest. You are never alone; I am here with warmth and care.",
+    moore: "M maaso, vʋʋsm bilfu n kẽes sũ-noogo fo meng pʋgẽ. Fo tʋmda dahar fãa zakã neb yĩnga, la fo segd n ges fo meng me laafi. Vʋʋsm zĩ-sõngo. Fo tara sor n na n vʋʋse. Fo ka fo yembr ye, mam be ne fo dahar fãa.",
+    dioula: "N ma muso, i lafiɲɛ dɔrɔn kɛ. I bɛ mɔgɔw bɛɛ ladon don o don, nka i yɛrɛ do? I ni lafiɲɛ fana kɔrɔtanin lo. Ni hakili-gɛlɛya b'i la, hakili saba minɛ. I ma kelen ye, an bɛ i kɔrɔ kosɛbɛ.",
+  },
+  col_uterus: {
+    fr: "Le col de l'utérus mérite toute ton attention : le cancer du col de l'utérus est l'un des plus fréquents en Afrique, mais c'est aussi le plus facile à éviter ! Un simple dépistage par inspection visuelle (test IVA) ou frottis, réalisé en quelques minutes par une sage-femme, permet de repérer et traiter d'éventuelles lésions bien avant qu'elles ne deviennent graves. C'est rapide, indolore et disponible dans les CSPS et CMA du Burkina. Fais ce dépistage tous les 3 ans !",
+    en: "Cervical health is vital: cervical cancer is common, yet completely preventable! A quick visual inspection (VIA test) or pap smear performed in minutes by a midwife detects precancerous lesions years in advance. It is fast, painless, and available at health centers across Burkina Faso. Get screened every 3 years!",
+    moore: "Pʋg-kɛenga laafi yaa tɩlae wʋsg. Bãaga wã tõe n gɩdgame sã n mik tɩ dɔgɔtɔr ges-a zĩigẽ (test IVA). A pa namsd ye, a pa rɩkd wakat wʋsg ye, la a bee Burkina Faso kɛnɛyaso fãa pʋgẽ. Bãng-y fo laafi yʋʋm a tãab fãa pʋgẽ.",
+    dioula: "Kɔnɔna juru bana bɛ se ka bali sani a ka juguya. Dɔgɔtɔrɔmuso bɛ se k'a lajɛ sekondi damanin kɔnɔ (test IVA). A tɛ dimi, a tɛ mɔgɔ namsi, a bɛ sɔrɔ an ka kɛnɛyasow bɛɛ la. O kɛ kalo 36 o kalo 36 kɔnɔ.",
+  },
+  grossesse_menopause: {
+    fr: "Chaque étape de ta vie de femme est un voyage sacré. Que tu sois en désir d'enfant, enceinte, jeune maman ou en période de ménopause, ton corps s'adapte en permanence. Pendant la ménopause, les bouffées de chaleur et sautes d'humeur sont courantes : bois frais, consomme du soja et du calcium, et pratique la marche. Si tu as des saignements inattendus après la ménopause ou pendant la grossesse, consulte immédiatement un soignant.",
+    en: "Every stage of a woman's journey is unique. Whether during pregnancy, postpartum, or menopause, your body evolves. During menopause, hot flashes and mood shifts are normal: stay hydrated, eat calcium-rich local foods, and take brisk walks. Any unexpected bleeding after menopause or during pregnancy requires prompt medical evaluation.",
+    moore: "Pʋg-yãmb laafi tekda wakat fãa: pʋg-tũub wakat, bi-doglem wakat, bɩ kʋdemd wakat. Kʋdemdã sasa, tʋʋlg namsda pagb wʋsg. Nyũ-y ko-sumdo, rɩ-y rɩ-sõma. Sã n mik tɩ zɩɩm yii fo meng pʋgẽ tɩ pa wakat, kẽng dɔgɔtɔr tao-tao.",
+    dioula: "Musoya ye yɛlɛmali yɔrɔ ye: kɔnɔtigi, denbaya, walima musokɔrɔya. Musokɔrɔya sɔrɔlen, funteni kɔnɔna na bɛ se ka kɛ. Ji sumana min, dumuni kɛnɛ kɛ. Ni jolidon kɛra kɔfɛ, taga dɔgɔtɔrɔmuso fɛ jona.",
+  },
   mal: {
-    fr: "Rassurez-vous : la mammographie ne fait généralement pas mal. C'est une pression de 5 à 10 secondes par cliché. Pour plus de confort, réalisez l'examen dans les 10 jours suivant vos règles.",
-    en: "Rest assured: mammography is generally not painful. It is a firm compression lasting 5 to 10 seconds per view. For best comfort, schedule it within 10 days after your menstrual period.",
-    moore: "Da zoe rabeem ye: mammographie masĩnã pa namsd ninsaal wʋsg ye. A rɩkda sekõnd a wãn bal n kaset.",
-    dioula: "I kana siran: masin nin tɛ mɔgɔ dimi kosɛbɛ. A bɛ kɛ sekondi damanin dɔrɔn lo kɔnɔ.",
+    fr: "Rassurez-vous avec tendresse : la mammographie ne fait généralement pas mal. C'est une pression ferme mais très brève (5 à 10 secondes par image) pour bien visualiser les tissus. Pour un confort optimal, prévoyez votre examen dans les 10 jours suivant la fin de vos règles, quand la poitrine est très souple.",
+    en: "Rest assured with calm: mammography is generally not painful. It is a brief compression (5 to 10 seconds per view) to clearly display breast tissue. For greatest comfort, schedule it within 10 days after your period ends.",
+    moore: "Da zoe rabeem ye: mammographie masĩnã pa namsd ninsaal wʋsg ye. A rɩkda sekõnd a wãn bal n kaset. Sã n mik tɩ y kẽngda pʋg-peelgã poore, yĩnsã tara pãng tɩ pa namsd ye.",
+    dioula: "I kana siran: masin nin tɛ mɔgɔ dimi kosɛbɛ. A bɛ kɛ sekondi damanin dɔrɔn lo kɔnɔ. Ni kalo-sira banna, o de ye wagati ɲuman ye ka taga lajɛ kɛ.",
   },
   prix: {
-    fr: "Au Burkina Faso, la palpation clinique est GRATUITE (0 FCFA) dans la plupart des centres. L'échographie coûte 6 000 à 7 500 FCFA, et la mammographie 10 000 à 12 000 FCFA (subventionnée à 5 000 FCFA à Schiphra).",
-    en: "In Burkina Faso, clinical breast exam is FREE (0 FCFA). Ultrasound is 6,000 to 7,500 FCFA, and mammography 10,000 to 12,000 FCFA (subsidized down to 5,000 FCFA at Schiphra).",
-    moore: "Burkina Faso ka, nus n gesã yaa zaalem (0 FCFA). Échographie yaa 6 000 n ta 7 500 FCFA.",
-    dioula: "Burkina Faso la, bɔlɔkɔrɔ lajɛ sɔngɔ ye fu ye (0 FCFA). Échographie ye 6 000 fo 7 500 FCFA ye.",
+    fr: "Au Burkina Faso, la palpation clinique de dépistage est GRATUITE (0 FCFA) dans les centres publics et les campagnes associatives. L'échographie coûte entre 6 000 et 7 500 FCFA, et la mammographie environ 10 000 à 12 000 FCFA (subventionnée à 5 000 FCFA à Schiphra pour les femmes vulnérables). L'argent ne doit jamais être un frein à ta santé.",
+    en: "In Burkina Faso, clinical breast exams are FREE (0 FCFA) at public centers and outreach campaigns. Ultrasound costs 6,000 to 7,500 FCFA, and mammography 10,000 to 12,000 FCFA (subsidized to 5,000 FCFA at Schiphra for vulnerable women). Financial worries should never keep you from care.",
+    moore: "Burkina Faso ka, nus n gesã yaa zaalem (0 FCFA) kɛnɛyaso wʋsg pʋgẽ. Échographie yaa 6 000 n ta 7 500 FCFA, la mammographie yaa 10 000 n ta 12 000 FCFA (subventionné a 5 000 FCFA Schiphra). Ligdi da yɩ gɩdgr fo laafɩ wɛɛngẽ ye.",
+    dioula: "Burkina Faso la, bɔlɔkɔrɔ lajɛ sɔngɔ ye fu ye (0 FCFA). Échographie ye 6 000 fo 7 500 FCFA ye, mammographie ye 10 000 fo 12 000 FCFA ye. Wari kana kɛ gɛlɛya ye i ka kɛnɛya siratigɛ la.",
   },
   boule: {
-    fr: "Ne paniquez pas : 8 boules sur 10 ne sont PAS un cancer (kystes bénins, fibromes). Mais faites-la impérativement examiner par un soignant sans attendre.",
-    en: "Do not panic: 8 out of 10 lumps are NOT cancerous. However, it is essential to have it examined promptly by a doctor or midwife.",
-    moore: "Da zoe rabeem ye: bõn-kʋds a nii (8) piig pʋgẽ pa bãag ye. La yaa tɩlae tɩ dɔgɔtɔr ges-a.",
-    dioula: "I kana jaasi: bõn-kʋdga tan kɔnɔ segin tɛ bana juguman ye. Nka dɔgɔtɔrɔ k'a lajɛ jona.",
+    fr: "Respire calmement, ma sœur, ne panique pas : dans plus de 8 cas sur 10, une boule ou un nodule n'est PAS un cancer (il s'agit très souvent de simples kystes bénins d'eau ou d'adénofibromes fréquents). Cependant, la seule façon d'en avoir le cœur net et d'être en paix est de la faire examiner rapidement par une sage-femme ou un médecin. Je t'accompagne.",
+    en: "Breathe gently, my sister, do not panic: over 8 out of 10 breast lumps are NOT cancer (they are usually benign fluid cysts or fibroadenomas). However, having it examined promptly by a midwife or doctor brings complete peace of mind. I am with you.",
+    moore: "Vʋʋsm sõma m maaso, da zoe rabeem ye: bõn-kʋds a nii (8) piig pʋgẽ pa bã-kãsenga ye (yaa kystes bal). La yaa tɩlae tɩ dɔgɔtɔr ges-a tao-tao tɩ fo sũur gãande. Mam be ne yãmba.",
+    dioula: "I ni lafiɲɛ dɔrɔn, kana siran : bõn-kʋdga tan kɔnɔ segin tɛ bana juguman ye. Nka kɛnɛyaso lajɛ jona de bɛ hakili sigi dɔgɔtɔrɔmuso fɛ. Ne b'i kɔrɔ.",
   },
   default: {
-    fr: "Je suis Rose IA, votre compagne de santé. Posez-moi vos questions sur le dépistage, la douleur, les tarifs ou les centres disponibles.",
-    en: "I am Rose AI, your health assistant. Ask me questions about breast exams, pain, costs, or available centers.",
-    moore: "Mam yaa Rose IA. M be n na n sõng yãmba ne laafi kaset. Sok-y maam bũmb fãa y sẽn rat n bãngã.",
-    dioula: "Ne ye Rose IA ye. Ne bɛ yan k'aw dɛmɛ kɛnɛya ko la. Aw bɛ se ka nɲininka bũmb o bũmb la.",
+    fr: "Bonjour ma sœur, je suis Rose IA, ta compagne de santé et de bien-être. Je suis là pour t'écouter avec amour, respect et sans aucun tabou : ton hygiène intime, ta nutrition (moringa, baobab), tes règles, ton stress, ton sommeil ou le dépistage de ta santé. Que ressens-tu dans ton corps ou dans ton cœur aujourd'hui ?",
+    en: "Hello my sister, I am Rose AI, your health and wellness companion. I am here to listen with compassion and respect: intimate hygiene, Sahelian nutrition (moringa, baobab), menstrual health, stress relief, or health screenings. How are you feeling in your body and heart today?",
+    moore: "Ne y beogo m maaso, mam yaa Rose IA. M be n na n sõng yãmba ne laafi wɛɛngẽ: yĩn-sõngr, rɩɩb sõma (moringa, baobab), pʋg-tõor, sũ-sãanga bɩ bãas gɩdgre. Bõe n namsda fo rũndã ?",
+    dioula: "I ni sɔgɔma n ma muso, ne ye Rose IA ye. Ne bɛ yan k'i dɛmɛ kɛnɛya ni lafiɲɛ ko la: i yɛrɛ saniya, dumuni ɲuman (moringa, sira-den), kalo-sira, hakili-gɛlɛya walima lajɛw. Mun b'i kɔnɔ bi ?",
   },
 };
 
@@ -640,14 +808,8 @@ export function PinkHubMobile() {
     motDePasse: "123456",
   });
 
-  // Utilisateur actuellement connecté (par défaut : Utilisatrice standard)
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>({
-    nom: "Ouedraogo",
-    prenom: "Aminata",
-    telephone: "70 12 34 56",
-    role: "user",
-    roleLabel: "Utilisatrice",
-  });
+  // Utilisateur actuellement connecté (null par défaut pour afficher la page de connexion après le splash)
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   // Modal Partage Wi-Fi local sans Expo pour les collègues
   const [showWifiModal, setShowWifiModal] = useState(false);
@@ -757,6 +919,8 @@ export function PinkHubMobile() {
   );
   const [showSuperadminModal, setShowSuperadminModal] = useState(false);
   const [superadminActiveTab, setSuperadminActiveTab] = useState<"stats" | "announcements" | "registrations">("stats");
+  const [superadminRegionFilter, setSuperadminRegionFilter] = useState<string>("all");
+  const [superadminAnnouncementTab, setSuperadminAnnouncementTab] = useState<"all" | "rose_ai" | "partners">("all");
 
   // 6. Centres de santé & Carte OpenStreetMap Leaflet
   const [centers, setCenters] = useState<HealthCenter[]>(initialCenters);
@@ -777,16 +941,20 @@ export function PinkHubMobile() {
   const [speechLanguage, setSpeechLanguage] = useState<"fr" | "en" | "moore" | "dioula">("fr");
   const audioIntervalRef = useRef<number | null>(null);
 
-  // 8. Assistant Vocal ROSE IA
+  // 8. Assistant Vocal & Compagne de Santé ROSE IA (Santé globale, Bien-être, Hygiène de vie & Éthique)
+  const [dailyTipIndex, setDailyTipIndex] = useState(0);
+  const [dailyTipLang, setDailyTipLang] = useState<"fr" | "moore" | "dioula" | "en">("fr");
+  const [notificationEnabled, setNotificationEnabled] = useState(false);
+
   const [roseMessages, setRoseMessages] = useState<
     Array<{ sender: "user" | "rose"; text: string; time: string; englishText?: string; mooreText?: string; dioulaText?: string }>
   >([
     {
       sender: "rose",
-      text: "Bonjour ! Je suis Rose IA, votre compagne de santé bienveillante. Une question sur le dépistage, une douleur ou un centre ? Écrivez-moi ou touchez le micro.",
-      englishText: "Hello! I am Rose AI, your caring health assistant. Ask me questions about screenings, pain, or health centers.",
-      mooreText: "Ne y beogo ! Mam yaa Rose IA. Sok-y maam bũmb fãa y sẽn rat n bãngã.",
-      dioulaText: "I ni sɔgɔma ! Ne ye Rose IA ye. Aw bɛ se ka nɲininka bũmb o bũmb la.",
+      text: "Bonjour ma sœur, je suis Rose IA, ta compagne de santé et de bien-être. Je suis à ton écoute avec bienveillance, sans jugement et dans le respect total de ta pudeur : hygiène intime, nutrition sahélienne (moringa, baobab), apaisement des règles, sérénité mentale ou dépistage. Écris-moi en toute confiance ou touche le micro.",
+      englishText: "Hello my sister, I am Rose AI, your caring health and well-being companion. I am here for your holistic health: intimate care, nutrition, menstrual comfort, mental peace, and screenings.",
+      mooreText: "Ne y beogo m maaso ! Mam yaa Rose IA, fo laafi zoa. Mam be ka n na n sõng yãmba ne yĩn-sõngr, rɩɩb sõma, pʋg-tõor bɩ bãas gɩdgre. Sok-y maam bũmb fãa y sẽn ratã.",
+      dioulaText: "I ni sɔgɔma n ma muso ! Ne ye Rose IA ye. Ne bɛ yan k'i dɛmɛ kɛnɛya, i yɛrɛ saniya, kalo-sira ani hakili-sigi la. Mun b'i kɔnɔ bi ?",
       time: "Maintenant",
     },
   ]);
@@ -815,9 +983,34 @@ export function PinkHubMobile() {
       verified: true,
     },
   ]);
+  // 9. Espace Docteur : Simulation du Parcours d'Entraînement de Rose IA (4 étapes)
   const [showDoctorTrainModal, setShowDoctorTrainModal] = useState(false);
-  const [doctorTeachTopic, setDoctorTeachTopic] = useState("");
-  const [doctorTeachContent, setDoctorTeachContent] = useState("");
+  const [doctorTrainStep, setDoctorTrainStep] = useState<1 | 2 | 3 | 4>(1);
+  const [doctorTeachTopic, setDoctorTeachTopic] = useState("Permanence urgences mammaires & Nodule suspect");
+  const [doctorTeachContent, setDoctorTeachContent] = useState(
+    "Pour toute patiente présentant un nodule dur et fixé, l'accueil se fait sans rendez-vous préalable tous les matins au service d'imagerie. Une mammographie et une échographie mammaire sont prescrites en urgence 48h.",
+  );
+  const [doctorEmpathicReformulation, setDoctorEmpathicReformulation] = useState({
+    fr: "Ma sœur, rassure-toi : un nodule n'est pas forcément grave, mais ton corps mérite toute notre attention. Viens directement sans rendez-vous au CMA Schiphra ou CHU Bogodogo dès demain matin à 08h. Une sage-femme et un radiologue vont t'examiner avec douceur.",
+    moore: "M maaso, da zoe rabeem ye: bõn-kʋdga pa bãag fãa ye, la yaa tɩlae tɩ d ges-a tao-tao. Wa-y zĩigẽ zaabre n mik dɔgɔtɔrã tɩ b ges yãmba ne laafi.",
+    dioula: "N ma muso, kana siran : fɛn o fɛn bɛ sin na, a bɛɛ tɛ bana juguman ye. Nka taga kɛnɛyaso la jona sɔgɔma fɛ walasa dɔgɔtɔrɔmuso ka lajɛ saniya kɛ.",
+  });
+  const [doctorTestQuestion, setDoctorTestQuestion] = useState(
+    "J'ai senti une boule un peu dure dans mon sein droit qui ne me fait pas mal, est-ce que je dois m'inquiéter ?",
+  );
+  const [doctorTestAnswer, setDoctorTestAnswer] = useState<string | null>(null);
+  const [doctorSignName, setDoctorSignName] = useState("Dr. Ibrahim Sanou");
+  const [doctorSignRole, setDoctorSignRole] = useState("Gynécologue-Obstétricien · CHU Bogodogo");
+
+  // 9.bis Paramètres de Confidentialité & Éthique des Données (Local-First, Zéro Tracking)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [privacySettings, setPrivacySettings] = useState({
+    localOnlyCycle: true, // Données de cycle et règles stockées 100% sur le téléphone
+    contributeAiClinical: true, // Partage des protocoles médicaux soignants pour enrichir Rose IA
+    anonymizedAssociationData: true, // Données agrégées pour les associations et l'expérience naturelle
+    urgentClinicalConsent: false, // Données médicales partagées uniquement sur demande d'un soignant
+    offlineModeCache: true, // Mise en cache hors-ligne des centres et audios
+  });
 
   // 10. Espace Soignant : Orientation & Recommandation patiente d'urgence
   const [showOrientationModal, setShowOrientationModal] = useState(false);
@@ -834,11 +1027,39 @@ export function PinkHubMobile() {
   // 11. Tableau de bord Administrateurs
   const [showAdminDashboardModal, setShowAdminDashboardModal] = useState(false);
 
-  // 12. Calendrier Féminin : Règles, Autopalpation & Rappels
+  // 12. Calendrier Féminin : Règles, Autopalpation, Prédiction & Recalibration
   const [lastPeriodDate, setLastPeriodDate] = useState("2026-10-06");
   const [cycleLengthDays, setCycleLengthDays] = useState(28);
   const [autopalpationDoneThisMonth, setAutopalpationDoneThisMonth] = useState(true);
   const [lastAutopalpationDate, setLastAutopalpationDate] = useState("12/10/2026");
+
+  // États pour la saisie réelle, apprentissage et recalibration de la prédiction
+  const [showRecalibrateBox, setShowRecalibrateBox] = useState(false);
+  const [realPeriodDateInput, setRealPeriodDateInput] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  const [showCycleHistory, setShowCycleHistory] = useState(false);
+  const [recalibrationFeedback, setRecalibrationFeedback] = useState<{
+    text: string;
+    type: "success" | "info" | "warning";
+  } | null>(null);
+  const [cycleHistory, setCycleHistory] = useState<Array<{
+    id: number;
+    date: string;
+    duration: number;
+    diff: number;
+    note: string;
+  }>>([
+    {
+      id: 1,
+      date: "06/10/2026",
+      duration: 28,
+      diff: 0,
+      note: "Cycle initial de référence (28 jours)",
+    },
+  ]);
+
   const [reminders, setReminders] = useState([
     { id: 1, title: "Dépistage annuel recommandé", date: "24 Octobre 2026", type: "screening", active: true },
     { id: 2, title: "Rendez-vous mammographie (CMA Schiphra)", date: "26 Octobre à 09h00", type: "appointment", active: true },
@@ -849,9 +1070,9 @@ export function PinkHubMobile() {
   const [newReminderDate, setNewReminderDate] = useState("");
   const [newReminderType, setNewReminderType] = useState<"screening" | "appointment" | "treatment">("appointment");
 
-  // 13. Annonces & Événements (avec modération Superadmin et filtre mois en cours)
+  // 13. Annonces & Événements (avec modération Superadmin, filtre mois en cours et veille Rose IA)
   const [announcements, setAnnouncements] = useState<PartnerAnnouncement[]>(initialAnnouncements);
-  const [announcementsFilter, setAnnouncementsFilter] = useState<"month" | "all" | "my">("month");
+  const [announcementsFilter, setAnnouncementsFilter] = useState<"month" | "all" | "my" | "rose_ai">("month");
   const [showNewAnnouncementModal, setShowNewAnnouncementModal] = useState(false);
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
@@ -864,7 +1085,25 @@ export function PinkHubMobile() {
     badgeColor: "bg-pink-100 text-pink-800",
     content: "",
     contact: "",
+    imageUrl: "/images/affiche-evenement-beneere.jpg",
+    imageCaption: "",
   });
+
+  // 13.bis Modal Vidéo Démonstrative Autopalpation (Personnage africain & sage-femme)
+  const [showAutopalpationVideoModal, setShowAutopalpationVideoModal] = useState(false);
+  const [videoIsPlaying, setVideoIsPlaying] = useState(true);
+  const [selectedVideoStep, setSelectedVideoStep] = useState<1 | 2 | 3 | 4>(1);
+  const [videoLang, setVideoLang] = useState<"fr" | "moore" | "dioula">("fr");
+  const [videoProgressSeconds, setVideoProgressSeconds] = useState(0);
+  const [videoSpeed, setVideoSpeed] = useState<1 | 1.5 | 2>(1);
+
+  // 13.ter Modal Affiche Grand Format
+  const [selectedPosterModal, setSelectedPosterModal] = useState<{
+    url: string;
+    title: string;
+    author: string;
+    caption?: string;
+  } | null>(null);
 
   // 14. Faire un Don (Orange Money avec Option Don Anonyme Chiffré)
   const [showDonationModal, setShowDonationModal] = useState(false);
@@ -1038,6 +1277,61 @@ export function PinkHubMobile() {
   }, []);
 
   /**
+   * Préchauffage instantané du moteur de synthèse vocale (Web Speech API)
+   * Élimine complètement le temps d'attente / latence de 2 à 3 secondes
+   * au premier déclenchement audio sur smartphone et navigateur de bureau.
+   */
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.getVoices();
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+          window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+          };
+        }
+      } catch {
+        // Fallback silencieux si non disponible
+      }
+    }
+  }, []);
+
+  /**
+   * Moteur de lecture vidéo ultra-réactif avec progression dynamique et vitesse ajustable
+   * Permet à la vidéo de se lancer immédiatement, d'avancer de manière fluide
+   * et de s'accélérer (1x, 1.5x, 2x) selon le souhait de l'utilisatrice.
+   */
+  useEffect(() => {
+    if (!showAutopalpationVideoModal || !videoIsPlaying) return;
+
+    const interval = window.setInterval(() => {
+      setVideoProgressSeconds((prev) => {
+        const next = prev + (0.5 * videoSpeed);
+        if (next >= 165) {
+          return 0; // Boucle de lecture continue
+        }
+        // Synchronisation automatique de l'étape affichée selon le temps
+        if (next < 35) setSelectedVideoStep(1);
+        else if (next < 75) setSelectedVideoStep(2);
+        else if (next < 115) setSelectedVideoStep(3);
+        else setSelectedVideoStep(4);
+
+        return next;
+      });
+    }, 500);
+
+    return () => window.clearInterval(interval);
+  }, [showAutopalpationVideoModal, videoIsPlaying, videoSpeed]);
+
+  // Formateur du temps vidéo (ex: "01:24")
+  const formatVideoTime = (seconds: number) => {
+    const s = Math.floor(seconds);
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
+
+  /**
    * Intégration fiabilisée de la carte OpenStreetMap via Leaflet
    * Fonctionne de manière synchrone sur tous les profils et réactualise
    * automatiquement les tuiles à chaque transition d'onglet.
@@ -1185,6 +1479,7 @@ export function PinkHubMobile() {
       return;
     }
 
+    // Arrêt immédiat si déjà en lecture
     if (isPlaying) {
       window.speechSynthesis.cancel();
       setIsPlaying(false);
@@ -1194,31 +1489,62 @@ export function PinkHubMobile() {
       return;
     }
 
-    window.speechSynthesis.cancel();
+    // Réveil et déblocage immédiat de la pile audio pour mobile/desktop
+    try {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+      window.speechSynthesis.cancel();
+    } catch {
+      // Ignorer si non applicable
+    }
+
+    // Déclenchement réactif immédiat pour l'ergonomie tactile (0 ms d'attente)
+    setIsPlaying(true);
+    setRoseSpeaking(true);
+    setAudioProgress(8);
 
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+    // Attribution directe d'une voix préchargée pour éviter le délai de recherche de voix
+    try {
+      const allVoices = window.speechSynthesis.getVoices();
+      if (allVoices && allVoices.length > 0) {
+        const matchedVoice = allVoices.find((v) =>
+          language === "en" ? v.lang.startsWith("en") : v.lang.startsWith("fr")
+        ) || allVoices[0];
+        if (matchedVoice) {
+          utterance.voice = matchedVoice;
+        }
+      }
+    } catch {
+      // Silencieux
+    }
+
     if (language === "en") {
       utterance.lang = "en-US";
-      utterance.rate = 0.95;
+      utterance.rate = 1.0;
       utterance.pitch = 1.0;
     } else if (language === "fr") {
       utterance.lang = "fr-FR";
-      utterance.rate = 0.95;
+      utterance.rate = 1.02; // Rythme alerte et naturel
       utterance.pitch = 1.05;
     } else {
+      // Mooré et Dioula : diction claire avec prosodie soignée
       utterance.lang = "fr-FR";
-      utterance.rate = 0.88;
+      utterance.rate = 0.95;
       utterance.pitch = 1.05;
     }
+
+    // Progression visuelle fluide
+    if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
+    audioIntervalRef.current = window.setInterval(() => {
+      setAudioProgress((prev) => (prev >= 95 ? 95 : prev + 6));
+    }, 600);
 
     utterance.onstart = () => {
       setIsPlaying(true);
       setRoseSpeaking(true);
-      setAudioProgress(5);
-      if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
-      audioIntervalRef.current = window.setInterval(() => {
-        setAudioProgress((prev) => (prev >= 95 ? 95 : prev + 4));
-      }, 1000);
     };
 
     utterance.onend = () => {
@@ -1226,7 +1552,7 @@ export function PinkHubMobile() {
       setRoseSpeaking(false);
       if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
       setAudioProgress(100);
-      window.setTimeout(() => setAudioProgress(0), 1200);
+      window.setTimeout(() => setAudioProgress(0), 600);
     };
 
     utterance.onerror = () => {
@@ -1236,31 +1562,135 @@ export function PinkHubMobile() {
       setAudioProgress(0);
     };
 
+    // Lancement instantané
     window.speechSynthesis.speak(utterance);
+
+    // Déverrouillage de sécurité supplémentaire pour Chrome Android
+    window.setTimeout(() => {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    }, 40);
   };
 
   /**
-   * Calculs pour le cycle menstruel & fenêtre d'autopalpation
+   * Calculs prédictifs pour le cycle menstruel & fenêtre d'autopalpation (Recommandation OMS)
+   * Calcule :
+   * - La date estimée des prochaines règles selon la durée de cycle calibrée.
+   * - Le nombre de jours restants (ou de décalage si la date est dépassée).
+   * - La fenêtre optimale d'autopalpation (J+7 à J+11 après le premier jour des règles).
    */
   const cycleInfo = useMemo(() => {
-    const lastDate = new Date(lastPeriodDate);
+    // Découpage strict de la date YYYY-MM-DD pour éviter les biais de fuseau GMT
+    const parts = lastPeriodDate.split("-");
+    const lastDate = parts.length === 3
+      ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
+      : new Date(lastPeriodDate);
+
+    // Calcul de la date prévisionnelle des prochaines règles
     const nextPeriodDate = new Date(lastDate);
     nextPeriodDate.setDate(lastDate.getDate() + cycleLengthDays);
 
+    // Fenêtre optimale d'autopalpation : 2 à 5 jours après la fin des règles (J+7 à J+11)
     const autopalpStart = new Date(lastDate);
     autopalpStart.setDate(lastDate.getDate() + 7);
     const autopalpEnd = new Date(lastDate);
     autopalpEnd.setDate(lastDate.getDate() + 11);
 
     const now = new Date();
-    const isOptimalWindow = now >= autopalpStart && now <= autopalpEnd;
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const isOptimalWindow = today >= autopalpStart && today <= autopalpEnd;
+
+    // Écart en jours entre aujourd'hui et la prédiction
+    const diffMs = nextPeriodDate.getTime() - today.getTime();
+    const daysUntilNextPeriod = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
     return {
       nextPeriodStr: nextPeriodDate.toLocaleDateString("fr-FR", { day: "numeric", month: "long" }),
+      nextPeriodFormatted: nextPeriodDate.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" }),
+      daysUntilNextPeriod,
       autopalpWindowStr: `Du ${autopalpStart.getDate()} au ${autopalpEnd.getDate()} ${autopalpEnd.toLocaleDateString("fr-FR", { month: "short" })}`,
       isOptimalWindow,
     };
   }, [lastPeriodDate, cycleLengthDays]);
+
+  /**
+   * Recalibration adaptative du cycle menstruel & synchronisation locale
+   * Fonctionnalité clé demandée :
+   * Si les règles arrivent en avance ou en retard, l'utilisatrice enregistre
+   * la date réelle constatée. L'application recalcule l'intervalle réel, recalibre
+   * la durée moyenne du cycle, réajuste la prédiction suivante et recadre la fenêtre d'autopalpation.
+   */
+  const handleRecalibratePeriod = (chosenDate?: string) => {
+    const targetDateStr = chosenDate || realPeriodDateInput;
+    if (!targetDateStr) {
+      notify("Veuillez indiquer une date pour recalibrer.");
+      return;
+    }
+
+    // Récupération de l'ancienne date et de la nouvelle date déclarée
+    const prevParts = lastPeriodDate.split("-");
+    const prevDate = new Date(parseInt(prevParts[0], 10), parseInt(prevParts[1], 10) - 1, parseInt(prevParts[2], 10));
+
+    const realParts = targetDateStr.split("-");
+    const realDate = new Date(parseInt(realParts[0], 10), parseInt(realParts[1], 10) - 1, parseInt(realParts[2], 10));
+
+    // Calcul de l'écart réel en jours entre les deux débuts de règles
+    const diffDays = Math.round((realDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) {
+      notify("La date réelle doit être postérieure au cycle précédent.");
+      return;
+    }
+
+    let calculatedCycleLength = cycleLengthDays;
+    let feedbackMsg = "";
+    let alertType: "success" | "info" | "warning" = "success";
+
+    // Analyse physiologique de l'intervalle constaté
+    if (diffDays >= 21 && diffDays <= 42) {
+      // Intervalle physiologique régulier : mise à jour directe du cycle
+      calculatedCycleLength = diffDays;
+      const variation = diffDays - cycleLengthDays;
+      if (variation === 0) {
+        feedbackMsg = `Règles confirmées au ${realDate.toLocaleDateString("fr-FR")} : prédiction 100% exacte (cycle régulier de ${diffDays} jours).`;
+      } else if (variation > 0) {
+        feedbackMsg = `Règles notées avec +${variation} j de décalage. Votre cycle a été automatiquement recalibré à ${diffDays} jours. Prochaine prédiction et autopalpation réajustées.`;
+      } else {
+        feedbackMsg = `Règles arrivées ${Math.abs(variation)} j plus tôt que prévu. Votre cycle a été recalibré à ${diffDays} jours. Prédictions réalignées.`;
+      }
+    } else if (diffDays < 21) {
+      // Cycle très court
+      calculatedCycleLength = 24;
+      alertType = "warning";
+      feedbackMsg = `Règles déclarées ${diffDays} jours après le dernier cycle (intervalle court). Date enregistrée. Si ce rythme persiste, demandez conseil à une sage-femme.`;
+    } else {
+      // Décalage supérieur à 42 jours
+      calculatedCycleLength = 32;
+      alertType = "info";
+      feedbackMsg = `Règles constatées après ${diffDays} jours. Date enregistrée et nouveau cycle réinitialisé avec succès.`;
+    }
+
+    // Mise à jour des états locaux réactifs
+    setCycleLengthDays(calculatedCycleLength);
+    setLastPeriodDate(targetDateStr);
+    setRecalibrationFeedback({ text: feedbackMsg, type: alertType });
+    setShowRecalibrateBox(false);
+
+    // Ajout à l'historique local pour visualiser l'apprentissage
+    setCycleHistory((prev) => [
+      {
+        id: Date.now(),
+        date: realDate.toLocaleDateString("fr-FR"),
+        duration: diffDays,
+        diff: diffDays - cycleLengthDays,
+        note: feedbackMsg,
+      },
+      ...prev.slice(0, 4),
+    ]);
+
+    notify("Cycle et fenêtre d'autopalpation recalibrés avec succès !");
+  };
 
   /**
    * Gestion de la connexion et inscription
@@ -1459,12 +1889,54 @@ export function PinkHubMobile() {
     notify("Demande d'inscription refusée.");
   };
 
-  // Modération Superadmin : annonces
+  // Modération Superadmin : annonces standard
   const handleApproveAnnouncement = (id: number) => {
     setAnnouncements((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status: "approved", badge: "Validée ✓", badgeColor: "bg-emerald-100 text-emerald-800" } : a)),
     );
     notify("Annonce validée par le Superadmin ! Elle est désormais visible publiquement.");
+  };
+
+  /**
+   * Modération Superadmin : Valider une opportunité détectée par Rose IA et déclencher le PUSH local
+   */
+  const handleApproveAndPushAnnouncement = async (id: number) => {
+    const target = announcements.find((a) => a.id === id);
+    if (!target) return;
+
+    setAnnouncements((prev) =>
+      prev.map((a) =>
+        a.id === id
+          ? {
+              ...a,
+              status: "approved",
+              badge: "🔍 Veille Rose IA · Validé Officiel ✓",
+              badgeColor: "bg-purple-100 text-purple-900 border border-purple-300 font-bold",
+              pushSent: true,
+            }
+          : a,
+      ),
+    );
+
+    const pushText =
+      target.pushMessageFr ||
+      `🌸 Rose IA vous informe : [Opportunité Validée] ${target.title} à ${target.city} !`;
+
+    // Tentative d'envoi Web Push API
+    if ("Notification" in window) {
+      if (Notification.permission === "granted") {
+        try {
+          new Notification(`🌸 Rose IA — Alerte Santé Vérifiée (${target.city})`, {
+            body: pushText,
+            icon: "/favicon.ico",
+          });
+        } catch (e) {
+          console.warn("Notification error:", e);
+        }
+      }
+    }
+
+    notify(`🚀 Annonce vérifiée et validée ! Message push diffusé aux femmes de ${target.city}.`);
   };
 
   const handleRejectAnnouncement = (id: number) => {
@@ -1496,6 +1968,8 @@ export function PinkHubMobile() {
       badgeColor: "bg-amber-100 text-amber-900",
       content: newAnnouncement.content,
       contact: newAnnouncement.contact || currentUser?.telephone || "+226 70 00 00 00",
+      imageUrl: newAnnouncement.imageUrl,
+      imageCaption: newAnnouncement.imageCaption,
       likes: 0,
       status: "pending_validation", // En attente obligatoire de validation du Superadmin
       submittedBy: currentUser ? `${currentUser.prenom} ${currentUser.nom}` : "Admin",
@@ -1515,8 +1989,10 @@ export function PinkHubMobile() {
       badgeColor: "bg-pink-100 text-pink-800",
       content: "",
       contact: "",
+      imageUrl: "/images/affiche-evenement-beneere.jpg",
+      imageCaption: "",
     });
-    notify("Annonce soumise ! Elle sera diffusée publiquement dès validation par le Superadmin.");
+    notify("Annonce avec affiche soumise ! Elle sera diffusée dès validation par le Superadmin.");
   };
 
   /**
@@ -1534,19 +2010,49 @@ export function PinkHubMobile() {
   };
 
   /**
-   * Entraînement de Rose IA par un docteur
+   * Présélection d'un cas clinique pour la simulation d'entraînement docteur
    */
-  const handleDoctorTeachAI = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!doctorTeachTopic.trim() || !doctorTeachContent.trim()) {
-      notify("Veuillez préciser le sujet clinique et l'explication.");
-      return;
-    }
+  const handleSelectDoctorPresetTopic = (
+    topic: string,
+    clinicalAdvice: string,
+    frReformulation: string,
+    mooreReformulation: string,
+    dioulaReformulation: string,
+    testQ: string,
+  ) => {
+    setDoctorTeachTopic(topic);
+    setDoctorTeachContent(clinicalAdvice);
+    setDoctorEmpathicReformulation({
+      fr: frReformulation,
+      moore: mooreReformulation,
+      dioula: dioulaReformulation,
+    });
+    setDoctorTestQuestion(testQ);
+    setDoctorTestAnswer(null);
+    setDoctorTrainStep(2);
+    notify(`Thème "${topic}" sélectionné pour l'entraînement.`);
+  };
 
+  /**
+   * Étape 2 -> Étape 3 : Simulation du test en direct avec la patiente
+   */
+  const handleRunDoctorTestSimulation = () => {
+    setDoctorTestAnswer(
+      doctorEmpathicReformulation.fr ||
+        "Ma sœur, suite aux consignes de nos médecins spécialistes, voici la conduite à tenir pour ta santé...",
+    );
+    setDoctorTrainStep(3);
+    notify("Simulation prête : testez la réponse de Rose IA à la question de la patiente.");
+  };
+
+  /**
+   * Étape 4 : Validation finale & Ingestion du savoir clinique dans Rose IA
+   */
+  const handleFinalizeDoctorTraining = () => {
     const newKnowledge: MedicalKnowledge = {
       id: Date.now(),
-      doctorName: currentUser ? `${currentUser.prenom} ${currentUser.nom}` : "Dr. Partenaire",
-      speciality: currentUser?.speciality || "Médecin Spécialiste",
+      doctorName: doctorSignName || (currentUser ? `${currentUser.prenom} ${currentUser.nom}` : "Dr. Ibrahim Sanou"),
+      speciality: doctorSignRole || currentUser?.speciality || "Gynécologue-Obstétricien",
       topic: doctorTeachTopic,
       advice: doctorTeachContent,
       date: "Aujourd'hui",
@@ -1555,25 +2061,52 @@ export function PinkHubMobile() {
 
     setClinicalKnowledgeList((prev) => [newKnowledge, ...prev]);
 
+    // Ingestion directe dans le fil de discussion de Rose IA
     setRoseMessages((prev) => [
       ...prev,
       {
         sender: "user",
-        text: `[Supervision Clinique] ${doctorTeachTopic} : ${doctorTeachContent}`,
+        text: `[Validation Médicale Signée] ${doctorTeachTopic} — ${newKnowledge.doctorName}`,
         time: "À l'instant",
       },
       {
         sender: "rose",
-        text: `Bien reçu ${newKnowledge.doctorName} ! J'ai intégré cette recommandation médicale à ma base clinique PagLaafi pour orienter les patientes.`,
-        englishText: `Acknowledged ${newKnowledge.doctorName}! This clinical guideline is now saved in my PagLaafi knowledge base.`,
+        text: `Bien reçu ${newKnowledge.doctorName} ! J'ai intégré votre protocole clinique : « ${doctorEmpathicReformulation.fr.slice(0, 140)}... ». Je suis désormais capable d'orienter les femmes en Français, Mooré et Dioula selon vos instructions.`,
+        mooreText: `Yozẽ kãsengã ${newKnowledge.doctorName} ! Mam bãngame laafi zãmsgã n na n sõng pagbã ne laafi.`,
+        dioulaText: `I ni ce ${newKnowledge.doctorName} ! Dɔgɔtɔrɔba fanga nin don na ne la bi walasa ka musow dɛmɛ.`,
         time: "À l'instant",
       },
     ]);
 
-    setDoctorTeachTopic("");
-    setDoctorTeachContent("");
     setShowDoctorTrainModal(false);
-    notify("Connaissance clinique enregistrée dans Rose IA avec succès !");
+    setDoctorTrainStep(1);
+    notify(`Protocole médical validé par ${newKnowledge.doctorName} et assimilé par Rose IA !`);
+  };
+
+  /**
+   * Sauvegarde des paramètres de confidentialité & Éthique des données
+   */
+  const handleSavePrivacySettings = () => {
+    setShowPrivacyModal(false);
+    notify("Vos préférences de confidentialité et de protection des données sont enregistrées.");
+  };
+
+  /**
+   * Purge complète des données locales (Droit à l'oubli immédiat)
+   */
+  const handleClearAllLocalData = () => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+    setReminders([]);
+    setAutopalpationDoneThisMonth(false);
+    setShowPrivacyModal(false);
+    notify("Droit à l'oubli appliqué : toutes vos données locales de cycle et rappels ont été effacées.");
   };
 
   /**
@@ -1587,7 +2120,57 @@ export function PinkHubMobile() {
   };
 
   /**
-   * Envoi de message à Rose IA
+   * Activation et envoi de notification bienveillante en langues locales (Web Notifications ou In-App)
+   */
+  const handleRequestNotification = async () => {
+    const tip = roseDailyTips[dailyTipIndex];
+    const text =
+      dailyTipLang === "moore"
+        ? tip.moore
+        : dailyTipLang === "dioula"
+          ? tip.dioula
+          : dailyTipLang === "en"
+            ? tip.en
+            : tip.fr;
+    const langLabel =
+      dailyTipLang === "moore"
+        ? "Mooré"
+        : dailyTipLang === "dioula"
+          ? "Dioula"
+          : dailyTipLang === "en"
+            ? "English"
+            : "Français";
+
+    if ("Notification" in window) {
+      let perm = Notification.permission;
+      if (perm !== "granted") {
+        try {
+          perm = await Notification.requestPermission();
+        } catch (e) {
+          console.warn("Notification request permission error:", e);
+        }
+      }
+      if (perm === "granted") {
+        setNotificationEnabled(true);
+        try {
+          new Notification(`🌸 Rose IA — ${tip.categoryLabel}`, {
+            body: `${text.slice(0, 130)}...`,
+            icon: "/favicon.ico",
+          });
+          notify(`Rappels quotidiens activés en ${langLabel} ! Notification bienveillante envoyée.`);
+          return;
+        } catch (e) {
+          console.warn("Notification show error:", e);
+        }
+      }
+    }
+
+    setNotificationEnabled((prev) => !prev);
+    notify(`Rappel bienveillant activé (${langLabel}) : "${tip.titleFr}"`);
+  };
+
+  /**
+   * Envoi de message à Rose IA avec analyse empathique & santé globale
    */
   const handleSendRoseMessage = (textOverride?: string) => {
     const textToSend = textOverride || roseInput;
@@ -1602,12 +2185,130 @@ export function PinkHubMobile() {
     setRoseInput("");
 
     const lower = textToSend.toLowerCase();
-    let responseKey: "mal" | "prix" | "boule" | "default" = "default";
-    if (lower.includes("mal") || lower.includes("douleur") || lower.includes("peur") || lower.includes("hurt") || lower.includes("pain")) {
+    type KnowledgeKey = keyof typeof roseKnowledge;
+    let responseKey: KnowledgeKey = "default";
+
+    // Hygiène intime & flore
+    if (
+      lower.includes("toilette") ||
+      lower.includes("intime") ||
+      lower.includes("savon") ||
+      lower.includes("perte") ||
+      lower.includes("odeur") ||
+      lower.includes("mycose") ||
+      lower.includes("démange") ||
+      lower.includes("vagin") ||
+      lower.includes("vulve") ||
+      lower.includes("culotte") ||
+      lower.includes("coton")
+    ) {
+      responseKey = "hygiene_intime";
+    }
+    // Nutrition sahélienne & hygiène de vie
+    else if (
+      lower.includes("moringa") ||
+      lower.includes("baobab") ||
+      lower.includes("singe") ||
+      lower.includes("soumbala") ||
+      lower.includes("manger") ||
+      lower.includes("nourriture") ||
+      lower.includes("nutrition") ||
+      lower.includes("eau") ||
+      lower.includes("boire") ||
+      lower.includes("sel") ||
+      lower.includes("cube") ||
+      lower.includes("bouillon") ||
+      lower.includes("anémie") ||
+      lower.includes("fatigue")
+    ) {
+      responseKey = "nutrition_locale";
+    }
+    // Règles & crampes
+    else if (
+      lower.includes("règle") ||
+      lower.includes("regle") ||
+      lower.includes("menstru") ||
+      lower.includes("crampe") ||
+      lower.includes("ventre") ||
+      lower.includes("cycle") ||
+      lower.includes("period") ||
+      lower.includes("cramp")
+    ) {
+      responseKey = "regles_douleurs";
+    }
+    // Bien-être mental & charge mentale
+    else if (
+      lower.includes("stress") ||
+      lower.includes("mental") ||
+      lower.includes("anxiet") ||
+      lower.includes("angoisse") ||
+      lower.includes("triste") ||
+      lower.includes("pleur") ||
+      lower.includes("sommeil") ||
+      lower.includes("dors") ||
+      lower.includes("dormir") ||
+      lower.includes("repose") ||
+      lower.includes("charge")
+    ) {
+      responseKey = "bien_etre_mental";
+    }
+    // Col de l'utérus & dépistage global
+    else if (
+      lower.includes("col") ||
+      lower.includes("uterus") ||
+      lower.includes("utérus") ||
+      lower.includes("frottis") ||
+      lower.includes("iva") ||
+      lower.includes("hpv") ||
+      lower.includes("vaccin")
+    ) {
+      responseKey = "col_uterus";
+    }
+    // Grossesse & ménopause
+    else if (
+      lower.includes("enceinte") ||
+      lower.includes("grossesse") ||
+      lower.includes("bebe") ||
+      lower.includes("bébé") ||
+      lower.includes("allait") ||
+      lower.includes("ménopause") ||
+      lower.includes("menopause") ||
+      lower.includes("bouffée")
+    ) {
+      responseKey = "grossesse_menopause";
+    }
+    // Douleur ou peur
+    else if (
+      lower.includes("mal") ||
+      lower.includes("douleur") ||
+      lower.includes("peur") ||
+      lower.includes("hurt") ||
+      lower.includes("pain")
+    ) {
       responseKey = "mal";
-    } else if (lower.includes("prix") || lower.includes("coût") || lower.includes("fcfa") || lower.includes("price") || lower.includes("cost")) {
+    }
+    // Prix & Tarifs
+    else if (
+      lower.includes("prix") ||
+      lower.includes("coût") ||
+      lower.includes("cout") ||
+      lower.includes("fcfa") ||
+      lower.includes("tarif") ||
+      lower.includes("argent") ||
+      lower.includes("gratuit") ||
+      lower.includes("price") ||
+      lower.includes("cost")
+    ) {
       responseKey = "prix";
-    } else if (lower.includes("boule") || lower.includes("kyste") || lower.includes("nodule") || lower.includes("lump")) {
+    }
+    // Boule ou nodule
+    else if (
+      lower.includes("boule") ||
+      lower.includes("kyste") ||
+      lower.includes("nodule") ||
+      lower.includes("masse") ||
+      lower.includes("lump")
+    ) {
       responseKey = "boule";
     }
 
@@ -1676,13 +2377,33 @@ export function PinkHubMobile() {
   }, [centers, searchQuery, statusFilter, cityFilter]);
 
   /**
-   * Filtrage des annonces selon le mois en cours et le profil
+   * Recensement et palmarès des centres de santé les plus fréquentés par région / ville (Superadmin)
+   */
+  const superadminSortedCenters = useMemo(() => {
+    return [...centers]
+      .filter((c) => {
+        if (superadminRegionFilter === "all") return true;
+        if (superadminRegionFilter === "Centre") return c.city === "Ouagadougou";
+        if (superadminRegionFilter === "Hauts-Bassins") return c.city === "Bobo-Dioulasso";
+        if (superadminRegionFilter === "Centre-Ouest") return c.city === "Koudougou";
+        return true;
+      })
+      .sort((a, b) => b.confirmedVisitsToday - a.confirmedVisitsToday);
+  }, [centers, superadminRegionFilter]);
+
+  /**
+   * Filtrage des annonces selon le mois en cours, la veille Rose IA et le profil
    */
   const displayedAnnouncements = useMemo(() => {
     if (announcementsFilter === "my") {
       return announcements.filter(
-        (a) => a.submittedBy === currentUser?.structureName || a.submittedBy === `${currentUser?.prenom} ${currentUser?.nom}`,
+        (a) =>
+          a.submittedBy === currentUser?.structureName ||
+          a.submittedBy === `${currentUser?.prenom} ${currentUser?.nom}`,
       );
+    }
+    if (announcementsFilter === "rose_ai") {
+      return announcements.filter((a) => a.isRoseAIDetected && a.status === "approved");
     }
     if (announcementsFilter === "month") {
       return announcements.filter((a) => a.month === "Octobre 2026" && a.status === "approved");
@@ -1731,7 +2452,7 @@ export function PinkHubMobile() {
                 PagLaafi
               </h1>
               <p className="mt-1 text-xs font-semibold text-[#8e4966]">
-                Dépistage & Santé du sein au Burkina Faso
+                Mieux  informée-Mieux orientée- Jamais seule.
               </p>
             </div>
 
@@ -1976,6 +2697,35 @@ export function PinkHubMobile() {
                   </button>
                 </div>
 
+                {/* Paramètres de Confidentialité & Entraînement Docteur */}
+                <div className="pt-2 border-t border-[#f2e1e6] space-y-1.5">
+                  <button
+                    onClick={() => {
+                      setSidebarOpen(false);
+                      setShowPrivacyModal(true);
+                    }}
+                    className="flex w-full items-center justify-between rounded-2xl bg-emerald-50/70 border border-emerald-200 px-3.5 py-2 font-semibold text-emerald-900 hover:bg-emerald-100"
+                  >
+                    <span className="flex items-center gap-2.5 text-xs">
+                      <ShieldCheck size={16} className="text-emerald-700" /> Confidentialité & Données
+                    </span>
+                    <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Local</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSidebarOpen(false);
+                      setShowDoctorTrainModal(true);
+                    }}
+                    className="flex w-full items-center justify-between rounded-2xl bg-amber-50 border border-amber-200 px-3.5 py-2 font-semibold text-amber-950 hover:bg-amber-100"
+                  >
+                    <span className="flex items-center gap-2.5 text-xs">
+                      <GraduationCap size={16} className="text-amber-700" /> Simuler Entraînement Docteur
+                    </span>
+                    <span className="text-[9.5px] font-bold text-amber-800 bg-amber-200 px-1.5 py-0.5 rounded">4 étapes</span>
+                  </button>
+                </div>
+
                 {/* BOUTON SE DÉCONNECTER DU MENU DÉROULANT GAUCHE EXIGÉ */}
                 {currentUser && (
                   <div className="pt-2 border-t border-[#f2e1e6]">
@@ -2141,6 +2891,37 @@ export function PinkHubMobile() {
                             className={`w-full mt-1 rounded-lg px-2 py-1 font-semibold text-left text-[10px] transition ${currentUser.role === 'superadmin' ? 'bg-purple-900 text-white' : 'bg-purple-50 text-purple-900 hover:bg-purple-100'}`}
                           >
                             🛡️ Superadmin National
+                          </button>
+                        </div>
+
+                        {/* Raccourcis Confidentialité & Simulation Docteur */}
+                        <div className="pt-2 border-t border-[#f7e6ec] space-y-1.5">
+                          <button
+                            onClick={() => {
+                              setShowPrivacyModal(true);
+                              setShowProfileMenu(false);
+                            }}
+                            className="flex w-full items-center justify-between rounded-xl bg-slate-50 border border-slate-200 px-2.5 py-1.5 text-[10.5px] font-bold text-slate-700 hover:bg-slate-100 transition shadow-xs"
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <ShieldCheck size={13} className="text-emerald-600" />
+                              <span>Confidentialité & Données</span>
+                            </span>
+                            <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">100% Local</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setShowDoctorTrainModal(true);
+                              setShowProfileMenu(false);
+                            }}
+                            className="flex w-full items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[10.5px] font-bold text-amber-900 hover:bg-amber-100 transition shadow-xs"
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <GraduationCap size={13} className="text-amber-600" />
+                              <span>Simuler Entraînement Docteur</span>
+                            </span>
+                            <span className="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">4 étapes</span>
                           </button>
                         </div>
 
@@ -2543,7 +3324,7 @@ export function PinkHubMobile() {
                 </h1>
 
                 <p className="relative mt-2 text-[13px] leading-[1.6] text-[#745866]">
-                  Sachez où l'appareil fonctionne aujourd'hui, suivez votre cycle pour l'autopalpation et trouvez de l'aide près de chez vous.
+                  Voyez quel centre peut vous accueillir aujourd’hui, repérez le bon moment pour votre autopalpation et trouvez de l’aide près de chez vous.
                 </p>
 
                 <div className="relative mt-4 flex flex-wrap items-center gap-2">
@@ -2559,6 +3340,124 @@ export function PinkHubMobile() {
                   >
                     <CalendarDays size={14} /> Règles & Autopalpation
                   </button>
+                </div>
+              </div>
+
+              {/* CARTE MOT DOUX & SANTÉ GLOBALE : ROSE IA (PENSÉE BIENVEILLANTE DU JOUR) */}
+              <div className="px-5 pt-3.5">
+                <div className="rounded-[26px] border-2 border-[#eed5df] bg-gradient-to-br from-[#ffffff] via-[#fff8fa] to-[#faedf2] p-4 shadow-sm hover:border-[#dfb2c2] transition">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-tr from-[#8a3350] to-[#cf5d83] text-white shadow-xs">
+                        <Sparkles size={16} className="text-amber-300 animate-pulse" />
+                      </span>
+                      <div>
+                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#a14364]">
+                          Rose IA · Conseil Bienveillant du Jour
+                        </span>
+                        <h3 className="ph-display text-xs font-bold text-[#452737]">
+                          {roseDailyTips[dailyTipIndex].titleFr}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleRequestNotification}
+                      className={`grid h-8 w-8 place-items-center rounded-xl transition ${
+                        notificationEnabled
+                          ? "bg-emerald-500 text-white shadow-xs"
+                          : "bg-[#f5e6ec] text-[#8e3f5a] hover:bg-[#ebd3de]"
+                      }`}
+                      title={notificationEnabled ? "Notifications quotidiennes actives" : "Activer les notifications locales"}
+                    >
+                      <Bell size={15} className={notificationEnabled ? "fill-white" : ""} />
+                    </button>
+                  </div>
+
+                  {/* Catégorie & Sélecteur de langue */}
+                  <div className="mt-2.5 flex flex-wrap items-center justify-between gap-1.5 border-b border-[#f3e1e7] pb-2 text-[10px]">
+                    <span className={`font-bold px-2 py-0.5 rounded-full border ${roseDailyTips[dailyTipIndex].categoryColor}`}>
+                      {roseDailyTips[dailyTipIndex].categoryLabel}
+                    </span>
+
+                    <div className="flex items-center gap-1 font-bold">
+                      {(
+                        [
+                          { code: "fr", label: "🇫🇷 FR" },
+                          { code: "moore", label: "🇧🇫 Mooré" },
+                          { code: "dioula", label: "🇧🇫 Dioula" },
+                          { code: "en", label: "🇬🇧 EN" },
+                        ] as const
+                      ).map(({ code, label }) => (
+                        <button
+                          key={code}
+                          onClick={() => setDailyTipLang(code)}
+                          className={`rounded-lg px-2 py-0.5 transition ${
+                            dailyTipLang === code
+                              ? "bg-[#a14364] text-white shadow-xs"
+                              : "bg-white text-[#7d5668] hover:bg-[#f6e7ee]"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Contenu du message bienveillant dans la langue choisie */}
+                  <div className="mt-2 text-xs leading-relaxed text-[#512c3e] italic">
+                    «{" "}
+                    {dailyTipLang === "moore"
+                      ? roseDailyTips[dailyTipIndex].moore
+                      : dailyTipLang === "dioula"
+                        ? roseDailyTips[dailyTipIndex].dioula
+                        : dailyTipLang === "en"
+                          ? roseDailyTips[dailyTipIndex].en
+                          : roseDailyTips[dailyTipIndex].fr}
+                    {" "}»
+                  </div>
+
+                  {/* Actions rapides : Écouter l'audio, changer de conseil, discuter avec Rose IA */}
+                  <div className="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-[#f4e4e9]">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          const tip = roseDailyTips[dailyTipIndex];
+                          const txt =
+                            dailyTipLang === "moore"
+                              ? tip.moore
+                              : dailyTipLang === "dioula"
+                                ? tip.dioula
+                                : dailyTipLang === "en"
+                                  ? tip.en
+                                  : tip.fr;
+                          handlePlayAudio(txt, dailyTipLang);
+                        }}
+                        className="inline-flex items-center gap-1 rounded-xl bg-[#faedf2] px-2.5 py-1 text-[11px] font-bold text-[#8f3654] hover:bg-[#f5dfe7] transition"
+                      >
+                        <Volume2 size={13} />
+                        <span>Écouter</span>
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          setDailyTipIndex((prev) => (prev + 1) % roseDailyTips.length)
+                        }
+                        className="inline-flex items-center gap-1 rounded-xl bg-white border border-[#edd1dc] px-2 py-1 text-[11px] font-bold text-[#7a485c] hover:bg-[#fdf4f7] transition"
+                        title="Voir une autre pensée bienveillante"
+                      >
+                        <span>Autre conseil ✨</span>
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => setSection("RoseIA")}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#a14364] hover:underline"
+                    >
+                      <span>Confier à Rose IA</span>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -2888,53 +3787,231 @@ export function PinkHubMobile() {
                 Suivez vos règles, sachez le moment idéal pour observer vos seins et programmez vos rappels médicaux.
               </p>
 
-              {/* Suivi des règles & cycle */}
+              {/* Suivi des règles, Prédictions & Recalibration adaptative */}
               <div className="mt-3.5 rounded-[24px] border border-[#f0d4df] bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between border-b border-[#f6e6ec] pb-2.5">
                   <div className="flex items-center gap-2">
                     <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] text-[#a14364]">
                       <Calendar size={17} />
                     </span>
-                    <h3 className="ph-display text-sm font-bold text-[#452737]">Cycle menstruel</h3>
+                    <div>
+                      <h3 className="ph-display text-sm font-bold text-[#452737]">Cycle & Prédictions</h3>
+                      <p className="text-[10px] text-[#8c566d]">Prévision locale adaptative</p>
+                    </div>
                   </div>
-                  <span className="rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-bold text-[#a14364]">
+                  <span className="rounded-full bg-pink-100 px-2.5 py-0.5 text-[10px] font-bold text-[#a14364]">
                     Cycle moyen : {cycleLengthDays} jours
                   </span>
                 </div>
 
-                <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="block text-[10.5px] font-bold text-[#725363]">Dernières règles :</label>
-                    <input
-                      type="date"
-                      value={lastPeriodDate}
-                      onChange={(e) => setLastPeriodDate(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-[#ebd6de] p-2 font-semibold text-[#452737] text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10.5px] font-bold text-[#725363]">Durée du cycle :</label>
-                    <select
-                      value={cycleLengthDays}
-                      onChange={(e) => setCycleLengthDays(Number(e.target.value))}
-                      className="mt-1 w-full rounded-xl border border-[#ebd6de] p-2 font-semibold text-[#452737] text-xs"
-                    >
-                      {[25, 26, 27, 28, 29, 30, 31, 32].map((days) => (
-                        <option key={days} value={days}>{days} jours</option>
-                      ))}
-                    </select>
+                {/* Estimation actuelle calculée */}
+                <div className="mt-3 rounded-2xl bg-gradient-to-br from-[#fdf5f7] to-[#faedf2] border border-[#f5dfe6] p-3 text-xs">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-[#91586e] uppercase tracking-wider">
+                        Prochaines règles estimées :
+                      </span>
+                      <p className="text-base font-extrabold text-[#452737] mt-0.5">
+                        {cycleInfo.nextPeriodStr}
+                      </p>
+                      <p className="text-[10px] text-[#785566]">
+                        Dernier début noté : {new Date(lastPeriodDate).toLocaleDateString("fr-FR")}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      {cycleInfo.daysUntilNextPeriod > 0 ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#a14364] shadow-xs border border-pink-100">
+                          <Clock size={12} /> Dans {cycleInfo.daysUntilNextPeriod} j
+                        </span>
+                      ) : cycleInfo.daysUntilNextPeriod === 0 ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-800 shadow-xs">
+                          <AlertCircle size={12} /> Prévues aujourd'hui
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-bold text-orange-800 shadow-xs">
+                          <RotateCcw size={12} /> Décalage ({Math.abs(cycleInfo.daysUntilNextPeriod)} j)
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-3 rounded-xl bg-[#fdf5f7] border border-[#f5dfe6] p-3 text-xs flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold text-[#91586e]">Estimation prochaines règles :</span>
-                    <p className="text-sm font-bold text-[#452737]">{cycleInfo.nextPeriodStr}</p>
+                {/* Feedback vivant lors d'un recalibrage récent */}
+                {recalibrationFeedback && (
+                  <div className={`mt-2.5 rounded-xl p-2.5 text-xs flex items-start gap-2 border ${
+                    recalibrationFeedback.type === "success"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+                      : recalibrationFeedback.type === "warning"
+                      ? "bg-amber-50 border-amber-200 text-amber-900"
+                      : "bg-blue-50 border-blue-200 text-blue-900"
+                  }`}>
+                    <Sparkles size={15} className="shrink-0 mt-0.5 text-[#a14364]" />
+                    <div className="flex-1 text-[11px] leading-relaxed">
+                      <p className="font-bold">Ajustement automatique du cycle :</p>
+                      <p>{recalibrationFeedback.text}</p>
+                    </div>
                   </div>
-                  <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-[#a14364] shadow-xs">
-                    Dans {Math.max(1, Math.round((new Date(lastPeriodDate).getTime() + cycleLengthDays * 86400000 - Date.now()) / 86400000))} j
-                  </span>
+                )}
+
+                {/* MODULE D'ENREGISTREMENT ET DE RECALIBRATION */}
+                <div className="mt-3 rounded-2xl bg-[#fff8fa] border border-[#f0d4de] p-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-[#4c2a3b]">Vos règles sont là ?</p>
+                      <p className="text-[10px] text-[#865d70]">
+                        Enregistrez la date réelle pour recalibrer la prédiction si elle n'est pas exacte.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {/* Bouton 1-clic direct pour aujourd'hui */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d = new Date();
+                        const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                        handleRecalibratePeriod(todayStr);
+                      }}
+                      className="flex items-center justify-center gap-2 rounded-xl bg-[#a14364] py-2 px-3 text-xs font-bold text-white shadow-xs hover:bg-[#8e3855] transition active:scale-[0.98]"
+                    >
+                      <CheckCircle2 size={15} /> Mes règles ont débuté aujourd'hui
+                    </button>
+
+                    {/* Bouton d'ouverture du sélecteur fin */}
+                    <button
+                      type="button"
+                      onClick={() => setShowRecalibrateBox(!showRecalibrateBox)}
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-[#d6a5b6] bg-white py-2 px-3 text-xs font-bold text-[#8c3855] shadow-xs hover:bg-[#faedf1] transition"
+                    >
+                      <RotateCcw size={14} />
+                      {showRecalibrateBox ? "Masquer le réglage" : "Autre date / Recalibrer"}
+                    </button>
+                  </div>
+
+                  {/* Volet rétractable pour choisir une date spécifique et recalibrer */}
+                  {showRecalibrateBox && (
+                    <div className="mt-3 rounded-xl bg-white p-3 border border-[#ebd0db] shadow-xs space-y-2.5">
+                      <p className="font-bold text-[#553043] text-xs">
+                        Indiquez le jour réel où vos règles ont commencé :
+                      </p>
+
+                      {/* Raccourcis tactiles rapides */}
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const d = new Date();
+                            const str = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                            setRealPeriodDateInput(str);
+                          }}
+                          className={`rounded-lg px-2.5 py-1 font-semibold border ${
+                            realPeriodDateInput === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`
+                              ? "bg-[#a14364] text-white border-[#a14364]"
+                              : "bg-[#faeff2] text-[#6b3c50] border-[#ebd1dc]"
+                          }`}
+                        >
+                          Aujourd'hui
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const d = new Date();
+                            d.setDate(d.getDate() - 1);
+                            const str = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                            setRealPeriodDateInput(str);
+                          }}
+                          className="rounded-lg px-2.5 py-1 font-semibold bg-[#faeff2] text-[#6b3c50] border border-[#ebd1dc] hover:bg-[#f6e1e8]"
+                        >
+                          Hier
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const d = new Date();
+                            d.setDate(d.getDate() - 2);
+                            const str = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                            setRealPeriodDateInput(str);
+                          }}
+                          className="rounded-lg px-2.5 py-1 font-semibold bg-[#faeff2] text-[#6b3c50] border border-[#ebd1dc] hover:bg-[#f6e1e8]"
+                        >
+                          Avant-hier
+                        </button>
+                      </div>
+
+                      {/* Sélecteur de date natif */}
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#865d70] mb-1">
+                          Date précise du premier jour :
+                        </label>
+                        <input
+                          type="date"
+                          value={realPeriodDateInput}
+                          onChange={(e) => setRealPeriodDateInput(e.target.value)}
+                          className="w-full rounded-xl border border-[#ebd2dd] p-2 text-xs font-bold text-[#452737] bg-[#fffcfd]"
+                        />
+                      </div>
+
+                      {/* Aperçu du calcul de l'écart */}
+                      {(() => {
+                        const prevParts = lastPeriodDate.split("-");
+                        const prevDate = new Date(parseInt(prevParts[0], 10), parseInt(prevParts[1], 10) - 1, parseInt(prevParts[2], 10));
+                        const realParts = realPeriodDateInput.split("-");
+                        const realDate = new Date(parseInt(realParts[0], 10), parseInt(realParts[1], 10) - 1, parseInt(realParts[2], 10));
+                        const diff = Math.round((realDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+                        return (
+                          <div className="rounded-lg bg-[#faeff2] p-2 text-[11px] text-[#6a3c50] flex items-center justify-between">
+                            <span>Écart constaté depuis le cycle précédent :</span>
+                            <span className="font-extrabold text-[#a14364]">
+                              {diff > 0 ? `${diff} jours` : "Date invalide"}
+                            </span>
+                          </div>
+                        );
+                      })()}
+
+                      <button
+                        type="button"
+                        onClick={() => handleRecalibratePeriod(realPeriodDateInput)}
+                        className="w-full rounded-xl bg-gradient-to-r from-[#a14364] to-[#b34d70] py-2 text-xs font-bold text-white shadow hover:opacity-95 transition"
+                      >
+                        Enregistrer & Recalibrer la prédiction
+                      </button>
+                    </div>
+                  )}
                 </div>
+
+                {/* Historique des cycles recalibrés (accordéon repliable) */}
+                <div className="mt-2.5 pt-2 border-t border-[#f7e4eb] flex items-center justify-between text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setShowCycleHistory(!showCycleHistory)}
+                    className="inline-flex items-center gap-1 font-bold text-[#914c66] hover:underline"
+                  >
+                    <span>{showCycleHistory ? "Masquer l'historique" : "Voir l'historique de recalibration"}</span>
+                    <span>({cycleHistory.length})</span>
+                  </button>
+                  <span className="text-[10px] text-[#9a7082]">Stockage 100% privé local</span>
+                </div>
+
+                {showCycleHistory && (
+                  <div className="mt-2 space-y-1.5 text-xs">
+                    {cycleHistory.map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-xl border border-[#f0dae2] bg-[#fffafb] p-2 flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="font-bold text-[#452737] text-[11px]">Cycle du {item.date}</p>
+                          <p className="text-[10px] text-[#7a5868]">{item.note}</p>
+                        </div>
+                        <span className="rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-bold text-[#a14364]">
+                          {item.duration} jours
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Fenêtre d'autopalpation recommandée par l'OMS */}
@@ -3191,6 +4268,41 @@ export function PinkHubMobile() {
                 {speechLanguage === "en" ? lessons[activeLesson].englishFullText : lessons[activeLesson].fullText}
               </div>
 
+              {/* ENCADRÉ VIDÉO GUIDÉE D'AUTOPALPATION (PERSONNAGE AFRICAIN) */}
+              <div className="mt-3 overflow-hidden rounded-2xl border border-pink-200 bg-gradient-to-r from-rose-50 via-white to-pink-50 p-3.5 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className="relative shrink-0 overflow-hidden rounded-xl border border-pink-200 shadow-xs w-20 aspect-[16/9]">
+                    <img
+                      src="/images/autopalpation-afrique-demo.jpg"
+                      alt="Vidéo démonstrative autopalpation"
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <Play size={14} className="fill-white text-white" />
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#a14364]">
+                      Démonstration Guidée (2:45 min)
+                    </span>
+                    <h3 className="ph-display text-xs font-bold text-[#452737] leading-tight">
+                      Vidéo des 4 gestes d'autopalpation
+                    </h3>
+                    <p className="text-[10px] text-[#745362] line-clamp-1">
+                      Avec une soignante africaine en Français, Mooré et Dioula.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAutopalpationVideoModal(true)}
+                  className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#a14364] to-rose-700 py-2 text-xs font-bold text-white shadow-xs hover:opacity-95 transition"
+                >
+                  <Play size={14} className="fill-white" />
+                  <span>Regarder la vidéo démonstrative 🎬</span>
+                </button>
+              </div>
+
               {/* Liste des autres leçons */}
               <div className="mt-4 space-y-2">
                 {lessons.map((lesson, idx) => (
@@ -3228,54 +4340,228 @@ export function PinkHubMobile() {
           {/* ------------------------------------------------------------------ */}
           {/* ONGLET 4 : ROSE IA (ASSISTANTE VOCALE DISPONIBLE)                   */}
           {/* ------------------------------------------------------------------ */}
+          {/* ------------------------------------------------------------------ */}
+          {/* ONGLET 4 : ROSE IA (SANTÉ GLOBALE, BIEN-ÊTRE & ÉTHIQUE BIENVEILLANTE)*/}
+          {/* ------------------------------------------------------------------ */}
           {section === "RoseIA" && !selectedCenter && (
             <section className="ph-enter flex flex-col h-full px-5 pt-3">
-              <div className="rounded-[24px] bg-gradient-to-r from-[#734059] to-[#924b6d] p-4 text-white shadow-md">
+              {/* Bannière Rose IA */}
+              <div className="rounded-[24px] bg-gradient-to-r from-[#734059] via-[#8a3857] to-[#9e466b] p-4 text-white shadow-md">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="relative">
-                      <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20 text-white">
-                        <Sparkles size={20} className="text-amber-300" />
+                      <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20 text-white shadow-sm">
+                        <Sparkles size={21} className="text-amber-300 animate-pulse" />
                       </span>
                       {roseSpeaking && (
                         <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white ph-pulse" />
                       )}
                     </div>
                     <div>
-                      <h2 className="ph-display text-base font-bold">Rose IA</h2>
-                      <p className="text-[10px] text-white/80">Assistance vocale · Français · English · Mooré · Dioula</p>
+                      <h2 className="ph-display text-base font-bold">Rose IA · Santé Globale</h2>
+                      <p className="text-[10px] text-white/85">
+                        Bien-être · Hygiène de vie · Écoute empathique & éthique
+                      </p>
                     </div>
                   </div>
                   <button
-                    onClick={() => handlePlayAudio("Bonjour, je suis Rose IA. Posez-moi votre question en touchant le micro.", "fr")}
-                    className="rounded-full bg-white/20 p-2 text-white"
+                    onClick={() =>
+                      handlePlayAudio(
+                        "Bonjour ma sœur, je suis Rose IA, ta compagne de santé et de bien-être. Pose-moi ta question à l'écrit ou au micro.",
+                        "fr",
+                      )
+                    }
+                    className="rounded-full bg-white/20 p-2 text-white hover:bg-white/30 transition"
+                    title="Écouter le message de bienvenue"
                   >
                     <Volume2 size={16} />
                   </button>
                 </div>
 
-                {currentUser?.role === "admin" && currentUser?.adminType === "doctor" && (
+                {/* Badges d'engagement éthique */}
+                <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[9.5px]">
+                  <span className="rounded-full bg-white/15 px-2 py-0.5 font-bold text-white">
+                    🌸 Zéro tabou
+                  </span>
+                  <span className="rounded-full bg-white/15 px-2 py-0.5 font-bold text-white">
+                    🤝 Bienveillance & Pudeur
+                  </span>
+                  <span className="rounded-full bg-white/15 px-2 py-0.5 font-bold text-amber-200">
+                    🌿 Remèdes & Conseils locaux
+                  </span>
+                </div>
+
+                {/* Raccourcis Soignant & Confidentialité Rose IA */}
+                <div className="mt-3 flex flex-col gap-1.5">
                   <button
                     onClick={() => setShowDoctorTrainModal(true)}
-                    className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-amber-400 py-1.5 text-xs font-bold text-purple-950 shadow-sm"
+                    className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-2 text-xs font-bold text-purple-950 shadow-sm hover:from-amber-300 hover:to-amber-400 transition"
                   >
-                    <GraduationCap size={15} /> 🩺 Mode Médecin : Entraîner Rose IA
+                    <GraduationCap size={15} /> 🩺 Simuler l'entraînement de Rose IA par un docteur (4 étapes)
                   </button>
-                )}
+                  <button
+                    onClick={() => setShowPrivacyModal(true)}
+                    className="flex items-center justify-center gap-1 text-[10px] text-white/90 hover:text-white underline underline-offset-2 transition"
+                  >
+                    <ShieldCheck size={12} className="text-emerald-300" />
+                    <span>Zéro collecte personnelle sans demande · Confidentialité & Éthique</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="ph-scroll mt-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
-                {["Est-ce que ça fait mal ?", "Combien coûte le dépistage ?", "J'ai senti une petite boule"].map((q) => (
+              {/* BANDEAU VIDÉO DÉMONSTRATIVE D'AUTOPALPATION (PERSONNAGE AFRICAIN) */}
+              <div className="mt-2.5 flex items-center justify-between rounded-[22px] bg-gradient-to-r from-rose-600 via-[#a14364] to-[#734059] p-3 text-white shadow-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/20 text-white backdrop-blur-xs">
+                    <Play size={18} className="fill-white translate-x-0.5" />
+                    <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs">Vidéo d'Autopalpation</h4>
+                    <p className="text-[10px] text-white/85">
+                      Démonstration guidée pas-à-pas par notre sage-femme
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAutopalpationVideoModal(true)}
+                  className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#a14364] shadow-xs hover:bg-pink-50 transition shrink-0"
+                >
+                  Voir la vidéo 🎬
+                </button>
+              </div>
+
+              {/* CARTE MOT DOUX & CONSEIL BIENVEILLANT EN LANGUE LOCALE */}
+              <div className="mt-2.5 rounded-[22px] border border-[#f0d4de] bg-[#fffbfd] p-3 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#a14364]">
+                      {roseDailyTips[dailyTipIndex].categoryLabel}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={handleRequestNotification}
+                      className={`inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] font-bold transition ${
+                        notificationEnabled
+                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                          : "bg-[#faedf2] text-[#8e3f5a] hover:bg-[#f3dbe4]"
+                      }`}
+                      title="Activer les notifications locales quotidiennes"
+                    >
+                      <Bell size={12} className={notificationEnabled ? "fill-emerald-800" : ""} />
+                      <span>{notificationEnabled ? "Rappels actifs" : "Me rappeler 🔔"}</span>
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setDailyTipIndex((prev) => (prev + 1) % roseDailyTips.length)
+                      }
+                      className="rounded-lg bg-white border border-[#edd1dc] px-2 py-0.5 text-[10px] font-bold text-[#7a485c] hover:bg-[#fdf4f7]"
+                    >
+                      ✨ Suivant
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sélecteur de langue Mooré / Dioula / FR / EN */}
+                <div className="mt-1.5 flex items-center justify-between">
+                  <p className="text-[11px] font-bold text-[#452737]">
+                    {roseDailyTips[dailyTipIndex].titleFr}
+                  </p>
+                  <div className="flex gap-1 text-[9px] font-bold">
+                    {(
+                      [
+                        { code: "fr", label: "FR" },
+                        { code: "moore", label: "Mooré" },
+                        { code: "dioula", label: "Dioula" },
+                        { code: "en", label: "EN" },
+                      ] as const
+                    ).map(({ code, label }) => (
+                      <button
+                        key={code}
+                        onClick={() => setDailyTipLang(code)}
+                        className={`rounded px-1.5 py-0.2 transition ${
+                          dailyTipLang === code
+                            ? "bg-[#a14364] text-white"
+                            : "bg-white text-[#7d5668] border border-[#f0dfe4]"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Message bienveillant */}
+                <p className="mt-1 text-[11px] leading-relaxed text-[#5a3648] italic">
+                  «{" "}
+                  {dailyTipLang === "moore"
+                    ? roseDailyTips[dailyTipIndex].moore
+                    : dailyTipLang === "dioula"
+                      ? roseDailyTips[dailyTipIndex].dioula
+                      : dailyTipLang === "en"
+                        ? roseDailyTips[dailyTipIndex].en
+                        : roseDailyTips[dailyTipIndex].fr}
+                  {" "}»
+                </p>
+
+                <div className="mt-1.5 flex justify-end">
                   <button
-                    key={q}
-                    onClick={() => handleSendRoseMessage(q)}
-                    className="shrink-0 rounded-full border border-[#e4cad3] bg-white px-2.5 py-1 text-[#863b55] font-semibold"
+                    onClick={() => {
+                      const tip = roseDailyTips[dailyTipIndex];
+                      const txt =
+                        dailyTipLang === "moore"
+                          ? tip.moore
+                          : dailyTipLang === "dioula"
+                            ? tip.dioula
+                            : dailyTipLang === "en"
+                              ? tip.en
+                              : tip.fr;
+                      handlePlayAudio(txt, dailyTipLang);
+                    }}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-[#a14364] hover:underline"
                   >
-                    {q}
+                    <Volume2 size={12} />
+                    <span>Écouter le mot doux ({dailyTipLang.toUpperCase()})</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* CAPSULES DE QUESTIONS RAPIDES SANTÉ GLOBALE & PRÉVENTION */}
+              <div className="ph-scroll mt-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
+                {/* Raccourci vidéo démonstrative direct demandé */}
+                <button
+                  type="button"
+                  onClick={() => setShowAutopalpationVideoModal(true)}
+                  className="shrink-0 rounded-full border border-rose-300 bg-rose-50 px-2.5 py-1 text-rose-800 font-bold hover:bg-rose-100 transition shadow-2xs flex items-center gap-1"
+                >
+                  <Play size={11} className="fill-rose-700" />
+                  <span>🎬 Voir la vidéo autopalpation</span>
+                </button>
+
+                {[
+                  { label: "🌸 Hygiène intime & flore", q: "Comment bien faire ma toilette intime ?" },
+                  { label: "🌿 Moringa, baobab & nutrition", q: "Quels sont les bienfaits du moringa et du baobab pour ma santé ?" },
+                  { label: "🩸 Soulager règles douloureuses", q: "Comment apaiser mes crampes et douleurs de règles naturellement ?" },
+                  { label: "🧘‍♀️ Sérénité & charge mentale", q: "Je me sens très fatiguée et stressée par ma famille" },
+                  { label: "🩺 Dépistage col utérus & seins", q: "Comment se passe le dépistage du col de l'utérus et des seins ?" },
+                  { label: "💰 Coût du dépistage (FCFA)", q: "Combien coûte le dépistage au Burkina Faso ?" },
+                  { label: "🔍 Petite boule au sein", q: "J'ai senti une petite boule dans mon sein" },
+                ].map(({ label, q }) => (
+                  <button
+                    key={label}
+                    onClick={() => handleSendRoseMessage(q)}
+                    className="shrink-0 rounded-full border border-[#e4cad3] bg-white px-2.5 py-1 text-[#863b55] font-semibold hover:bg-[#faedf2] transition shadow-2xs"
+                  >
+                    {label}
                   </button>
                 ))}
               </div>
 
+              {/* LISTE DES MESSAGES DU CHAT ROSE IA */}
               <div className="mt-3 space-y-2.5 flex-1 overflow-y-auto">
                 {roseMessages.map((msg, i) => (
                   <div key={i} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
@@ -3298,6 +4584,23 @@ export function PinkHubMobile() {
                           <strong>Dioula :</strong> {msg.dioulaText}
                         </div>
                       )}
+
+                      {/* Bouton cliquable pour voir la vidéo démonstrative dans le chat */}
+                      {msg.sender === "rose" &&
+                        (msg.text.toLowerCase().includes("palpation") ||
+                          msg.text.toLowerCase().includes("geste") ||
+                          msg.text.toLowerCase().includes("boule") ||
+                          msg.text.toLowerCase().includes("sein") ||
+                          msg.text.toLowerCase().includes("nodule")) && (
+                          <button
+                            type="button"
+                            onClick={() => setShowAutopalpationVideoModal(true)}
+                            className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#a14364] to-rose-700 py-1.5 px-2.5 text-[11px] font-bold text-white shadow-xs hover:opacity-95 transition"
+                          >
+                            <Play size={12} className="fill-white" />
+                            <span>Voir la vidéo démonstrative (Sage-femme) 🎬</span>
+                          </button>
+                        )}
                     </div>
                     {msg.sender === "rose" && (
                       <div className="mt-0.5 flex gap-2">
@@ -3315,6 +4618,22 @@ export function PinkHubMobile() {
                             <Volume2 size={12} /> EN
                           </button>
                         )}
+                        {msg.mooreText && (
+                          <button
+                            onClick={() => handlePlayAudio(msg.mooreText!, "moore")}
+                            className="flex items-center gap-1 text-[10px] font-bold text-[#845068] hover:underline"
+                          >
+                            <Volume2 size={12} /> Mooré
+                          </button>
+                        )}
+                        {msg.dioulaText && (
+                          <button
+                            onClick={() => handlePlayAudio(msg.dioulaText!, "dioula")}
+                            className="flex items-center gap-1 text-[10px] font-bold text-[#845068] hover:underline"
+                          >
+                            <Volume2 size={12} /> Dioula
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -3323,7 +4642,13 @@ export function PinkHubMobile() {
                 <div ref={roseChatBottomRef} />
               </div>
 
-              <div className="mt-2.5 rounded-2xl border border-[#e5ccd5] bg-white p-2 shadow-sm">
+              {/* RAPPEL ÉTHIQUE MÉDICAL */}
+              <div className="mt-2 text-center text-[9px] text-[#936b7c] px-2 italic">
+                🛡️ Rose IA est une conseillère préventive bienveillante. Elle ne remplace pas l'avis d'une sage-femme ou d'un médecin.
+              </div>
+
+              {/* BARRE DE SAISIE VOCALE & TEXTUELLE */}
+              <div className="mt-2 rounded-2xl border border-[#e5ccd5] bg-white p-2 shadow-sm">
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -3344,8 +4669,8 @@ export function PinkHubMobile() {
                     onKeyDown={(e) => e.key === "Enter" && handleSendRoseMessage()}
                     placeholder={
                       isRecordingVoice
-                        ? "Rose IA vous écoute... Parlez en français"
-                        : "Écrivez ou touchez le micro pour parler..."
+                        ? "Rose IA vous écoute avec tendresse... Parlez"
+                        : "Posez votre question (intime, nutrition, règles...)"
                     }
                     className="flex-1 bg-transparent text-xs text-[#452737] outline-none"
                   />
@@ -3449,13 +4774,20 @@ export function PinkHubMobile() {
                 )}
               </div>
 
-              {/* FILTRES D'ANNONCES : MOIS EN COURS / TOUTES / MES ANNONCES (ADMIN) */}
-              <div className="mt-3 flex items-center gap-1.5 text-[11px]">
+              {/* FILTRES D'ANNONCES : MOIS EN COURS / TOUTES / VEILLE ROSE IA / MES ANNONCES */}
+              <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px]">
                 <button
                   onClick={() => setAnnouncementsFilter("month")}
                   className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "month" ? "bg-[#a14364] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   📅 Mois en cours (Octobre 2026)
+                </button>
+                <button
+                  onClick={() => setAnnouncementsFilter("rose_ai")}
+                  className={`rounded-full px-3 py-1 font-bold transition inline-flex items-center gap-1 ${announcementsFilter === "rose_ai" ? "bg-purple-900 text-white shadow-xs" : "border border-purple-200 bg-purple-50 text-purple-900"}`}
+                >
+                  <Sparkles size={12} className="text-amber-400" />
+                  <span>Veille Rose IA ({announcements.filter((a) => a.isRoseAIDetected && a.status === "approved").length})</span>
                 </button>
                 <button
                   onClick={() => setAnnouncementsFilter("all")}
@@ -3480,14 +4812,62 @@ export function PinkHubMobile() {
                   </div>
                 ) : (
                   displayedAnnouncements.map((a) => (
-                    <div key={a.id} className="rounded-2xl border border-[#efdfe4] bg-white p-3.5 text-xs shadow-sm">
+                    <div
+                      key={a.id}
+                      className={`rounded-2xl border p-3.5 text-xs shadow-sm ${
+                        a.isRoseAIDetected
+                          ? "border-purple-200 bg-gradient-to-br from-white to-purple-50/40"
+                          : "border-[#efdfe4] bg-white"
+                      }`}
+                    >
                       <div className="flex items-center justify-between">
-                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${a.badgeColor}`}>{a.badge}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${a.badgeColor}`}>
+                          {a.badge}
+                        </span>
                         <span className="text-[10px] text-[#8e6878] font-semibold">{a.month}</span>
                       </div>
+
+                      {/* Mention spéciale si repérée par Rose IA */}
+                      {a.isRoseAIDetected && (
+                        <div className="mt-1 flex items-center gap-1 text-[9.5px] font-bold text-purple-900 bg-purple-100/70 px-2 py-0.5 rounded-lg w-fit">
+                          <Sparkles size={11} className="text-amber-500" />
+                          <span>Veille intelligente Rose IA · {a.sourceWebUrl}</span>
+                        </div>
+                      )}
+
                       <h3 className="ph-display mt-1 text-sm font-bold text-[#452737]">{a.title}</h3>
-                      <p className="text-[11px] text-[#8c405c] mt-0.5 font-semibold">{a.author} · {a.city}</p>
-                      <p className="mt-1 text-[#6d4f5e] leading-relaxed">{a.content}</p>
+                      <p className="text-[11px] text-[#8c405c] mt-0.5 font-semibold">
+                        {a.author} · {a.city}
+                      </p>
+
+                      {/* Affiche officielle ou photo de l'événement */}
+                      {a.imageUrl && (
+                        <div className="relative mt-2 overflow-hidden rounded-xl border border-pink-100 shadow-xs group">
+                          <img
+                            src={a.imageUrl}
+                            alt={a.title}
+                            className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-102"
+                            loading="lazy"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedPosterModal({
+                                url: a.imageUrl!,
+                                title: a.title,
+                                author: a.author,
+                                caption: a.imageCaption,
+                              })
+                            }
+                            className="absolute bottom-2 right-2 flex items-center gap-1 rounded-lg bg-black/75 px-2 py-1 text-[9.5px] font-bold text-white backdrop-blur-xs hover:bg-black/90 transition shadow-sm"
+                          >
+                            <Eye size={12} /> Agrandir l'affiche
+                          </button>
+                        </div>
+                      )}
+
+                      <p className="mt-2 text-[#6d4f5e] leading-relaxed">{a.content}</p>
+
                       <div className="mt-2 flex items-center justify-between border-t border-[#f7e8ee] pt-2 text-[10px] text-[#8b6375]">
                         <span>📞 {a.contact}</span>
                         <span>{a.date}</span>
@@ -3534,8 +4914,8 @@ export function PinkHubMobile() {
 
                 <div className="mt-3 rounded-xl bg-[#fdf5f8] border border-[#f5dfeb] p-2.5 text-[11px] italic text-[#6f4b5d]">
                   « {smsLanguage === "fr"
-                    ? "Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : http://localhost:5173/"
-                    : "Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : http://localhost:5173/"} »
+                    ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${localShareUrl}`
+                    : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${localShareUrl}`} »
                 </div>
 
                 {/* 1. BOUTON ENVOI PAR WHATSAPP */}
@@ -3543,8 +4923,8 @@ export function PinkHubMobile() {
                   onClick={() => {
                     const text = encodeURIComponent(
                       smsLanguage === "fr"
-                        ? "Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : http://localhost:5173/"
-                        : "Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : http://localhost:5173/",
+                        ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${localShareUrl}`
+                        : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${localShareUrl}`,
                     );
                     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
                     notify("Invitation WhatsApp prête à l'envoi.");
@@ -3559,8 +4939,8 @@ export function PinkHubMobile() {
                   onClick={() => {
                     const text = encodeURIComponent(
                       smsLanguage === "fr"
-                        ? "Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : http://localhost:5173/"
-                        : "Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : http://localhost:5173/",
+                        ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${localShareUrl}`
+                        : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${localShareUrl}`,
                     );
                     window.open(`sms:?body=${text}`, "_blank");
                     notify("Application SMS ouverte pour envoi direct.");
@@ -3682,10 +5062,10 @@ export function PinkHubMobile() {
             <div className="grid grid-cols-5 items-end">
               {[
                 { label: "Accueil" as Section, icon: Heart, name: "Accueil" },
-                { label: "Centres" as Section, icon: MapPin, name: "Centres" },
-                { label: "RoseIA" as Section, icon: Sparkles, name: "Rose IA", isCentral: true },
                 { label: "Comprendre" as Section, icon: BookOpen, name: "Comprendre" },
-                { label: "FaireUnDon" as Section, icon: Heart, name: "Faire un don" },
+                { label: "RoseIA" as Section, icon: Sparkles, name: "Rose IA", isCentral: true },
+                { label: "Centres" as Section, icon: MapPin, name: "Centres" },
+                { label: "FaireUnDon" as Section, icon: Gift, name: "Faire un don" },
               ].map(({ label, icon: Icon, name, isCentral }) => {
                 const active = section === label;
 
@@ -3815,14 +5195,87 @@ export function PinkHubMobile() {
                   />
                 </div>
 
-                <div>
-                  <label className="block font-bold text-[#563746]">Badge de mise en avant :</label>
+                {/* Photo ou Affiche officielle de l'événement */}
+                <div className="space-y-1.5 rounded-xl border border-pink-200 bg-pink-50/40 p-2.5">
+                  <label className="block font-bold text-[#563746]">Affiche ou Photo de l'événement :</label>
+                  
+                  {/* Modèles d'affiches des partenaires en 1 clic */}
+                  <div className="grid grid-cols-3 gap-1 text-[9.5px]">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setNewAnnouncement({
+                          ...newAnnouncement,
+                          imageUrl: "/images/affiche-evenement-beneere.jpg",
+                          imageCaption: "Affiche Caravane BE NEERE FOR CAUSE",
+                        })
+                      }
+                      className={`rounded-lg p-1 text-center font-bold border transition ${
+                        newAnnouncement.imageUrl === "/images/affiche-evenement-beneere.jpg"
+                          ? "bg-[#a14364] text-white border-[#a14364]"
+                          : "bg-white text-[#7d4b60] border-pink-200 hover:bg-pink-100"
+                      }`}
+                    >
+                      🎪 BE NEERE
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setNewAnnouncement({
+                          ...newAnnouncement,
+                          imageUrl: "/images/affiche-wtm-odc.jpg",
+                          imageCaption: "Affiche Hackathon WTM & Orange Digital Center",
+                        })
+                      }
+                      className={`rounded-lg p-1 text-center font-bold border transition ${
+                        newAnnouncement.imageUrl === "/images/affiche-wtm-odc.jpg"
+                          ? "bg-[#a14364] text-white border-[#a14364]"
+                          : "bg-white text-[#7d4b60] border-pink-200 hover:bg-pink-100"
+                      }`}
+                    >
+                      💻 WTM / ODC
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setNewAnnouncement({
+                          ...newAnnouncement,
+                          imageUrl: "/images/affiche-genit-care.jpg",
+                          imageCaption: "Affiche Clinique GENIT CARE",
+                        })
+                      }
+                      className={`rounded-lg p-1 text-center font-bold border transition ${
+                        newAnnouncement.imageUrl === "/images/affiche-genit-care.jpg"
+                          ? "bg-[#a14364] text-white border-[#a14364]"
+                          : "bg-white text-[#7d4b60] border-pink-200 hover:bg-pink-100"
+                      }`}
+                    >
+                      🏥 GENIT CARE
+                    </button>
+                  </div>
+
+                  {/* Saisie d'une URL personnalisée */}
                   <input
                     type="text"
-                    value={newAnnouncement.badge}
-                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, badge: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
+                    placeholder="Ou lien de votre affiche / photo..."
+                    value={newAnnouncement.imageUrl || ""}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, imageUrl: e.target.value })}
+                    className="w-full rounded-lg border border-[#e4cfd6] bg-white p-1.5 text-[11px]"
                   />
+
+                  {/* Prévisualisation miniature de l'affiche */}
+                  {newAnnouncement.imageUrl && (
+                    <div className="relative mt-1 overflow-hidden rounded-lg border border-pink-200 shadow-2xs">
+                      <img
+                        src={newAnnouncement.imageUrl}
+                        alt="Aperçu affiche"
+                        className="aspect-[16/9] w-full object-cover"
+                      />
+                      <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[8.5px] font-bold text-white">
+                        ✓ Aperçu de l'affiche
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -3909,7 +5362,7 @@ export function PinkHubMobile() {
                 </button>
               </div>
 
-              {/* ONGLET 1 : STATISTIQUES DE VISITES DU SITE & TABLEAU DE BORD COMPLET */}
+              {/* ONGLET 1 : STATISTIQUES DE VISITES DU SITE & RECENSEMENT DES CENTRES PAR VILLE/RÉGION */}
               {superadminActiveTab === "stats" && (
                 <div className="mt-3.5 space-y-3 text-xs ph-enter">
                   <div className="grid grid-cols-2 gap-2">
@@ -3935,6 +5388,128 @@ export function PinkHubMobile() {
                       <span className="text-[9.5px] font-bold text-emerald-900 uppercase">Dons collectés</span>
                       <p className="text-lg font-extrabold text-emerald-950 mt-0.5">14,8 M F</p>
                       <p className="text-[9px] text-emerald-700 font-bold">Via Orange Money</p>
+                    </div>
+                  </div>
+
+                  {/* ================================================================= */}
+                  {/* RECENSEMENT DES CENTRES LES PLUS FRÉQUENTÉS PAR VILLE ET RÉGION   */}
+                  {/* ================================================================= */}
+                  <div className="rounded-2xl border-2 border-purple-300 bg-white p-3.5 shadow-sm space-y-2.5">
+                    <div className="flex items-center justify-between border-b border-purple-100 pb-2">
+                      <div className="flex items-center gap-1.5">
+                        <Activity size={16} className="text-purple-900" />
+                        <h4 className="ph-display text-xs font-bold text-purple-950">
+                          Centres les plus fréquentés
+                        </h4>
+                      </div>
+                      <span className="text-[9.5px] font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full">
+                        {superadminSortedCenters.length} centres
+                      </span>
+                    </div>
+
+                    {/* Filtres par Ville & Région */}
+                    <div className="flex flex-wrap items-center gap-1 text-[10px] font-bold">
+                      {[
+                        { id: "all", label: "🇧🇫 Tout le pays" },
+                        { id: "Centre", label: "📍 Ouaga (Centre)" },
+                        { id: "Hauts-Bassins", label: "📍 Bobo (Hauts-Bassins)" },
+                        { id: "Centre-Ouest", label: "📍 Koudougou" },
+                      ].map((reg) => (
+                        <button
+                          key={reg.id}
+                          onClick={() => setSuperadminRegionFilter(reg.id)}
+                          className={`rounded-lg px-2 py-1 transition ${
+                            superadminRegionFilter === reg.id
+                              ? "bg-purple-950 text-white shadow-xs"
+                              : "bg-[#f5eaf0] text-purple-900 hover:bg-[#ebdbe5]"
+                          }`}
+                        >
+                          {reg.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Palmarès classé par fréquentation */}
+                    <div className="space-y-2 pt-1">
+                      {superadminSortedCenters.map((center, index) => {
+                        const monthlyEstimated = center.confirmedVisitsToday * 24;
+                        const rankColor =
+                          index === 0
+                            ? "bg-amber-400 text-amber-950 font-black shadow-xs ring-2 ring-amber-300"
+                            : index === 1
+                              ? "bg-slate-300 text-slate-900 font-bold"
+                              : index === 2
+                                ? "bg-amber-700 text-white font-bold"
+                                : "bg-purple-100 text-purple-900 font-semibold";
+
+                        return (
+                          <div
+                            key={center.id}
+                            className="rounded-xl border border-purple-100 bg-purple-50/40 p-2.5 transition hover:bg-purple-50"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-start gap-2">
+                                <span
+                                  className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg text-[10px] ${rankColor}`}
+                                >
+                                  #{index + 1}
+                                </span>
+                                <div>
+                                  <h5 className="font-bold text-[#351c2a] text-[11.5px] leading-tight">
+                                    {center.shortName}
+                                  </h5>
+                                  <p className="text-[10px] text-purple-800">
+                                    {center.place} ({center.city})
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="text-right shrink-0">
+                                <span className="text-xs font-black text-purple-950 block">
+                                  {center.confirmedVisitsToday} femmes/j
+                                </span>
+                                <span className="text-[9px] text-[#865d70]">
+                                  ~{monthlyEstimated.toLocaleString("fr-FR")} /mois
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Jauge d'affluence et détails */}
+                            <div className="mt-2 pt-1.5 border-t border-purple-100/80 flex items-center justify-between text-[9.5px]">
+                              <span className="flex items-center gap-1 font-semibold text-[#5a3b4c]">
+                                <span
+                                  className={`h-2 w-2 rounded-full ${
+                                    center.isApparatusWorking ? "bg-emerald-500" : "bg-rose-500"
+                                  }`}
+                                />
+                                {center.isApparatusWorking ? "Mammographe actif" : "Mammographe en révision"}
+                              </span>
+                              <span className="text-purple-900 font-bold">
+                                Attente : {center.estimatedWait}
+                              </span>
+                              <span className="text-purple-800">
+                                👥 {center.agentsPresent} soignants
+                              </span>
+                            </div>
+
+                            {/* Barre de tension relative */}
+                            <div className="mt-1.5 h-1.5 w-full rounded-full bg-purple-100 overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-300 ${
+                                  center.confirmedVisitsToday >= 60
+                                    ? "bg-rose-500"
+                                    : center.confirmedVisitsToday >= 30
+                                      ? "bg-amber-500"
+                                      : "bg-emerald-500"
+                                }`}
+                                style={{
+                                  width: `${Math.min(100, (center.confirmedVisitsToday / 80) * 100)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -3983,39 +5558,135 @@ export function PinkHubMobile() {
                 </div>
               )}
 
-              {/* ONGLET 2 : MODÉRATION DES ANNONCES (SEUL LE SUPERADMIN PEUT VALIDER) */}
+              {/* ONGLET 2 : MODÉRATION DES ANNONCES & VEILLE RADAR ROSE IA */}
               {superadminActiveTab === "announcements" && (
-                <div className="mt-3.5 space-y-2 text-xs ph-enter">
-                  <p className="font-bold text-[#452737]">
-                    Annonces en attente de modération ({announcements.filter((a) => a.status === "pending_validation").length}) :
-                  </p>
+                <div className="mt-3.5 space-y-3 text-xs ph-enter">
+                  {/* Sous-onglets de tri : Tout / Veille Rose IA / Partenaires */}
+                  <div className="flex items-center gap-1 bg-[#f5eaf0] p-1 rounded-xl text-[10.5px] font-bold">
+                    <button
+                      onClick={() => setSuperadminAnnouncementTab("all")}
+                      className={`flex-1 py-1 rounded-lg transition ${
+                        superadminAnnouncementTab === "all"
+                          ? "bg-purple-950 text-white shadow-xs"
+                          : "text-purple-900"
+                      }`}
+                    >
+                      Toutes ({announcements.filter((a) => a.status === "pending_validation").length})
+                    </button>
+                    <button
+                      onClick={() => setSuperadminAnnouncementTab("rose_ai")}
+                      className={`flex-1 py-1 rounded-lg transition inline-flex items-center justify-center gap-1 ${
+                        superadminAnnouncementTab === "rose_ai"
+                          ? "bg-purple-950 text-white shadow-xs"
+                          : "text-purple-900"
+                      }`}
+                    >
+                      <Sparkles size={11} className="text-amber-400" />
+                      <span>
+                        Veille Rose IA (
+                        {
+                          announcements.filter(
+                            (a) => a.status === "pending_validation" && a.isRoseAIDetected,
+                          ).length
+                        }
+                        )
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setSuperadminAnnouncementTab("partners")}
+                      className={`flex-1 py-1 rounded-lg transition ${
+                        superadminAnnouncementTab === "partners"
+                          ? "bg-purple-950 text-white shadow-xs"
+                          : "text-purple-900"
+                      }`}
+                    >
+                      Partenaires (
+                      {
+                        announcements.filter(
+                          (a) => a.status === "pending_validation" && !a.isRoseAIDetected,
+                        ).length
+                      }
+                      )
+                    </button>
+                  </div>
 
-                  {announcements.filter((a) => a.status === "pending_validation").length === 0 ? (
-                    <div className="rounded-xl border border-[#ebd6dc] p-4 text-center text-[#825b6d]">
-                      Toutes les annonces sont à jour et validées.
-                    </div>
-                  ) : (
-                    announcements
-                      .filter((a) => a.status === "pending_validation")
+                  {/* Liste des annonces à modérer */}
+                  <div className="space-y-2.5">
+                    {announcements
+                      .filter((a) => {
+                        if (a.status !== "pending_validation") return false;
+                        if (superadminAnnouncementTab === "rose_ai") return a.isRoseAIDetected;
+                        if (superadminAnnouncementTab === "partners") return !a.isRoseAIDetected;
+                        return true;
+                      })
                       .map((ann) => (
-                        <div key={ann.id} className="rounded-2xl border-2 border-amber-300 bg-amber-50/70 p-3 text-xs space-y-1.5">
-                          <div className="flex justify-between items-start">
-                            <span className="font-bold text-[#452737] text-[12px]">{ann.title}</span>
-                            <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[9px] font-bold text-amber-900">
-                              En attente
+                        <div
+                          key={ann.id}
+                          className={`rounded-2xl p-3 text-xs space-y-2 border-2 ${
+                            ann.isRoseAIDetected
+                              ? "border-purple-400 bg-gradient-to-br from-purple-50 via-white to-pink-50/50 shadow-sm"
+                              : "border-amber-300 bg-amber-50/70"
+                          }`}
+                        >
+                          {/* Badge et Origine */}
+                          <div className="flex justify-between items-start gap-2">
+                            <span className="font-bold text-[#3a1d2d] text-[12px] leading-tight">
+                              {ann.title}
+                            </span>
+                            <span
+                              className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                                ann.isRoseAIDetected
+                                  ? "bg-purple-900 text-white"
+                                  : "bg-amber-200 text-amber-900"
+                              }`}
+                            >
+                              {ann.isRoseAIDetected ? "🤖 Veille Web Rose IA" : "En attente partenaire"}
                             </span>
                           </div>
-                          <p className="text-[10.5px] text-[#863e58] font-semibold">{ann.author} · {ann.city} ({ann.date})</p>
-                          <p className="text-[11px] text-[#553b49] leading-relaxed">{ann.content}</p>
-                          <p className="text-[10px] text-[#7d5d6d]">Contact public : {ann.contact}</p>
 
+                          {/* Source internet pour la veille Rose IA */}
+                          {ann.isRoseAIDetected && (
+                            <div className="rounded-xl bg-purple-100/70 p-2 text-[10px] space-y-0.5 text-purple-950">
+                              <p className="font-bold flex items-center gap-1">
+                                <span>🌐 Source détectée :</span>
+                                <span className="text-purple-800 font-normal">{ann.sourceWebUrl}</span>
+                              </p>
+                              <p className="font-bold flex items-center gap-1">
+                                <span>🎯 Indice de confiance IA :</span>
+                                <span className="text-emerald-700">{ann.aiConfidence}</span>
+                              </p>
+                              <p className="mt-1 italic text-[9.5px] text-purple-900">
+                                📲 <strong>Notification push préparée :</strong> « {ann.pushMessageFr} »
+                              </p>
+                            </div>
+                          )}
+
+                          <p className="text-[10.5px] text-[#863e58] font-semibold">
+                            {ann.author} · {ann.city} ({ann.date})
+                          </p>
+                          <p className="text-[11px] text-[#553b49] leading-relaxed">{ann.content}</p>
+                          <p className="text-[10px] text-[#7d5d6d]">Contact : {ann.contact}</p>
+
+                          {/* Actions : Validation avec diffusion Push ou Rejet */}
                           <div className="pt-2 flex gap-2">
-                            <button
-                              onClick={() => handleApproveAnnouncement(ann.id)}
-                              className="flex-1 rounded-xl bg-emerald-600 py-1.5 font-bold text-white shadow-xs text-center hover:bg-emerald-700"
-                            >
-                              Valider & Publier ✓
-                            </button>
+                            {ann.isRoseAIDetected ? (
+                              <button
+                                onClick={() => handleApproveAndPushAnnouncement(ann.id)}
+                                className="flex-1 rounded-xl bg-gradient-to-r from-purple-900 to-[#a14364] py-2 font-bold text-white shadow-sm text-center hover:opacity-95 flex items-center justify-center gap-1.5"
+                                title="Valider officiellement l'annonce et envoyer un push bienveillant aux femmes"
+                              >
+                                <Sparkles size={14} className="text-amber-300" />
+                                <span>Valider & Diffuser en Push 🚀</span>
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleApproveAnnouncement(ann.id)}
+                                className="flex-1 rounded-xl bg-emerald-600 py-1.5 font-bold text-white shadow-xs text-center hover:bg-emerald-700"
+                              >
+                                Valider & Publier ✓
+                              </button>
+                            )}
+
                             <button
                               onClick={() => handleRejectAnnouncement(ann.id)}
                               className="rounded-xl border border-rose-300 bg-white px-3 py-1.5 font-bold text-rose-700 hover:bg-rose-50"
@@ -4024,8 +5695,19 @@ export function PinkHubMobile() {
                             </button>
                           </div>
                         </div>
-                      ))
-                  )}
+                      ))}
+
+                    {announcements.filter((a) => {
+                      if (a.status !== "pending_validation") return false;
+                      if (superadminAnnouncementTab === "rose_ai") return a.isRoseAIDetected;
+                      if (superadminAnnouncementTab === "partners") return !a.isRoseAIDetected;
+                      return true;
+                    }).length === 0 && (
+                      <div className="rounded-xl border border-[#ebd6dc] p-4 text-center text-[#825b6d]">
+                        Aucune annonce en attente dans cette catégorie.
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -4448,6 +6130,970 @@ export function PinkHubMobile() {
                   Fermer
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* MODAL : PARAMÈTRES DE CONFIDENTIALITÉ & ÉTHIQUE DES DONNÉES           */}
+        {/* ==================================================================== */}
+        {showPrivacyModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:absolute sm:rounded-[36px]"
+            onClick={() => setShowPrivacyModal(false)}
+          >
+            <div
+              className="ph-enter max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[28px] bg-white p-5 shadow-2xl border border-[#ecd5df]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* En-tête du modal */}
+              <div className="flex items-center justify-between border-b border-[#f2e1e7] pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-100 text-emerald-700">
+                    <ShieldCheck size={20} />
+                  </div>
+                  <div>
+                    <h3 className="ph-display text-sm font-bold text-[#452737]">
+                      Confidentialité & Données
+                    </h3>
+                    <p className="text-[10px] text-emerald-700 font-bold">
+                      Zero Tracking · Local-First · Éthique Médicale
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPrivacyModal(false)}
+                  className="rounded-full p-1.5 text-[#725261] hover:bg-[#faedf2]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Contenu */}
+              <div className="mt-3 space-y-3.5 text-xs">
+                {/* Cartouche d'explication pédagogique */}
+                <div className="rounded-2xl bg-emerald-50/70 border border-emerald-200 p-3.5 text-[#20432f] space-y-2">
+                  <div className="flex items-center gap-1.5 font-bold text-xs text-emerald-900">
+                    <Shield size={14} className="text-emerald-700" />
+                    <span>Nos engagements éthiques stricts</span>
+                  </div>
+                  <ul className="space-y-1.5 text-[11px] leading-relaxed text-[#2c523c]">
+                    <li className="flex items-start gap-1.5">
+                      <Check size={13} className="shrink-0 text-emerald-600 mt-0.5" />
+                      <span><strong>Aucune donnée personnelle n'est collectée</strong> par l'application sans votre demande expresse. Vos règles et notes restent 100% sur votre téléphone.</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <Check size={13} className="shrink-0 text-emerald-600 mt-0.5" />
+                      <span><strong>Entraînement de Rose IA</strong> : Seules les recommandations certifiées par les <strong>docteurs, sages-femmes et associations</strong> alimentent l'IA pour la rendre naturelle, empathique et culturellement adaptée (Français, Mooré, Dioula).</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <Check size={13} className="shrink-0 text-emerald-600 mt-0.5" />
+                      <span><strong>Partage médical sur demande uniquement</strong> : En cas de nodule suspect ou d'urgence, vous choisissez explicitement si vous transmettez votre fiche à un centre.</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Paramètres interactifs / Toggles */}
+                <div className="space-y-2.5">
+                  <p className="text-[10.5px] font-bold uppercase tracking-wider text-[#7a4c60]">
+                    Vos réglages de confidentialité
+                  </p>
+
+                  {/* Toggle 1 : Stockage 100% Local */}
+                  <label className="flex items-center justify-between rounded-xl border border-[#edd7e1] bg-[#fffcfd] p-3 cursor-pointer hover:bg-pink-50/50 transition">
+                    <div className="pr-2">
+                      <span className="font-bold text-[#452737] text-xs block">
+                        Stockage 100% Local (Cycle & Calendrier)
+                      </span>
+                      <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
+                        Vos dates de règles et autopalpations restent enregistrées uniquement dans la mémoire de cet appareil.
+                      </span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={privacySettings.localOnlyCycle}
+                      onChange={(e) =>
+                        setPrivacySettings({ ...privacySettings, localOnlyCycle: e.target.checked })
+                      }
+                      className="h-4 w-4 rounded border-gray-300 text-[#a14364] focus:ring-[#a14364]"
+                    />
+                  </label>
+
+                  {/* Toggle 2 : Protocoles cliniques IA */}
+                  <label className="flex items-center justify-between rounded-xl border border-[#edd7e1] bg-[#fffcfd] p-3 cursor-pointer hover:bg-pink-50/50 transition">
+                    <div className="pr-2">
+                      <span className="font-bold text-[#452737] text-xs block">
+                        Entraînement de Rose IA par les soignants
+                      </span>
+                      <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
+                        Permet de recevoir les protocoles médicaux validés par les médecins du Burkina Faso pour des réponses naturelles.
+                      </span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={privacySettings.contributeAiClinical}
+                      onChange={(e) =>
+                        setPrivacySettings({ ...privacySettings, contributeAiClinical: e.target.checked })
+                      }
+                      className="h-4 w-4 rounded border-gray-300 text-[#a14364] focus:ring-[#a14364]"
+                    />
+                  </label>
+
+                  {/* Toggle 3 : Soutien aux associations */}
+                  <label className="flex items-center justify-between rounded-xl border border-[#edd7e1] bg-[#fffcfd] p-3 cursor-pointer hover:bg-pink-50/50 transition">
+                    <div className="pr-2">
+                      <span className="font-bold text-[#452737] text-xs block">
+                        Statistiques anonymisées pour les Associations
+                      </span>
+                      <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
+                        Aide les ONG (ex: ABAC, Espoir pour Demain) à cibler les campagnes de dépistage selon la fréquentation régionale.
+                      </span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={privacySettings.anonymizedAssociationData}
+                      onChange={(e) =>
+                        setPrivacySettings({ ...privacySettings, anonymizedAssociationData: e.target.checked })
+                      }
+                      className="h-4 w-4 rounded border-gray-300 text-[#a14364] focus:ring-[#a14364]"
+                    />
+                  </label>
+
+                  {/* Toggle 4 : Partage clinique uniquement sur demande */}
+                  <label className="flex items-center justify-between rounded-xl border border-[#edd7e1] bg-[#fffcfd] p-3 cursor-pointer hover:bg-pink-50/50 transition">
+                    <div className="pr-2">
+                      <span className="font-bold text-[#452737] text-xs block">
+                        Transmission médicale sur demande expresse
+                      </span>
+                      <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
+                        Exiger une confirmation par code PIN ou clic avant d'adresser une fiche d'orientation à un médecin référent.
+                      </span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={privacySettings.urgentClinicalConsent}
+                      onChange={(e) =>
+                        setPrivacySettings({ ...privacySettings, urgentClinicalConsent: e.target.checked })
+                      }
+                      className="h-4 w-4 rounded border-gray-300 text-[#a14364] focus:ring-[#a14364]"
+                    />
+                  </label>
+                </div>
+
+                {/* Section Droit à l'oubli / Purge */}
+                <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-rose-900 text-xs flex items-center gap-1.5">
+                      <ShieldAlert size={14} className="text-rose-700" /> Droit à l'oubli immédiat
+                    </span>
+                    <span className="text-[9.5px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
+                      RGPD & Éthique
+                    </span>
+                  </div>
+                  <p className="text-[10.5px] text-rose-800 leading-snug">
+                    Vous pouvez à tout moment effacer instantanément l'ensemble de votre historique, vos rappels et vos messages stockés sur ce téléphone.
+                  </p>
+                  <button
+                    onClick={handleClearAllLocalData}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-white border border-rose-300 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
+                  >
+                    <RotateCcw size={13} /> Purger toutes mes données locales
+                  </button>
+                </div>
+
+                {/* Bouton de sauvegarde */}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setShowPrivacyModal(false)}
+                    className="flex-1 rounded-2xl border border-[#debcc8] py-2.5 font-bold text-[#6d4d5d]"
+                  >
+                    Fermer
+                  </button>
+                  <button
+                    onClick={handleSavePrivacySettings}
+                    className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 py-2.5 font-bold text-white shadow-md hover:from-emerald-500 hover:to-teal-600 transition"
+                  >
+                    Enregistrer mes choix
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* MODAL : SIMULATION DU PARCOURS D'ENTRAÎNEMENT DE ROSE IA PAR LE DOCTEUR */}
+        {/* ==================================================================== */}
+        {showDoctorTrainModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:absolute sm:rounded-[36px]"
+            onClick={() => setShowDoctorTrainModal(false)}
+          >
+            <div
+              className="ph-enter max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[28px] bg-white p-5 shadow-2xl border border-[#ecd5df]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* En-tête */}
+              <div className="flex items-center justify-between border-b border-[#f2e1e7] pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-amber-100 text-amber-800">
+                    <GraduationCap size={20} />
+                  </div>
+                  <div>
+                    <h3 className="ph-display text-sm font-bold text-[#452737]">
+                      Entraînement Clinique Rose IA
+                    </h3>
+                    <p className="text-[10px] text-amber-800 font-bold">
+                      Parcours Soignant · Étape {doctorTrainStep}/4
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDoctorTrainModal(false)}
+                  className="rounded-full p-1.5 text-[#725261] hover:bg-[#faedf2]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Indicateur visuel d'étapes (1 -> 2 -> 3 -> 4) */}
+              <div className="mt-3 flex items-center justify-between px-1">
+                {[
+                  { step: 1, label: "Thème" },
+                  { step: 2, label: "Protocole" },
+                  { step: 3, label: "Simulation" },
+                  { step: 4, label: "Signature" },
+                ].map((item) => (
+                  <div key={item.step} className="flex flex-col items-center flex-1">
+                    <div
+                      className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold transition ${
+                        doctorTrainStep === item.step
+                          ? "bg-amber-500 text-white shadow-md ring-2 ring-amber-300"
+                          : doctorTrainStep > item.step
+                          ? "bg-emerald-500 text-white"
+                          : "bg-gray-100 text-gray-400"
+                      }`}
+                    >
+                      {doctorTrainStep > item.step ? <Check size={13} /> : item.step}
+                    </div>
+                    <span
+                      className={`text-[9px] font-semibold mt-1 ${
+                        doctorTrainStep === item.step ? "text-amber-800 font-bold" : "text-gray-400"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* ÉTAPE 1 : Choix ou Saisie du Thème Clinique */}
+              {doctorTrainStep === 1 && (
+                <div className="mt-4 space-y-3 text-xs">
+                  <div className="rounded-2xl bg-amber-50/70 border border-amber-200 p-3 text-amber-950">
+                    <p className="font-bold text-xs flex items-center gap-1.5 text-amber-900">
+                      <Stethoscope size={14} /> Objectif de la simulation
+                    </p>
+                    <p className="text-[11px] text-amber-900/90 mt-1 leading-relaxed">
+                      En tant que docteur, sage-femme ou agent de santé, vous enrichissez la base de connaissances de Rose IA avec vos protocoles cliniques locaux. Choisissez un cas concret :
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#7a4c60]">
+                      Cas cliniques & Recommandations présélectionnées :
+                    </p>
+
+                    {/* Presets de thèmes */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSelectDoctorPresetTopic(
+                          "Permanence urgences mammaires & Nodule suspect",
+                          "Pour toute patiente présentant un nodule dur et indolore, accueil sans rendez-vous tous les matins au service d'imagerie. Mammographie et échographie sous 48h.",
+                          "Ma sœur, rassure-toi : un nodule n'est pas forcément grave, mais ton corps mérite toute notre attention. Viens directement sans rendez-vous au CMA Schiphra ou CHU Bogodogo dès demain matin à 08h. Une sage-femme et un radiologue vont t'examiner avec douceur.",
+                          "M maaso, da zoe rabeem ye: bõn-kʋdga pa bãag fãa ye, la yaa tɩlae tɩ d ges-a tao-tao. Wa-y zĩigẽ zaabre n mik dɔgɔtɔrã tɩ b ges yãmba ne laafi.",
+                          "N ma muso, kana siran : fɛn o fɛn bɛ sin na, a bɛɛ tɛ bana juguman ye. Nka taga kɛnɛyaso la jona sɔgɔma fɛ walasa dɔgɔtɔrɔmuso ka lajɛ saniya kɛ.",
+                          "J'ai senti une boule un peu dure dans mon sein droit qui ne me fait pas mal, est-ce que je dois m'inquiéter ?"
+                        )
+                      }
+                      className="w-full text-left p-3 rounded-2xl border border-pink-200 bg-[#fffbfc] hover:bg-pink-50 transition space-y-1 shadow-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#8a2d4f] text-xs">🩺 Nodule suspect & Urgences mammaires</span>
+                        <span className="text-[9px] bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded-full">Priorité 48h</span>
+                      </div>
+                      <p className="text-[10.5px] text-[#6b4c5b]">
+                        Accueil direct sans rendez-vous au CMA Schiphra ou CHU Bogodogo + protocole rassurant.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSelectDoctorPresetTopic(
+                          "Douleurs de règles aiguës & Endométriose",
+                          "Des règles très douloureuses incapacitantes ne sont pas normales. Exclure l'endométriose par échographie pelvienne dédiée. Éviter l'automédication prolongée aux anti-inflammatoires.",
+                          "Chère sœur, souffrir pendant ses règles n'est pas une fatalité. Si la douleur t'empêche de travailler ou dormir, ce n'est pas une faiblesse. Consulte un gynécologue pour rechercher une endométriose. En attendant, privilégie une bouillotte tiède et l'infusion de gingembre doux.",
+                          "M yaanga, rog-n-mik bãag sã n namsd foo wakat fãa, pa yel-bãanega ye. Taga dɔgɔtɔr n bãng a võore.",
+                          "N ba den muso, dimi min bɛ kɛ muso kɔnɔ fɛ kalo o kalo, ni a ka bon kosɛbɛ, a tɛ foyi ye fo ka dɔgɔtɔrɔ sɔrɔ.",
+                          "Mes règles me font tellement mal que je ne peux pas me lever du lit, ma mère me dit que c'est normal pour une femme ?"
+                        )
+                      }
+                      className="w-full text-left p-3 rounded-2xl border border-pink-200 bg-[#fffbfc] hover:bg-pink-50 transition space-y-1 shadow-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#8a2d4f] text-xs">🌸 Règles douloureuses & Endométriose</span>
+                        <span className="text-[9px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">Santé globale</span>
+                      </div>
+                      <p className="text-[10.5px] text-[#6b4c5b]">
+                        Démystification de la souffrance des règles + orientation gynécologique pelvienne.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSelectDoctorPresetTopic(
+                          "Nutrition sahélienne fortifiante & Immunité",
+                          "Recommander l'apport en antioxydants locaux : feuilles de moringa (en poudre dans la sauce), jus de pain de singe (baobab riche en vitamine C) et graines de sésame pour l'équilibre hormonal.",
+                          "Pour prendre soin de ta santé et de ta vitalité au Burkina Faso, nos plantes sont des trésors : une cuillère de moringa dans ton repas et du jus de baobab naturel renforcent tes défenses sans aucun produit chimique nocif.",
+                          "D tɩɩsã ne d rɩɩbã yaa arzɛka : arzɛk-tɩɩga (moringa) la toedga n kõt yĩns-laafi wʋsgo.",
+                          "An ka siriw ni jiriw bɛ fanga di : arjanayiri (moringa) ni zira ji bɛ muso fanga gɛlɛya kosɛbɛ.",
+                          "Quels aliments locaux du pays puis-je consommer pour renforcer mon corps et mes seins ?"
+                        )
+                      }
+                      className="w-full text-left p-3 rounded-2xl border border-pink-200 bg-[#fffbfc] hover:bg-pink-50 transition space-y-1 shadow-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#8a2d4f] text-xs">🌿 Nutrition locale (Moringa & Baobab)</span>
+                        <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Prévention</span>
+                      </div>
+                      <p className="text-[10.5px] text-[#6b4c5b]">
+                        Conseils nutritionnels sahéliens bienveillants intégrés naturellement par Rose IA.
+                      </p>
+                    </button>
+                  </div>
+
+                  {/* Saisie personnalisée */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <label className="block text-[11px] font-bold text-[#452737] mb-1">
+                      Ou définissez un autre thème médical :
+                    </label>
+                    <input
+                      type="text"
+                      value={doctorTeachTopic}
+                      onChange={(e) => setDoctorTeachTopic(e.target.value)}
+                      placeholder="Ex : Palpation axillaire, Allaitement et crevasses..."
+                      className="w-full rounded-xl border border-gray-300 p-2 text-xs font-semibold text-[#452737]"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setDoctorTrainStep(2)}
+                    className="w-full rounded-2xl bg-amber-500 py-2.5 text-xs font-bold text-white shadow-md hover:bg-amber-600 transition"
+                  >
+                    Passer à la formulation médicale (Étape 2) →
+                  </button>
+                </div>
+              )}
+
+              {/* ÉTAPE 2 : Saisie du Protocole Clinique & Reformulation Multilingue */}
+              {doctorTrainStep === 2 && (
+                <div className="mt-4 space-y-3.5 text-xs">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#452737] mb-1">
+                      Thème clinique sélectionné :
+                    </label>
+                    <input
+                      type="text"
+                      value={doctorTeachTopic}
+                      onChange={(e) => setDoctorTeachTopic(e.target.value)}
+                      className="w-full rounded-xl border border-amber-300 bg-amber-50/50 p-2 text-xs font-bold text-amber-950"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#452737] mb-1">
+                      Recommandation clinique stricte du praticien :
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={doctorTeachContent}
+                      onChange={(e) => setDoctorTeachContent(e.target.value)}
+                      placeholder="Consignes médicales précises, bilans recommandés, centres d'orientation..."
+                      className="w-full rounded-xl border border-gray-300 p-2 text-xs text-[#452737]"
+                    />
+                  </div>
+
+                  {/* Vulgarisation empathique multilingue générée pour Rose IA */}
+                  <div className="rounded-2xl border border-pink-200 bg-[#fff9fb] p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-[#8a2d4f] flex items-center gap-1.5">
+                        <Sparkles size={14} className="text-amber-500" /> Adaptation Empathique Rose IA
+                      </span>
+                      <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                        3 Langues
+                      </span>
+                    </div>
+
+                    <p className="text-[10px] text-[#785968] leading-tight">
+                      Rose IA convertit le jargon médical en parole douce, sans tabou et respectueuse des pudeurs sahéliennes :
+                    </p>
+
+                    {/* Français */}
+                    <div className="rounded-xl bg-white p-2.5 border border-pink-100 text-[11px] space-y-1">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-[#a14364]">
+                        <span>🇫🇷 En Français facile :</span>
+                        <button
+                          type="button"
+                          onClick={() => handlePlayAudio(doctorEmpathicReformulation.fr, "fr")}
+                          className="flex items-center gap-1 text-[9.5px] text-[#a14364] hover:underline"
+                        >
+                          <Volume2 size={12} /> Écouter
+                        </button>
+                      </div>
+                      <p className="text-[#452737] leading-relaxed">{doctorEmpathicReformulation.fr}</p>
+                    </div>
+
+                    {/* Mooré */}
+                    <div className="rounded-xl bg-white p-2.5 border border-pink-100 text-[11px] space-y-1">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-emerald-700">
+                        <span>🇧🇫 En Mooré (Traduction bienveillante) :</span>
+                        <button
+                          type="button"
+                          onClick={() => handlePlayAudio(doctorEmpathicReformulation.moore, "moore")}
+                          className="flex items-center gap-1 text-[9.5px] text-emerald-700 hover:underline"
+                        >
+                          <Volume2 size={12} /> Écouter
+                        </button>
+                      </div>
+                      <p className="text-[#334e3e] italic leading-relaxed">{doctorEmpathicReformulation.moore}</p>
+                    </div>
+
+                    {/* Dioula */}
+                    <div className="rounded-xl bg-white p-2.5 border border-pink-100 text-[11px] space-y-1">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-purple-700">
+                        <span>🇧🇫 En Dioula (Traduction bienveillante) :</span>
+                        <button
+                          type="button"
+                          onClick={() => handlePlayAudio(doctorEmpathicReformulation.dioula, "dioula")}
+                          className="flex items-center gap-1 text-[9.5px] text-purple-700 hover:underline"
+                        >
+                          <Volume2 size={12} /> Écouter
+                        </button>
+                      </div>
+                      <p className="text-[#402e48] italic leading-relaxed">{doctorEmpathicReformulation.dioula}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDoctorTrainStep(1)}
+                      className="rounded-2xl border border-gray-300 px-4 py-2.5 font-bold text-gray-700"
+                    >
+                      ← Retour
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRunDoctorTestSimulation}
+                      className="flex-1 rounded-2xl bg-amber-500 py-2.5 font-bold text-white shadow-md hover:bg-amber-600 transition"
+                    >
+                      Lancer la simulation en direct (Étape 3) →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ÉTAPE 3 : Test en Direct Patiente ↔ Rose IA */}
+              {doctorTrainStep === 3 && (
+                <div className="mt-4 space-y-3.5 text-xs">
+                  <div className="rounded-2xl bg-slate-900 text-white p-3.5 shadow-md space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles size={13} /> Banc d'essai en direct
+                      </span>
+                      <span className="text-[9.5px] bg-slate-800 text-emerald-400 px-2 py-0.5 rounded font-mono">
+                        Mode Simulation
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-snug">
+                      Vérifions comment Rose IA répond à une question posée spontanément par une femme :
+                    </p>
+                  </div>
+
+                  {/* Bulle Question de la Patiente */}
+                  <div className="rounded-2xl bg-purple-50 border border-purple-200 p-3 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-purple-900 flex items-center gap-1">
+                        👩 Patiente (Question posée) :
+                      </span>
+                      <span className="text-[9px] text-purple-600">Voix ou Texte</span>
+                    </div>
+                    <textarea
+                      rows={2}
+                      value={doctorTestQuestion}
+                      onChange={(e) => setDoctorTestQuestion(e.target.value)}
+                      className="w-full rounded-xl border border-purple-200 bg-white p-2 text-xs font-semibold text-purple-950"
+                    />
+                  </div>
+
+                  {/* Bouton pour déclencher la réponse */}
+                  {!doctorTestAnswer && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDoctorTestAnswer(
+                          doctorEmpathicReformulation.fr ||
+                            "Ma sœur, rassure-toi. Suite aux recommandations de nos docteurs référents..."
+                        )
+                      }
+                      className="w-full rounded-2xl bg-gradient-to-r from-[#a14364] to-[#734059] py-2.5 font-bold text-white shadow hover:opacity-95 transition flex items-center justify-center gap-2"
+                    >
+                      <Sparkles size={15} /> Voir la réponse générée par Rose IA
+                    </button>
+                  )}
+
+                  {/* Bulle Réponse Rose IA */}
+                  {doctorTestAnswer && (
+                    <div className="rounded-2xl bg-gradient-to-br from-[#fff7fa] to-[#fff0f4] border-2 border-emerald-300 p-3.5 space-y-2 ph-enter">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-[#8a2d4f] flex items-center gap-1.5">
+                          <Sparkles size={14} className="text-amber-500" /> Rose IA (Réponse avec protocole docteur) :
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handlePlayAudio(doctorTestAnswer, "fr")}
+                          className="flex items-center gap-1 text-[10px] font-bold text-[#a14364] bg-pink-100 px-2 py-0.5 rounded-full hover:bg-pink-200"
+                        >
+                          <Volume2 size={13} /> Écouter
+                        </button>
+                      </div>
+
+                      <p className="text-xs text-[#452737] leading-relaxed">
+                        {doctorTestAnswer}
+                      </p>
+
+                      <div className="flex items-center gap-1.5 text-[9.5px] text-emerald-800 font-bold bg-emerald-50 p-2 rounded-xl border border-emerald-200">
+                        <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                        <span>Protocole respecté à 100% : Empathie locale + Orientation sans délai.</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDoctorTrainStep(2)}
+                      className="rounded-2xl border border-gray-300 px-4 py-2.5 font-bold text-gray-700"
+                    >
+                      ← Modifier
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDoctorTrainStep(4)}
+                      className="flex-1 rounded-2xl bg-amber-500 py-2.5 font-bold text-white shadow-md hover:bg-amber-600 transition"
+                    >
+                      Valider et passer à la signature (Étape 4) →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ÉTAPE 4 : Signature Officielle & Ingestion dans Rose IA */}
+              {doctorTrainStep === 4 && (
+                <div className="mt-4 space-y-3.5 text-xs">
+                  <div className="rounded-2xl bg-emerald-50 border border-emerald-300 p-3.5 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-200 text-emerald-800 font-bold">
+                        <CheckCheck size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-emerald-950 text-xs">Prêt pour signature médicale</h4>
+                        <p className="text-[10px] text-emerald-800 font-semibold">
+                          Attestation de conformité déontologique & éthique
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl bg-white p-2.5 border border-emerald-200 text-[11px] space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Sujet validé :</span>
+                        <span className="font-bold text-[#452737] truncate max-w-[200px]">{doctorTeachTopic}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Langues certifiées :</span>
+                        <span className="font-bold text-emerald-700">Français · Mooré · Dioula</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Date d'effet :</span>
+                        <span className="font-bold text-gray-800">Immédiate (16 Octobre 2026)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Champs de signature du médecin */}
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#452737] mb-1">
+                        Nom et Prénom du praticien référent :
+                      </label>
+                      <input
+                        type="text"
+                        value={doctorSignName}
+                        onChange={(e) => setDoctorSignName(e.target.value)}
+                        className="w-full rounded-xl border border-gray-300 p-2 text-xs font-bold text-[#452737]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#452737] mb-1">
+                        Titre clinique & Hôpital d'exercice :
+                      </label>
+                      <input
+                        type="text"
+                        value={doctorSignRole}
+                        onChange={(e) => setDoctorSignRole(e.target.value)}
+                        className="w-full rounded-xl border border-gray-300 p-2 text-xs font-semibold text-[#452737]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-[10px] text-slate-600 space-y-1">
+                    <p className="font-bold text-slate-800 flex items-center gap-1">
+                      <Lock size={12} className="text-slate-500" /> Engagement déontologique :
+                    </p>
+                    <p className="leading-tight">
+                      En signant, vous attestez que ces instructions médicales et leurs vulgarisations ont été vérifiées et ne violent aucun secret médical. Aucune donnée privée de patiente n'est ingérée.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDoctorTrainStep(3)}
+                      className="rounded-2xl border border-gray-300 px-4 py-2.5 font-bold text-gray-700"
+                    >
+                      ← Revoir test
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleFinalizeDoctorTraining}
+                      className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 py-3 text-xs font-bold text-white shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle2 size={16} /> Signer & Intégrer dans Rose IA
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* MODAL : VIDÉO DÉMONSTRATIVE D'AUTOPALPATION AVEC SAGE-FEMME AFRICAINE */}
+        {/* ==================================================================== */}
+        {showAutopalpationVideoModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 backdrop-blur-md sm:absolute sm:rounded-[36px]"
+            onClick={() => setShowAutopalpationVideoModal(false)}
+          >
+            <div
+              className="ph-enter max-h-[94vh] w-full max-w-md overflow-y-auto rounded-[28px] bg-white p-4 shadow-2xl border-2 border-pink-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* En-tête du lecteur vidéo */}
+              <div className="flex items-center justify-between border-b border-[#f2e1e7] pb-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-rose-100 text-[#a14364]">
+                    <Play size={16} className="fill-[#a14364] translate-x-0.5" />
+                  </div>
+                  <div>
+                    <h3 className="ph-display text-sm font-bold text-[#452737]">
+                      Vidéo Guidée d'Autopalpation
+                    </h3>
+                    <p className="text-[10px] text-emerald-700 font-bold">
+                      Démonstration Pédagogique & Pudique · Sage-femme Africaine
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAutopalpationVideoModal(false)}
+                  className="rounded-full p-1 text-[#725261] hover:bg-[#faedf2]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* ÉCRAN VIDÉO INTERACTIF AVEC PERSONNAGE AFRICAIN */}
+              <div className="relative mt-3 overflow-hidden rounded-2xl bg-black shadow-md border border-slate-800 group">
+                <img
+                  src="/images/autopalpation-afrique-demo.jpg"
+                  alt="Démonstration autopalpation sage-femme africaine"
+                  className="aspect-[16/9] w-full object-cover opacity-95"
+                />
+
+                {/* Badge en direct */}
+                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[9.5px] font-bold text-white backdrop-blur-sm">
+                  <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+                  <span>Vidéo Démo Burkina · 4 gestes clés</span>
+                </div>
+
+                {/* Sélecteur de langue audio pour la vidéo */}
+                <div className="absolute top-2.5 right-2.5 flex rounded-full bg-black/60 p-0.5 text-[9px] font-bold text-white backdrop-blur-sm">
+                  {(["fr", "moore", "dioula"] as const).map((lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => {
+                        setVideoLang(lang);
+                        const txt =
+                          lang === "moore"
+                            ? "M maaso, ges-y zĩig ninga ninsaal sẽn tõe n kẽes a nug n bãng a yĩnsa laafi ne zãmsgã."
+                            : lang === "dioula"
+                              ? "N muso, i sin lajɛ saniya kɛ dɔgɔtɔrɔmusow ka cogo la."
+                              : "Observez et palpez avec délicatesse chaque mois après vos règles. Suivez les 4 gestes démontrés par notre sage-femme.";
+                        handlePlayAudio(txt, lang);
+                      }}
+                      className={`rounded-full px-2 py-0.5 transition ${
+                        videoLang === lang ? "bg-[#a14364] text-white" : "text-white/75 hover:text-white"
+                      }`}
+                    >
+                      {lang.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Bouton Play/Pause central sur la vidéo avec feedback instantané */}
+                <button
+                  type="button"
+                  onClick={() => setVideoIsPlaying(!videoIsPlaying)}
+                  className="absolute inset-0 flex items-center justify-center bg-black/25 hover:bg-black/35 transition"
+                  aria-label={videoIsPlaying ? "Mettre la vidéo en pause" : "Lancer la démonstration vidéo"}
+                >
+                  <div className="grid h-14 w-14 place-items-center rounded-full bg-[#a14364]/95 text-white shadow-xl hover:scale-105 active:scale-95 transition">
+                    {videoIsPlaying ? (
+                      <Pause size={24} className="fill-white" />
+                    ) : (
+                      <Play size={24} className="fill-white translate-x-0.5" />
+                    )}
+                  </div>
+                </button>
+
+                {/* Barre de contrôles vidéo en bas : Progression continue et accélérateur */}
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2.5 text-white">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold text-emerald-400 min-w-[36px]">
+                      {formatVideoTime(videoProgressSeconds)}
+                    </span>
+                    <div
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const clickPos = (e.clientX - rect.left) / rect.width;
+                        const newTime = Math.max(0, Math.min(165, clickPos * 165));
+                        setVideoProgressSeconds(newTime);
+                        setVideoIsPlaying(true);
+                      }}
+                      className="relative h-2 flex-1 rounded-full bg-white/30 overflow-hidden cursor-pointer"
+                      title="Cliquer pour naviguer dans la vidéo"
+                    >
+                      <div
+                        className="h-full bg-gradient-to-r from-rose-500 to-[#a14364] rounded-full transition-all duration-150"
+                        style={{ width: `${Math.min(100, (videoProgressSeconds / 165) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-mono text-white/70">02:45</span>
+
+                    {/* Sélecteur de vitesse pour jouer plus rapidement */}
+                    <div className="flex items-center gap-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[9px] font-bold border border-white/20">
+                      {([1, 1.5, 2] as const).map((spd) => (
+                        <button
+                          key={spd}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setVideoSpeed(spd);
+                            setVideoIsPlaying(true);
+                          }}
+                          className={`rounded px-1.5 py-0.5 transition ${
+                            videoSpeed === spd
+                              ? "bg-[#a14364] text-white font-extrabold"
+                              : "text-white/75 hover:text-white"
+                          }`}
+                          title={`Vitesse de lecture x${spd}`}
+                        >
+                          {spd}x
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SÉLECTEUR INTERACTIF DES 4 GESTES : SAUT TEMPOREL INSTANTANÉ */}
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10.5px] font-bold uppercase tracking-wider text-[#7a4c60]">
+                    Les 4 temps expliqués pas à pas :
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const txt =
+                        videoLang === "moore"
+                          ? "M maaso, ges-y zĩig ninga ninsaal sẽn tõe n kẽes a nug n bãng a yĩnsa laafi."
+                          : videoLang === "dioula"
+                            ? "N muso, i sin lajɛ saniya kɛ dɔgɔtɔrɔmusow ka cogo la."
+                            : "Voici l'explication audio détaillée des gestes d'autopalpation par notre soignante.";
+                      handlePlayAudio(txt, videoLang);
+                    }}
+                    className="flex items-center gap-1 text-[10px] font-bold text-[#a14364] hover:underline"
+                  >
+                    <Volume2 size={12} /> Écouter la sage-femme ({videoLang.toUpperCase()})
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-4 gap-1">
+                  {[
+                    { step: 1, label: "1. Regarder", tag: "Miroir", time: 0 },
+                    { step: 2, label: "2. Palper", tag: "3 doigts", time: 35 },
+                    { step: 3, label: "3. Aisselle", tag: "Zone large", time: 75 },
+                    { step: 4, label: "4. Mamelon", tag: "Pression", time: 115 },
+                  ].map((item) => (
+                    <button
+                      key={item.step}
+                      type="button"
+                      onClick={() => {
+                        setSelectedVideoStep(item.step as any);
+                        setVideoProgressSeconds(item.time);
+                        setVideoIsPlaying(true);
+                      }}
+                      className={`rounded-xl p-1.5 text-center transition border ${
+                        selectedVideoStep === item.step
+                          ? "bg-[#a14364] text-white border-[#a14364] shadow-xs scale-[1.02]"
+                          : "bg-slate-50 text-[#543343] border-slate-200 hover:bg-pink-50"
+                      }`}
+                    >
+                      <span className="block font-bold text-[10.5px]">{item.label}</span>
+                      <span className="block text-[8.5px] opacity-80">{item.tag}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Explication du geste sélectionné */}
+                <div className="rounded-2xl border border-pink-200 bg-[#fffbfc] p-3 text-xs text-[#452737] space-y-1.5 shadow-2xs">
+                  {selectedVideoStep === 1 && (
+                    <>
+                      <div className="flex items-center justify-between font-bold text-[#a14364]">
+                        <span>Étape 1 : Inspection visuelle devant le miroir</span>
+                        <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">LOOK</span>
+                      </div>
+                      <p className="text-[11px] text-[#6d4f5e] leading-relaxed">
+                        Debout devant votre miroir, bras le long du corps puis levés au-dessus de la tête. Observez l'aspect général des deux seins : peau d'orange, rougeur, fossette ou mamelon qui se rétracte vers l'intérieur.
+                      </p>
+                    </>
+                  )}
+                  {selectedVideoStep === 2 && (
+                    <>
+                      <div className="flex items-center justify-between font-bold text-[#a14364]">
+                        <span>Étape 2 : Palpation douce avec la pulpe de 3 doigts</span>
+                        <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">FEEL</span>
+                      </div>
+                      <p className="text-[11px] text-[#6d4f5e] leading-relaxed">
+                        Allongée confortablement ou sous la douche (avec du savon doux). Utilisez la pulpe des 3 doigts du milieu (index, majeur, annulaire) à plat. Décrivez de petits cercles réguliers du pourtour extérieur vers le mamelon.
+                      </p>
+                    </>
+                  )}
+                  {selectedVideoStep === 3 && (
+                    <>
+                      <div className="flex items-center justify-between font-bold text-[#a14364]">
+                        <span>Étape 3 : Couvrir toute la zone jusqu'aux aisselles</span>
+                        <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">COVER ALL</span>
+                      </div>
+                      <p className="text-[11px] text-[#6d4f5e] leading-relaxed">
+                        Le tissu mammaire s'étend jusqu'au creux de l'aisselle et sous la clavicule. Palpez soigneusement cette zone pour vérifier l'absence de ganglion dur ou de nodule profond.
+                      </p>
+                    </>
+                  )}
+                  {selectedVideoStep === 4 && (
+                    <>
+                      <div className="flex items-center justify-between font-bold text-[#a14364]">
+                        <span>Étape 4 : Vérification du mamelon sans douleur</span>
+                        <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">NIPPLE CHECK</span>
+                      </div>
+                      <p className="text-[11px] text-[#6d4f5e] leading-relaxed">
+                        Pincez très délicatement le mamelon entre le pouce et l'index. Vérifiez qu'aucun liquide (clair, jaunâtre ou sanglant) ne s'écoule spontanément.
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Bouton de confirmation & fermeture */}
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAutopalpationVideoModal(false)}
+                  className="flex-1 rounded-2xl bg-gradient-to-r from-[#a14364] to-[#734059] py-2.5 text-xs font-bold text-white shadow-md hover:opacity-95 transition"
+                >
+                  J'ai compris les gestes ✓
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* MODAL : AFFICHE D'ÉVÉNEMENT EN GRAND FORMAT ZOOMÉ                    */}
+        {/* ==================================================================== */}
+        {selectedPosterModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 backdrop-blur-md sm:absolute sm:rounded-[36px]"
+            onClick={() => setSelectedPosterModal(null)}
+          >
+            <div
+              className="ph-enter max-h-[94vh] w-full max-w-lg overflow-y-auto rounded-[28px] bg-slate-950 p-4 text-white shadow-2xl border border-slate-800"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div className="min-w-0 pr-2">
+                  <h3 className="ph-display text-sm font-bold text-white truncate">
+                    {selectedPosterModal.title}
+                  </h3>
+                  <p className="text-[10px] text-pink-400 font-bold truncate">
+                    {selectedPosterModal.author}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedPosterModal(null)}
+                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="mt-3 overflow-hidden rounded-2xl border border-slate-800 bg-black">
+                <img
+                  src={selectedPosterModal.url}
+                  alt={selectedPosterModal.title}
+                  className="w-full object-contain max-h-[65vh] mx-auto"
+                />
+              </div>
+
+              {selectedPosterModal.caption && (
+                <p className="mt-2 text-center text-[10.5px] text-slate-300 italic">
+                  {selectedPosterModal.caption}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setSelectedPosterModal(null)}
+                className="mt-3 w-full rounded-2xl bg-slate-800 py-2.5 text-xs font-bold text-white hover:bg-slate-700 transition"
+              >
+                Fermer l'affiche
+              </button>
             </div>
           </div>
         )}

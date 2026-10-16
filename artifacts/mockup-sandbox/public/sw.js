@@ -3,7 +3,7 @@
  * Assure la disponibilité de l'application même sans réseau internet au Burkina Faso.
  */
 
-const CACHE_NAME = "paglaafi-offline-v1";
+const CACHE_NAME = "paglaafi-offline-v2";
 
 // Ressources vitales pré-mises en cache pour l'accès hors-ligne immédiat
 const PRECACHE_ASSETS = [
@@ -11,6 +11,10 @@ const PRECACHE_ASSETS = [
   "/index.html",
   "/manifest.json",
   "/images/pinkhub-mvp-paglaafi.png",
+  "/images/autopalpation-afrique-demo.jpg",
+  "/images/affiche-evenement-beneere.jpg",
+  "/images/affiche-wtm-odc.jpg",
+  "/images/affiche-genit-care.jpg",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 ];
