@@ -55,7 +55,7 @@ Le projet est structuré sous forme de monorepo géré avec `pnpm workspaces` :
 ## 3. Guide de Démarrage en Local sous Windows & Audit Technique
 
 ### A. Démarrage Rapide en 1 Clic (Recommandé)
-- **Fichier Windows 1-Clic** : Double-cliquez directement sur **`demarrer-en-local.bat`** à la racine du projet.
+- **Fichier Windows 1-Clic** : Double-cliquez directement sur **`demarrer.bat`** (ou **`demarrer-en-local.bat`**) à la racine du projet.
 - **Ou via Terminal PowerShell / Invite de commande** :
   ```powershell
   pnpm run dev
