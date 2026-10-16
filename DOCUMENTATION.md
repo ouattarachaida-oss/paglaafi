@@ -395,3 +395,20 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
     - Réponses complètes traduites en Mooré et Dioula avec boutons d'écoute audio individuels.
     - **Bouton Vidéo Démonstratif Intégré** : Accès direct en un clic vers la vidéo d'autopalpation de la sage-femme burkinabè dès qu'une question aborde les seins ou le dépistage.
 
+#### 8. Épuration de Rose IA, Affichage Conditionnel par Profil, Sélecteur de Langue Global et Chatbot IA Réactif (Octobre 2026)
+- **Suppression des Conteneurs Encombrants au Sommet de Rose IA** :
+  - Élimination de la grande bannière violette/rose de 200px et de la carte « mot doux quotidien » qui encombraient la partie supérieure de l'écran et comprimaient la zone de chat sur smartphone.
+- **Affichage Conditionnel Strict selon les Profils** :
+  - **Profil Utilisatrice / Visiteur** : Affichage exclusif du bandeau compact **« Vidéo d'Autopalpation Mammaire »** (démonstration guidée pas-à-pas par la sage-femme burkinabè avec bouton direct *« Voir la vidéo 🎬 »*). Aucun bouton d'entraînement n'est visible.
+  - **Profil Docteur / Superadmin National** : Affichage d'un double bouton en en-tête permettant à la fois d'accéder à **« Entraîner Rose IA 🩺 »** (parcours en 4 étapes) et de **« Voir la vidéo 🎬 »**.
+- **Sélecteur de Langue Global Discret dans le Header (Tous Écrans & Tous Profils)** :
+  - Intégration d'une icône discrète `<Languages />` dans l'en-tête fixe du smartphone affichant le badge de la langue active (**FR**, **Mooré**, **Dioula**, **EN**).
+  - Popover intuitif permettant de basculer instantanément la langue de l'ensemble de l'application et de Rose IA sans encombrer la zone de conversation.
+  - Suppression des rangées d'onglets de langues redondants qui polluaient l'espace visuel dans le chat.
+- **Fiabilisation & Intelligence Conversationnelle du Chatbot Rose IA** :
+  - **Moteur IA en Langage Naturel Étendu** : Rose IA comprend et répond désormais à TOUTES les questions écrites et vocales (salutations, questions intimes, autopalpation, boules/nodules, orientation centres du Burkina, tarifs réels en FCFA, peur/soutien moral, espoir/guérison, règles, nutrition sahélienne au Moringa/Baobab, hygiène intime, col de l'utérus, maternité/ménopause).
+  - **Générateur Contextuel Empathique Universel** : Pour toute question inédite ou ouverte, Rose IA analyse les termes, reformule avec bienveillance, apporte des repères médicaux préventifs clairs et invite avec tendresse à consulter si nécessaire.
+  - **Intégration Directe des Protocoles Docteurs** : Rose IA intègre les fiches cliniques saisies par les médecins dans sa base active.
+  - **Formulaire de Saisie Réactif `<form>`** : Saisie fluide, validation immédiate par la touche Entrée du clavier mobile ou bouton d'envoi tactile, écoute vocale au micro Web Speech API.
+  - **Synthèse Vocale Instantanée** : Bouton d'écoute audio direct `<Volume2 />` sous chaque réponse de Rose IA dans la langue active choisie (Français, Mooré, Dioula, Anglais).
+

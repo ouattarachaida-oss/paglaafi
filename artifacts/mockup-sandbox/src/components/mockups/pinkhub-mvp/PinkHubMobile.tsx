@@ -964,8 +964,26 @@ export function PinkHubMobile() {
   // Mode de discussion avec Rose IA : "text" (discussion écrite) ou "voice" (discussion orale/audio directe)
   const [roseChatMode, setRoseChatMode] = useState<"text" | "voice">("text");
   const [oralVoiceLang, setOralVoiceLang] = useState<"fr" | "moore" | "dioula" | "en">("fr");
+  // Sélecteur de langue globale discret pour tous les écrans et tous les profils
+  const [appLanguage, setAppLanguage] = useState<"fr" | "moore" | "dioula" | "en">("fr");
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const lastVoiceTranscriptRef = useRef<string>("");
   const handleSendRoseMessageRef = useRef<(text?: string, speak?: boolean) => void>(() => {});
+
+  const handleSelectAppLanguage = (lang: "fr" | "moore" | "dioula" | "en") => {
+    setAppLanguage(lang);
+    setSpeechLanguage(lang);
+    setDailyTipLang(lang);
+    setOralVoiceLang(lang);
+    setShowLanguageMenu(false);
+    const langNames = {
+      fr: "Français 🇫🇷",
+      moore: "Mooré 🇧🇫",
+      dioula: "Dioula 🇧🇫",
+      en: "English 🇬🇧",
+    };
+    notify(`Langue changée : ${langNames[lang]}`);
+  };
 
   // 9. Espace Docteur : Entraîner Rose IA
   const [clinicalKnowledgeList, setClinicalKnowledgeList] = useState<MedicalKnowledge[]>([
@@ -2182,7 +2200,8 @@ export function PinkHubMobile() {
   };
 
   /**
-   * Envoi de message à Rose IA avec analyse empathique & santé globale
+   * Envoi de message à Rose IA avec moteur conversationnel IA enrichi,
+   * intégration des fiches cliniques docteurs, et support 4 langues (FR, Mooré, Dioula, EN)
    */
   const handleSendRoseMessage = (textOverride?: string, speakAloud = false) => {
     const textToSend = textOverride || roseInput;
@@ -2196,161 +2215,322 @@ export function PinkHubMobile() {
     setRoseMessages((prev) => [...prev, userMsg]);
     setRoseInput("");
 
+    // Normalisation sans accents pour recherche insensible
     const lower = textToSend.toLowerCase();
-    type KnowledgeKey = keyof typeof roseKnowledge;
-    let responseKey: KnowledgeKey = "default";
+    const clean = lower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-    // Hygiène intime & flore
-    if (
-      lower.includes("toilette") ||
-      lower.includes("intime") ||
-      lower.includes("savon") ||
-      lower.includes("perte") ||
-      lower.includes("odeur") ||
-      lower.includes("mycose") ||
-      lower.includes("démange") ||
-      lower.includes("vagin") ||
-      lower.includes("vulve") ||
-      lower.includes("culotte") ||
-      lower.includes("coton")
-    ) {
-      responseKey = "hygiene_intime";
+    // 1. VÉRIFICATION DANS LES CONNAISSANCES CLINIQUES DES DOCTEURS
+    const doctorMatch = clinicalKnowledgeList.find((k) => {
+      const topicClean = k.topic.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const adviceClean = k.advice.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      return (
+        clean.includes("sanou") ||
+        clean.includes("urgence") ||
+        clean.includes("permanence") ||
+        topicClean.split(" ").some((w) => w.length > 4 && clean.includes(w)) ||
+        adviceClean.split(" ").some((w) => w.length > 5 && clean.includes(w))
+      );
+    });
+
+    let aiFr = "";
+    let aiEn = "";
+    let aiMoore = "";
+    let aiDioula = "";
+
+    if (doctorMatch) {
+      aiFr = `Protocole clinique validé par le ${doctorMatch.doctorName} (${doctorMatch.speciality}) : « ${doctorMatch.advice} » (Mis à jour le ${doctorMatch.date}).`;
+      aiEn = `Clinical recommendation validated by ${doctorMatch.doctorName} (${doctorMatch.speciality}): "${doctorMatch.advice}" (Updated on ${doctorMatch.date}).`;
+      aiMoore = `Dɔgɔtɔr ${doctorMatch.doctorName} saglsgo ne kaseto: « ${doctorMatch.advice} ».`;
+      aiDioula = `Dɔgɔtɔrɔ ${doctorMatch.doctorName} ka ladili kɛnɛya siratigɛ la: « ${doctorMatch.advice} ».`;
     }
-    // Nutrition sahélienne & hygiène de vie
+    // 2. SALUTATIONS, POLITESSE & PRÉSENTATION
     else if (
-      lower.includes("moringa") ||
-      lower.includes("baobab") ||
-      lower.includes("singe") ||
-      lower.includes("soumbala") ||
-      lower.includes("manger") ||
-      lower.includes("nourriture") ||
-      lower.includes("nutrition") ||
-      lower.includes("eau") ||
-      lower.includes("boire") ||
-      lower.includes("sel") ||
-      lower.includes("cube") ||
-      lower.includes("bouillon") ||
-      lower.includes("anémie") ||
-      lower.includes("fatigue")
+      clean.includes("bonjour") ||
+      clean.includes("salut") ||
+      clean.includes("bonsoir") ||
+      clean.includes("coucou") ||
+      clean.includes("qui es tu") ||
+      clean.includes("qui t'a") ||
+      clean.includes("comment vas tu") ||
+      clean.includes("comment tu t'appelles") ||
+      clean.includes("presente") ||
+      clean.includes("aide moi")
     ) {
-      responseKey = "nutrition_locale";
+      aiFr = "Bonjour ma sœur bien-aimée ! Je suis Rose IA, ton assistante intelligente et bienveillante sur PagLaafi. Je suis à ton entière écoute sans tabou ni jugement : autopalpation des seins, hygiène intime, remèdes locaux (moringa, baobab), apaisement des règles ou dépistage dans les centres du Burkina. Comment te sens-tu aujourd'hui ?";
+      aiEn = "Hello my beloved sister! I am Rose AI, your caring and holistic health companion on PagLaafi. I am here to listen and guide you without judgment: breast self-exam, intimate care, local nutrition, period comfort, and screenings in Burkina Faso. How can I assist you today?";
+      aiMoore = "Ne y beogo m maaso ! Mam yaa Rose IA, fo laafi zoa PagLaafi pʋgẽ. M be ka n na n sõng fõ ne yĩn-sõngr, rɩɩb sõma (moringa, baobab), pʋg-tõor bɩ bãas gɩdgre. Bõe n be fo sũurẽ rũndã ?";
+      aiDioula = "I ni sɔgɔma n ma muso ! Ne ye Rose IA ye PagLaafi kɔnɔ. Ne bɛ yan k'i dɛmɛ kɛnɛya, i yɛrɛ saniya, dumuni ɲuman ani kalo-sira la. Mun b'i kɔnɔ bi ?";
     }
-    // Règles & crampes
+    // 3. AUTOPALPATION, GESTES PRATIQUES & TECHNIQUE D'EXAMEN
     else if (
-      lower.includes("règle") ||
-      lower.includes("regle") ||
-      lower.includes("menstru") ||
-      lower.includes("crampe") ||
-      lower.includes("ventre") ||
-      lower.includes("cycle") ||
-      lower.includes("period") ||
-      lower.includes("cramp")
+      clean.includes("autopalpation") ||
+      clean.includes("palpation") ||
+      clean.includes("palper") ||
+      clean.includes("palpe") ||
+      clean.includes("examiner") ||
+      clean.includes("toucher") ||
+      clean.includes("comment faire") ||
+      clean.includes("geste") ||
+      clean.includes("technique") ||
+      clean.includes("etape") ||
+      clean.includes("methode") ||
+      clean.includes("quand") ||
+      clean.includes("moment")
     ) {
-      responseKey = "regles_douleurs";
+      aiFr = "L'autopalpation se réalise en 3 étapes douces, idéalement 2 à 7 jours après la fin de tes règles : 1° Face au miroir, regarde l'aspect de tes seins bras baissés puis levés (recherche un creux, une rougeur ou une rétractation). 2° Lève un bras et palpe avec la pulpe des 3 doigts du milieu en petits cercles fermes de l'extérieur vers le mamelon, debout puis allongée. 3° Examine sous l'aisselle et presse doucement le mamelon pour vérifier l'absence d'écoulement. Regarde la vidéo démonstrative avec notre sage-femme en cliquant sur le bouton ci-dessous !";
+      aiEn = "Breast self-exam is done in 3 gentle steps, best scheduled 2 to 7 days after your period: 1° Look in the mirror with arms relaxed then raised (check for dimples or retraction). 2° Raise one arm and feel firmly with the pads of your 3 middle fingers in small circular motions toward the nipple, standing and lying down. 3° Check under your armpit and gently squeeze the nipple for any discharge. Watch the step-by-step video with our midwife below!";
+      aiMoore = "Yĩn-gesgo wã tũuda vɛr a tãabo, pʋg-peelgã poore rasem a 2 n ta a 7: 1° Ges fo meng laloorẽ n gũus fo yĩnsã rɩsg la gõosgo. 2° Yiis fo nus n kɛlees ne nus-bi a tãabã pãng n lilli n kẽng zĩ-kãsengã wɛɛngẽ. 3° Ges fo baglem pʋgẽ la fo bĩidã bɩ zɩɩm pa yit ye. Ges-y video wã bilfu !";
+      aiDioula = "Bɔlɔkɔrɔ lajɛ bɛ kɛ taabolo saba de la, kalo-sira ban kɔfɛ tle 2 fo 7: 1° I yɛrɛ lajɛ filɛli-fɛn na k'a filɛ ni yɛlɛmali dɔ bɛ yen. 2° I bɔlɔ kɔrɔta ka bɔlɔden saba kɛ k'a sɛgɛsɛgɛ lali maana la fo ka ta masiɲɛ na. 3° I kaman kɔrɔ lajɛ ani i sin-toli dɔɔnin digi. Vidéow lajɛ duguma sabali !";
     }
-    // Bien-être mental & charge mentale
+    // 4. BOULE, NODULE, KYSTE, MASSE, GROSSEUR & SYMPTÔMES
     else if (
-      lower.includes("stress") ||
-      lower.includes("mental") ||
-      lower.includes("anxiet") ||
-      lower.includes("angoisse") ||
-      lower.includes("triste") ||
-      lower.includes("pleur") ||
-      lower.includes("sommeil") ||
-      lower.includes("dors") ||
-      lower.includes("dormir") ||
-      lower.includes("repose") ||
-      lower.includes("charge")
+      clean.includes("boule") ||
+      clean.includes("nodule") ||
+      clean.includes("kyste") ||
+      clean.includes("masse") ||
+      clean.includes("grosseur") ||
+      clean.includes("dur") ||
+      clean.includes("ganglion") ||
+      clean.includes("gonflement") ||
+      clean.includes("ecoulement") ||
+      clean.includes("liquide") ||
+      clean.includes("peau d'orange") ||
+      clean.includes("retractation") ||
+      clean.includes("creux")
     ) {
-      responseKey = "bien_etre_mental";
+      aiFr = "Respire calmement ma sœur, ne panique pas : dans plus de 8 cas sur 10, une boule ou un nodule n'est PAS un cancer (il s'agit très souvent d'un simple kyste liquide ou d'un adénofibrome bénin très fréquent). Cependant, la seule façon d'avoir le cœur net et d'être en paix est de la faire examiner rapidement par une sage-femme ou un médecin dans un centre de santé. Tu peux consulter l'onglet 'Centres' pour trouver le plus proche.";
+      aiEn = "Breathe gently my sister, do not panic: in more than 8 out of 10 cases, a lump is NOT cancer (it is often a benign fluid cyst or fibroadenoma). However, having it examined promptly by a midwife or doctor brings complete peace of mind. Check the 'Centres' tab to visit a facility near you.";
+      aiMoore = "Vʋʋsm sõma m maaso, da zoe rabeem ye: bõn-kʋds a nii (8) piig pʋgẽ pa bã-kãsenga ye (yaa kystes bal). La yaa tɩlae tɩ dɔgɔtɔr ges-a tao-tao tɩ fo sũur gãande kɛnɛyaso pʋgẽ. Mam be ne yãmba.";
+      aiDioula = "I ni lafiɲɛ dɔrɔn, kana siran: kunkolo tan kɔnɔ segin tɛ bana juguman ye. Nka kɛnɛyaso lajɛ jona de bɛ hakili sigi dɔgɔtɔrɔmuso fɛ. Taga kɛnɛyaso la jona.";
     }
-    // Col de l'utérus & dépistage global
+    // 5. CENTRES DE SANTÉ, HÔPITAUX & OÙ ALLER À OUAGA / BURKINA
     else if (
-      lower.includes("col") ||
-      lower.includes("uterus") ||
-      lower.includes("utérus") ||
-      lower.includes("frottis") ||
-      lower.includes("iva") ||
-      lower.includes("hpv") ||
-      lower.includes("vaccin")
+      clean.includes("centre") ||
+      clean.includes("hopital") ||
+      clean.includes("clinique") ||
+      clean.includes("ou aller") ||
+      clean.includes("ouaga") ||
+      clean.includes("bobo") ||
+      clean.includes("schiphra") ||
+      clean.includes("yalgado") ||
+      clean.includes("bogodogo") ||
+      clean.includes("pissy") ||
+      clean.includes("tingandogo") ||
+      clean.includes("rdv") ||
+      clean.includes("rendez vous") ||
+      clean.includes("rendez-vous")
     ) {
-      responseKey = "col_uterus";
+      aiFr = "Au Burkina Faso, plusieurs centres spécialisés sont à ton service pour le dépistage et la prise en charge : 1° CHU de Bogodogo (Pôle Mère-Enfant avec mammographe numérique ouvert). 2° Centre Médical Schiphra à Tanghin (dépistage et tarifs subventionnés). 3° CHU Yalgado Ouédraogo (Service de cancérologie & sénologie). 4° CMA de Pissy et centres de santé CSPS pour la palpation clinique gratuite. Consulte l'onglet 'Centres' pour lancer l'itinéraire GPS en un clic !";
+      aiEn = "In Burkina Faso, excellent health centers welcome you: 1° CHU Bogodogo (Mother-Child specialized pole). 2° Schiphra Medical Center in Tanghin (subsidized screenings). 3° CHU Yalgado Ouédraogo (Oncology & Senology). 4° CMA Pissy and local CSPS clinics. Open the 'Centres' tab to get GPS directions instantly!";
+      aiMoore = "Burkina Faso ka, kɛnɛyasow wʋsg bee n gũud yãmba: CHU Bogodogo, Centre Médical Schiphra Tanghin, CHU Yalgado Ouédraogo, la CMA Pissy. Nus n gesã yaa zaalem. Ges-y 'Centres' n bãng zĩiga tao-tao.";
+      aiDioula = "Burkina Faso la, kɛnɛyasow caman bɛ yen: CHU Bogodogo, Centre Médical Schiphra Tanghin, CHU Yalgado, ani CMA Pissy. Bɔlɔkɔrɔ lajɛ sɔngɔ ye fu ye. Taga 'Centres' siratigɛ la ka siraw ye.";
     }
-    // Grossesse & ménopause
+    // 6. PRIX, COÛTS, TARIFS & FCFA
     else if (
-      lower.includes("enceinte") ||
-      lower.includes("grossesse") ||
-      lower.includes("bebe") ||
-      lower.includes("bébé") ||
-      lower.includes("allait") ||
-      lower.includes("ménopause") ||
-      lower.includes("menopause") ||
-      lower.includes("bouffée")
+      clean.includes("prix") ||
+      clean.includes("cout") ||
+      clean.includes("combien") ||
+      clean.includes("tarif") ||
+      clean.includes("argent") ||
+      clean.includes("fcfa") ||
+      clean.includes("gratuit") ||
+      clean.includes("payer") ||
+      clean.includes("cher")
     ) {
-      responseKey = "grossesse_menopause";
+      aiFr = "Au Burkina Faso : 1° La palpation clinique de dépistage est 100% GRATUITE (0 FCFA) dans les centres publics et les campagnes de sensibilisation. 2° L'échographie mammaire coûte entre 6 000 et 7 500 FCFA. 3° La mammographie coûte entre 10 000 et 12 000 FCFA (subventionnée à 5 000 FCFA à Schiphra pour les femmes vulnérables grâce aux dons). L'argent ne doit jamais être un frein à ta santé.";
+      aiEn = "In Burkina Faso: 1° Clinical breast exams are 100% FREE (0 FCFA) in public centers and campaigns. 2° Breast ultrasound costs 6,000 to 7,500 FCFA. 3° Mammography is 10,000 to 12,000 FCFA (subsidized to 5,000 FCFA at Schiphra for vulnerable women). Financial concerns must never prevent medical care.";
+      aiMoore = "Burkina Faso ka, nus n gesã yaa zaalem (0 FCFA) kɛnɛyaso wʋsg pʋgẽ. Échographie yaa 6 000 n ta 7 500 FCFA, la mammographie yaa 10 000 n ta 12 000 FCFA (subventionné a 5 000 FCFA Schiphra). Ligdi da yɩ gɩdgr fo laafɩ wɛɛngẽ ye.";
+      aiDioula = "Burkina Faso la, bɔlɔkɔrɔ lajɛ sɔngɔ ye fu ye (0 FCFA). Échographie ye 6 000 fo 7 500 FCFA ye, mammographie ye 10 000 fo 12 000 FCFA ye. Wari kana kɛ gɛlɛya ye i ka kɛnɛya siratigɛ la.";
     }
-    // Douleur ou peur
+    // 7. PEUR, ANGOISSE, DÉTRESSE, MORT & SOUTIEN ÉMOTIONNEL
     else if (
-      lower.includes("mal") ||
-      lower.includes("douleur") ||
-      lower.includes("peur") ||
-      lower.includes("hurt") ||
-      lower.includes("pain")
+      clean.includes("peur") ||
+      clean.includes("angoisse") ||
+      clean.includes("panique") ||
+      clean.includes("mourir") ||
+      clean.includes("mort") ||
+      clean.includes("stress") ||
+      clean.includes("triste") ||
+      clean.includes("pleur") ||
+      clean.includes("seule") ||
+      clean.includes("moral") ||
+      clean.includes("choc")
     ) {
-      responseKey = "mal";
+      aiFr = "Respire profondément ma sœur, pose la main sur ton cœur : tu n'es pas seule, je suis là et les soignants sont à tes côtés. La peur est une réaction tout à fait humaine, mais rappelle-toi ceci avec force : le cancer du sein n'est pas une condamnation ! Détecté tôt, il se guérit dans plus de 9 cas sur 10. Tu as une valeur inestimable pour ta famille et pour nous. Nous allons avancer pas à pas avec tendresse et courage.";
+      aiEn = "Take a deep breath my sister, place your hand on your heart: you are not alone, I am here with you. Fear is entirely normal, but remember this: breast cancer is not a fatality! Detected early, more than 9 out of 10 women are cured completely. You have courage and we are by your side step by step.";
+      aiMoore = "M maaso, vʋʋsm sõma n ning fo nuga fo sũurẽ : fo ka fo yembr ye, mam be ne fo. Zõeemã yaa bũmb sẽn pa wẽnga ninsaal pʋgẽ, la bãagã sã n bãng tao-tao a vʋʋgda sõma. Bãng tɩ fo tara pãng, la d na n zĩnd ne taab wakat fãa.";
+      aiDioula = "I dusu suma n ma muso, i bɔlɔ bila i dusu kan: i ma kelen ye, ne bɛ yan i kɔrɔ. Siran bɛ mɔgɔ bɛɛ la, nka ni bana ye jona, mɔgɔ bɛ kɛnɛya kosɛbɛ. An bɛ i kɔrɔ ni barika ye.";
     }
-    // Prix & Tarifs
+    // 8. GUÉRISON, CHANCES, ESPOIR & TRAITEMENT
     else if (
-      lower.includes("prix") ||
-      lower.includes("coût") ||
-      lower.includes("cout") ||
-      lower.includes("fcfa") ||
-      lower.includes("tarif") ||
-      lower.includes("argent") ||
-      lower.includes("gratuit") ||
-      lower.includes("price") ||
-      lower.includes("cost")
+      clean.includes("guerir") ||
+      clean.includes("guerison") ||
+      clean.includes("soigner") ||
+      clean.includes("espoir") ||
+      clean.includes("chances") ||
+      clean.includes("survie") ||
+      clean.includes("stade")
     ) {
-      responseKey = "prix";
+      aiFr = "Oui, le cancer du sein se guérit très bien ! Lorsqu'il est découvert à un stade précoce grâce à l'autopalpation mensuelle et au dépistage, le taux de guérison dépasse 90%. Au Burkina Faso, les équipes médicales disposent de chirurgies réparatrices, de traitements adaptés et d'un accompagnement fraternel. L'espoir et la vie triomphent toujours quand on agit tôt.";
+      aiEn = "Yes, breast cancer is highly curable! When diagnosed early through monthly self-exams and screening, the cure rate exceeds 90%. In Burkina Faso, medical teams provide modern treatments and caring support. Hope and life always win when we act early.";
+      aiMoore = "N-ye, bãaga wã tõe n komsame hal n sa ! Sã n mik tɩ bãngrã yɩɩ tao-tao, neb piig pʋgẽ a wae (9) vʋʋgda fasafasa. Kẽng dɔgɔtɔr zĩigẽ n bãng fo laafi.";
+      aiDioula = "Ɔwɔ, bana nin bɛ se ka kɛnɛya kosɛbɛ ! Ni a yera jona, mɔgɔ tan kɔnɔ kɔnɔntɔn bɛ kɛnɛya tiɲɛ na. Kɛnɛyaso bɛ dɛmɛ di.";
     }
-    // Boule ou nodule
+    // 9. RÈGLES, CRAMPES, CYCLE MENSTRUEL & DOULEURS DU VENTRE
     else if (
-      lower.includes("boule") ||
-      lower.includes("kyste") ||
-      lower.includes("nodule") ||
-      lower.includes("masse") ||
-      lower.includes("lump")
+      clean.includes("regle") ||
+      clean.includes("menstru") ||
+      clean.includes("crampe") ||
+      clean.includes("ventre") ||
+      clean.includes("cycle") ||
+      clean.includes("douleur") ||
+      clean.includes("retard")
     ) {
-      responseKey = "boule";
+      aiFr = "Je te comprends profondément ma sœur, les douleurs de règles peuvent être épuisantes. Pour t'apaiser naturellement : applique un linge tiède sur ton bas-ventre, bois une infusion chaude de gingembre ou de kinkeliba, masse doucement ton ventre avec un peu de beurre de karité et repose-toi. Si la douleur est si forte qu'elle t'empêche de vaquer à tes occupations, parles-en à une sage-femme car cela peut être de l'endométriose.";
+      aiEn = "I hear you deeply, menstrual pain can be genuinely exhausting. To soothe cramps naturally: apply a warm cloth to your lower belly, drink warm ginger or kinkeliba tea, gently massage with shea butter, and rest. If severe pain prevents your daily activities, consult a midwife to check for endometriosis.";
+      aiMoore = "Pʋg-tõor namsda pagb wʋsg. Bõn-sõma n tõe n koms-a: ning-y fu-tʋʋlga y pʋgẽ, nyũ-y gingembre koom bɩ kinkeliba ko-tʋʋlga, rɩk karité kam n so y pʋgã bilfu, la y vʋʋse.";
+      aiDioula = "Kalo-sira dimi bɛ muso caman tɔɔrɔ. Walasa k'a dɔgɔya: fɛn kaliman bila i kɔnɔ la, jinɛbɛrɛ-ji sumana min, si-tulu dɔoni kɛ i kɔnɔ la ka lafiɲɛ kɛ.";
+    }
+    // 10. HYGIÈNE INTIME, TOILETTE, PERTES & FLORE VAGINALE
+    else if (
+      clean.includes("toilette") ||
+      clean.includes("intime") ||
+      clean.includes("savon") ||
+      clean.includes("perte") ||
+      clean.includes("odeur") ||
+      clean.includes("vagin") ||
+      clean.includes("vulve") ||
+      clean.includes("mycose") ||
+      clean.includes("demange") ||
+      clean.includes("brulure") ||
+      clean.includes("coton")
+    ) {
+      aiFr = "Ma sœur, ton intimité est délicate et précieuse. La règle d'or des soignants est simple : lave uniquement la partie extérieure (la vulve) à l'eau propre ou avec un savon doux sans parfum. Ne fais JAMAIS de douche vaginale interne ni n'introduis de poudres décapantes : le vagin possède son propre système d'auto-nettoyage. Porte des culottes en coton. Si tu as des démangeaisons ou des pertes inhabituelles, consulte une sage-femme sans aucune honte.";
+      aiEn = "My sister, your intimate health is delicate and precious. The golden rule is simple: wash only the outside (the vulva) with clean water or mild unscented soap. NEVER practice internal douching or use harsh powders: the vagina cleanses itself naturally. Wear cotton underwear. If you have itching or unusual discharge, visit a midwife with full confidence.";
+      aiMoore = "M maaso, fo yĩng sõngr yaa tɩlae wʋsg. Rɩk koom sõma bal n peeg fo meng yĩng zĩ-kẽemã yell bal. Da rɩk tɩɩm dãmb n kẽes fo pʋgẽ ye, bala a sãamda fo yĩnsa laafi. Yeelg fu-kõbdo sẽn yaa koton.";
+      aiDioula = "N ma muso, i yɛrɛ saniya ko ka kɔrɔtanin kosɛbɛ. Ji saniya dɔrɔn de kɛ kɔkan, kana fɛn juguw don kɔnɔna na abada. Koton faniw don funteni senfɛ. Ni fɛn dɔ y'i gɛlɛya, taga dɔgɔtɔrɔmuso fɛ sabali.";
+    }
+    // 11. NUTRITION SAHÉLIENNE, MORINGA, BAOBAB & BIEN-ÊTRE
+    else if (
+      clean.includes("moringa") ||
+      clean.includes("baobab") ||
+      clean.includes("soumbala") ||
+      clean.includes("singe") ||
+      clean.includes("manger") ||
+      clean.includes("nutrition") ||
+      clean.includes("vitamine") ||
+      clean.includes("anemie") ||
+      clean.includes("fatigue") ||
+      clean.includes("sel") ||
+      clean.includes("bouillon") ||
+      clean.includes("cube") ||
+      clean.includes("eau") ||
+      clean.includes("boire")
+    ) {
+      aiFr = "Pour préserver ta vitalité et prévenir les maladies au Burkina Faso, la nature nous a offert des trésors : les feuilles de Moringa regorgent de fer contre la fatigue et l'anémie, la pulpe de Baobab (pain de singe) est un concentré d'antioxydants et de vitamine C, et le Soumbala traditionnel protège le cœur et la tension. Évite les bouillons cubes industriels trop salés, et bois au moins 2 à 3 litres d'eau propre par jour.";
+      aiEn = "To preserve your vitality in the Sahel, nature has provided wonders: Moringa leaves offer rich iron against fatigue and anemia, Baobab fruit (pain de singe) brings powerful antioxidants and vitamin C, and authentic Soumbala protects the heart. Reduce salty bouillon seasoning cubes, and drink 2 to 3 liters of clean water daily.";
+      aiMoore = "Burkina Faso ka, Wẽnd kõ-d-la rɩɩb sõma wʋsg: moringa vaadã kẽesda pãng fo zɩlem pʋgẽ n gɩdg zɩ-komlem, tɔɔd bɩ zɩt-yɩla waoogda pãng, la sumbala sõngda sũurã laafi. Gɩdg yaalem wʋsg, la nyũ-y koom sõma dahar fãa.";
+      aiDioula = "An ka faso la, kɛnɛya dumunifɛnw caman bɛ yen: moringa buluw bɛ fanga di joliko la, sira-den bɛ kɛnɛya gansan di, ani sumbala bɛ dusu mara. Maggi cube ka caya tɛ kɛnɛya ye, ji saniya min don o don.";
+    }
+    // 12. DÉPISTAGE DU COL DE L'UTÉRUS
+    else if (
+      clean.includes("col") ||
+      clean.includes("uterus") ||
+      clean.includes("frottis") ||
+      clean.includes("iva") ||
+      clean.includes("hpv") ||
+      clean.includes("vaccin")
+    ) {
+      aiFr = "Le col de l'utérus mérite toute ton attention : un simple dépistage visuel (test IVA) ou frottis réalisé en 5 minutes par une sage-femme permet de repérer des petites anomalies bien avant qu'elles ne se transforment. C'est rapide, indolore et disponible dans tous les CSPS et CMA du Burkina. Fais ce dépistage tous les 3 ans !";
+      aiEn = "Cervical health is vital: a simple visual inspection (VIA test) or pap smear done in 5 minutes by a midwife detects early changes years in advance. It is quick, painless, and available at all CSPS and CMA clinics in Burkina Faso. Get screened every 3 years!";
+      aiMoore = "Pʋg-kɛenga laafi yaa tɩlae wʋsg. Bãaga wã tõe n gɩdgame sã n mik tɩ dɔgɔtɔr ges-a zĩigẽ (test IVA). A pa namsd ye, a pa rɩkd wakat wʋsg ye. Bãng-y fo laafi yʋʋm a tãab fãa pʋgẽ.";
+      aiDioula = "Kɔnɔna juru bana bɛ se ka bali sani a ka juguya. Dɔgɔtɔrɔmuso bɛ se k'a lajɛ sekondi damanin kɔnɔ (test IVA). A tɛ dimi, a bɛ sɔrɔ kɛnɛyasow bɛɛ la. O kɛ kalo 36 o kalo 36 kɔnɔ.";
+    }
+    // 13. GROSSESSE, ALLAITEMENT & MÉNOPAUSE
+    else if (
+      clean.includes("enceinte") ||
+      clean.includes("grossesse") ||
+      clean.includes("bebe") ||
+      clean.includes("allait") ||
+      clean.includes("menopause") ||
+      clean.includes("bouffee")
+    ) {
+      aiFr = "Chaque étape de la vie d'une femme est un passage précieux. Que tu sois enceinte, jeune maman allaitante ou en ménopause, écoute ton corps : bois beaucoup d'eau, consomme des aliments frais riches en calcium et en fer, et pratique la marche. Si tu constates un saignement inattendu ou un nodule mammaire pendant ou après la grossesse/ménopause, consulte sans tarder.";
+      aiEn = "Every stage in a woman's journey is precious. Whether pregnant, nursing, or navigating menopause, listen to your body: stay hydrated, eat fresh nutrient-dense foods, and stay active. Any unexpected bleeding or breast changes warrant a prompt consultation.";
+      aiMoore = "Pʋg-yãmb laafi tekda wakat fãa: pʋg-tũub wakat, bi-doglem wakat, bɩ kʋdemd wakat. Nyũ-y ko-sumdo, rɩ-y rɩ-sõma. Sã n mik tɩ zɩɩm yii fo meng pʋgẽ tɩ pa wakat, kẽng dɔgɔtɔr tao-tao.";
+      aiDioula = "Musoya ye yɛlɛmali yɔrɔ ye: kɔnɔtigi, denbaya, walima musokɔrɔya. Ji sumana min, dumuni kɛnɛ kɛ. Ni jolidon kɛra kɔfɛ, taga dɔgɔtɔrɔmuso fɛ jona.";
+    }
+    // 14. REMERCIEMENTS & AU REVOIR
+    else if (
+      clean.includes("merci") ||
+      clean.includes("bark biiga") ||
+      clean.includes("anitche") ||
+      clean.includes("thank") ||
+      clean.includes("au revoir") ||
+      clean.includes("bye") ||
+      clean.includes("a bientot") ||
+      clean.includes("bonne journee") ||
+      clean.includes("bonne soiree")
+    ) {
+      aiFr = "C'est un véritable honneur et un bonheur d'être à tes côtés, ma sœur ! Prends grand soin de toi et de ton corps. N'hésite jamais à revenir me parler dès que tu as une question ou besoin d'écoute. Que la paix et la santé t'accompagnent !";
+      aiEn = "It is an absolute honor and joy to accompany you, my sister! Take tender care of your body and well-being. Never hesitate to talk to me whenever you need guidance. May peace and radiant health stay with you!";
+      aiMoore = "Yaa sũ-noogo kãsenga mam yĩnga tɩ m sõng fo maaso ! Ges fo meng laafi sõma. Wakat fãa fo sã n tar sokre, wa n sok maam. Wẽnd kõ-f laafi la sũ-noogo !";
+      aiDioula = "A ye ninsɔndiya ye ne bolo k'i dɛmɛ n ma muso ! I yɛrɛ ladon kosɛbɛ. Wagati o wagati, n'i b'a fɛ k'an ka kuma, na yan. Ala ka kɛnɛya n'i ye !";
+    }
+    // 15. DON & SOLIDARITÉ
+    else if (
+      clean.includes("don") ||
+      clean.includes("aider") ||
+      clean.includes("financer") ||
+      clean.includes("solidarite") ||
+      clean.includes("orange money") ||
+      clean.includes("association")
+    ) {
+      aiFr = "Ton cœur est généreux ! L'onglet 'Faire un don' de PagLaafi permet de soutenir directement les femmes vulnérables du Burkina Faso via Orange Money (dès 500 FCFA). Tu peux choisir de faire un don nominatif ou un Don Anonyme Chiffré pour préserver ta discrétion. Chaque contribution finance des dépistages et des mammographies gratuits.";
+      aiEn = "Your generosity warms my heart! PagLaafi's 'Faire un don' tab lets you support vulnerable women across Burkina Faso through Orange Money (from 500 FCFA). You can donate publicly or via an Anonymous Encrypted gift. Every contribution funds free screenings and mammograms.";
+      aiMoore = "Fo sũur yaa sõma wʋsg ! 'Faire un don' pʋgẽ, fo tõe n dɩka Orange Money (sẽn sɩng ne 500 FCFA) n sõng pagb nins sẽn ka tar ligdi tɩ b bãng b laafi zaalem. Barka wʋsg !";
+      aiDioula = "I dusu ka ɲi kosɛbɛ ! 'Faire un don' bolo la, i bɛ se ka muso gɛlɛyaw dɛmɛ Orange Money fɛ (kabini 500 FCFA) walasa u ka kɛnɛya lajɛ sɔrɔ fu. I ni ce kosɛbɛ !";
+    }
+    // 16. MOTEUR CONTEXTUEL UNIVERSEL POUR TOUTE QUESTION ÉCRITE LIBRE
+    else {
+      aiFr = `J'ai bien reçu ta question avec toute mon attention, ma sœur : « ${textToSend} ». En matière de santé féminine, chaque ressenti et chaque interrogation méritent respect et clarté. Écoute ton corps : pratique l'autopalpation mensuelle (quelques jours après tes règles), veille à une bonne hydratation avec les super-aliments burkinabè (moringa, baobab), et n'hésite pas à consulter une sage-femme dans un centre partenaire si tu ressens un doute ou une gêne. Tu peux aussi me poser d'autres questions précises ou toucher le micro !`;
+      aiEn = `I received your message with care, my sister: "${textToSend}". In women's health, every concern deserves clear understanding and compassion. Listen to your body: practice monthly breast exams, enjoy wholesome local nutrition, and visit a midwife at a partner clinic whenever in doubt. Feel free to ask more details or speak to me via the microphone!`;
+      aiMoore = `M wʋma fo sokrã sõma m maaso : « ${textToSend} ». Fo laafi yaa tɩlae wʋsg : ges fo meng yĩnsã dahar fãa pʋg-peelgã poore, rɩ rɩ-sõma (moringa, baobab), la fo sã n mik bũmb sẽn pa zems fo yĩngẽ, kẽng n ges dɔgɔtɔr-pʋgbo kɛnɛyaso la. Sok-y maam bũmb a taaba !`;
+      aiDioula = `N ye i ka ɲiningali mɛn kosɛbɛ n ma muso : « ${textToSend} ». I ka kɛnɛya kɔrɔtanin lo : i sinw sɛgɛsɛgɛ kalo-sira ban kɔfɛ, dumuni kɛnɛ kɛ (moringa, sira-den), wa ni fɛn dɔ y'i gɛlɛya, taga dɔgɔtɔrɔmuso fɛ jona. I bɛ se ka fɛn wɛrɛ ɲini ne fɛ !`;
     }
 
-    const aiAnswer = roseKnowledge[responseKey];
+    // Réponse différée pour simulation naturelle d'analyse IA
     window.setTimeout(() => {
       setRoseMessages((prev) => [
         ...prev,
         {
           sender: "rose",
-          text: aiAnswer.fr,
-          englishText: aiAnswer.en,
-          mooreText: aiAnswer.moore,
-          dioulaText: aiAnswer.dioula,
+          text: aiFr,
+          englishText: aiEn,
+          mooreText: aiMoore,
+          dioulaText: aiDioula,
           time: "Maintenant",
         },
       ]);
 
-      // Si le mode oral est actif ou si la question a été posée au micro / à voix haute
-      if (speakAloud || roseChatMode === "voice") {
+      // Défilement automatique vers le nouveau message
+      window.setTimeout(() => {
+        roseChatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 80);
+
+      // Si le micro a été utilisé, synthèse vocale immédiate dans la langue choisie
+      if (speakAloud || isRecordingVoice) {
         const textToSpeak =
-          oralVoiceLang === "moore" && aiAnswer.moore
-            ? aiAnswer.moore
-            : oralVoiceLang === "dioula" && aiAnswer.dioula
-            ? aiAnswer.dioula
-            : oralVoiceLang === "en" && aiAnswer.en
-            ? aiAnswer.en
-            : aiAnswer.fr;
-        handlePlayAudio(textToSpeak, oralVoiceLang);
+          appLanguage === "moore" && aiMoore
+            ? aiMoore
+            : appLanguage === "dioula" && aiDioula
+            ? aiDioula
+            : appLanguage === "en" && aiEn
+            ? aiEn
+            : aiFr;
+        handlePlayAudio(textToSpeak, appLanguage);
       }
-    }, 600);
+    }, 450);
   };
 
   useEffect(() => {
@@ -2822,23 +3002,79 @@ export function PinkHubMobile() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* Bouton direct Partage Wi-Fi local sans Expo */}
             <button
               onClick={() => setShowWifiModal(true)}
               className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-800 transition hover:bg-emerald-100 shadow-2xs"
               title="Lien Mobile Wi-Fi (Sans Expo)"
             >
-              <Globe size={12} className="text-emerald-600" />
+              <Globe size={11} className="text-emerald-600" />
               <span>Wi-Fi</span>
             </button>
 
+            {/* SÉLECTEUR DE LANGUE DISCRET & INTUITIF (TOUS ÉCRANS & TOUS PROFILS) */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLanguageMenu(!showLanguageMenu);
+                  setShowProfileMenu(false);
+                }}
+                className="inline-flex items-center gap-1 rounded-full border border-[#ecd2dc] bg-[#fff6f8] px-2 py-1 text-[10px] font-bold text-[#863b55] hover:bg-[#faedf2] transition shadow-2xs cursor-pointer"
+                title="Changer de langue (Français, Mooré, Dioula, English)"
+              >
+                <Languages size={12} className="text-[#a14364]" />
+                <span className="font-extrabold">{appLanguage === "moore" ? "Mooré" : appLanguage === "dioula" ? "Dioula" : appLanguage.toUpperCase()}</span>
+              </button>
+
+              {/* Popover compact de sélection de langue */}
+              {showLanguageMenu && (
+                <div
+                  className="ph-enter absolute right-0 top-10 z-50 w-44 rounded-2xl border border-[#ebd4dd] bg-white p-2 shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-[#a14364] border-b border-[#f4dee6] mb-1">
+                    Langue / Language
+                  </div>
+                  {[
+                    { code: "fr" as const, label: "Français", flag: "🇫🇷", sub: "Officielle" },
+                    { code: "moore" as const, label: "Mooré", flag: "🇧🇫", sub: "Nationale" },
+                    { code: "dioula" as const, label: "Dioula", flag: "🇧🇫", sub: "Nationale" },
+                    { code: "en" as const, label: "English", flag: "🇬🇧", sub: "English" },
+                  ].map((l) => (
+                    <button
+                      key={l.code}
+                      type="button"
+                      onClick={() => handleSelectAppLanguage(l.code)}
+                      className={`w-full flex items-center justify-between rounded-xl px-2 py-1.5 text-xs font-semibold transition ${
+                        appLanguage === l.code
+                          ? "bg-[#a14364] text-white font-bold"
+                          : "text-[#5a3648] hover:bg-pink-50"
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span>{l.flag}</span>
+                        <span>{l.label}</span>
+                      </span>
+                      <span className={`text-[9px] ${appLanguage === l.code ? "text-white/80" : "text-gray-400"}`}>
+                        {l.sub}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Bouton direct Rose IA */}
             <button
-              onClick={() => setSection("RoseIA")}
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition shadow-sm ${section === "RoseIA" ? "bg-[#a14364] text-white" : "border border-[#e7bcc9] bg-[#fbf0f4] text-[#8e3857]"}`}
+              onClick={() => {
+                setSection("RoseIA");
+                setShowLanguageMenu(false);
+              }}
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10.5px] font-bold transition shadow-sm ${section === "RoseIA" ? "bg-[#a14364] text-white" : "border border-[#e7bcc9] bg-[#fbf0f4] text-[#8e3857]"}`}
             >
-              <Sparkles size={13} className="text-amber-500" />
+              <Sparkles size={12} className="text-amber-500" />
               <span>Rose IA</span>
             </button>
 
@@ -4376,540 +4612,198 @@ export function PinkHubMobile() {
           {/* ONGLET 4 : ROSE IA (ASSISTANTE VOCALE DISPONIBLE)                   */}
           {/* ------------------------------------------------------------------ */}
           {/* ------------------------------------------------------------------ */}
-          {/* ONGLET 4 : ROSE IA (SANTÉ GLOBALE, BIEN-ÊTRE & ÉTHIQUE BIENVEILLANTE)*/}
+          {/* ------------------------------------------------------------------ */}
+          {/* ONGLET 4 : ROSE IA (ASSISTANTE CONVERSATIONNELLE & ÉTHIQUE)        */}
           {/* ------------------------------------------------------------------ */}
           {section === "RoseIA" && !selectedCenter && (
-            <section className="ph-enter flex flex-col h-full px-5 pt-3">
-              {/* Bannière Rose IA */}
-              <div className="rounded-[24px] bg-gradient-to-r from-[#734059] via-[#8a3857] to-[#9e466b] p-4 text-white shadow-md">
-                <div className="flex items-center justify-between">
+            <section className="ph-enter flex flex-col h-full px-4 pt-2.5 pb-2">
+              {/* ============================================================ */}
+              {/* CONTENEURS DU HAUT SELON LE PROFIL                           */}
+              {/* Profil Utilisatrice : uniquement "Voir la vidéo"             */}
+              {/* Profil Docteur/Superadmin : "Entraîner le modèle" + "Vidéo"  */}
+              {/* ============================================================ */}
+              {currentUser?.adminType === "doctor" || currentUser?.role === "superadmin" ? (
+                /* HAUT DE PAGE POUR DOCTEURS & SUPERADMIN */
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowDoctorModal(true)}
+                    className="flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-800 p-2.5 text-white font-bold text-xs shadow-xs hover:opacity-95 transition cursor-pointer"
+                  >
+                    <Stethoscope size={15} className="text-cyan-300" />
+                    <span>Entraîner Rose IA 🩺</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAutopalpationVideoModal(true)}
+                    className="flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-[#9e466b] to-rose-600 p-2.5 text-white font-bold text-xs shadow-xs hover:opacity-95 transition cursor-pointer"
+                  >
+                    <Play size={14} className="fill-white" />
+                    <span>Voir la vidéo 🎬</span>
+                  </button>
+                </div>
+              ) : (
+                /* HAUT DE PAGE POUR LES UTILISATRICES : UNIQUEMENT VOIR LA VIDÉO */
+                <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-rose-600 via-[#a14364] to-[#734059] px-3.5 py-2.5 text-white shadow-xs">
                   <div className="flex items-center gap-2.5">
-                    <div className="relative">
-                      <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20 text-white shadow-sm">
-                        <Sparkles size={21} className="text-amber-300 animate-pulse" />
-                      </span>
-                      {roseSpeaking && (
-                        <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white ph-pulse" />
-                      )}
+                    <div className="relative grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/20 text-white backdrop-blur-xs">
+                      <Play size={14} className="fill-white translate-x-0.5" />
+                      <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 border border-white" />
                     </div>
                     <div>
-                      <h2 className="ph-display text-base font-bold">Rose IA · Santé Globale</h2>
-                      <p className="text-[10px] text-white/85">
-                        Bien-être · Hygiène de vie · Écoute empathique & éthique
+                      <h4 className="font-bold text-xs">Vidéo d'Autopalpation Mammaire</h4>
+                      <p className="text-[9.5px] text-white/85">
+                        Démonstration guidée pas-à-pas par notre sage-femme
                       </p>
                     </div>
                   </div>
                   <button
-                    onClick={() =>
-                      handlePlayAudio(
-                        "Bonjour ma sœur, je suis Rose IA, ta compagne de santé et de bien-être. Pose-moi ta question à l'écrit ou au micro.",
-                        "fr",
-                      )
-                    }
-                    className="rounded-full bg-white/20 p-2 text-white hover:bg-white/30 transition"
-                    title="Écouter le message de bienvenue"
-                  >
-                    <Volume2 size={16} />
-                  </button>
-                </div>
-
-                {/* Badges d'engagement éthique */}
-                <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[9.5px]">
-                  <span className="rounded-full bg-white/15 px-2 py-0.5 font-bold text-white">
-                    🌸 Zéro tabou
-                  </span>
-                  <span className="rounded-full bg-white/15 px-2 py-0.5 font-bold text-white">
-                    🤝 Bienveillance & Pudeur
-                  </span>
-                  <span className="rounded-full bg-white/15 px-2 py-0.5 font-bold text-amber-200">
-                    🌿 Remèdes & Conseils locaux
-                  </span>
-                </div>
-
-                {/* Sélecteur de Mode : Discussion Écrite vs Discussion Orale/Vocale (Utilisatrice) */}
-                <div className="mt-3 flex items-center gap-2">
-                  <button
                     type="button"
-                    onClick={() => setRoseChatMode("text")}
-                    className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition shadow-xs ${
-                      roseChatMode === "text"
-                        ? "bg-white text-[#734059] shadow-sm ring-2 ring-white/60"
-                        : "bg-white/20 text-white/95 hover:bg-white/30"
-                    }`}
+                    onClick={() => setShowAutopalpationVideoModal(true)}
+                    className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#a14364] shadow-xs hover:bg-pink-50 transition shrink-0 cursor-pointer"
                   >
-                    <MessageCircle size={14} />
-                    <span>Discussion Écrite</span>
+                    Voir la vidéo 🎬
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setRoseChatMode("voice");
-                      handlePlayAudio(
-                        "Je t'écoute à voix haute ma sœur. Tu peux me parler au micro ou choisir ta question.",
-                        oralVoiceLang,
-                      );
-                    }}
-                    className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition shadow-xs ${
-                      roseChatMode === "voice"
-                        ? "bg-gradient-to-r from-amber-400 to-amber-500 text-purple-950 font-extrabold shadow-sm ring-2 ring-amber-300"
-                        : "bg-white/20 text-white/95 hover:bg-white/30"
-                    }`}
-                  >
-                    <Mic size={14} className={roseSpeaking || isRecordingVoice ? "animate-pulse" : ""} />
-                    <span>Discussion Orale 🎙️</span>
-                  </button>
-                </div>
-
-                {/* Confidentialité & Éthique 100% locale */}
-                <div className="mt-2 text-center">
-                  <button
-                    onClick={() => setShowPrivacyModal(true)}
-                    className="inline-flex items-center gap-1 text-[10px] text-white/85 hover:text-white underline underline-offset-2 transition"
-                  >
-                    <ShieldCheck size={11} className="text-emerald-300" />
-                    <span>Zéro collecte de données personnelles · 100% confidentiel</span>
-                  </button>
-                </div>
-              </div>
-
-
-              {/* ============================================================ */}
-              {/* MODE 1 : DISCUSSION ORALE & VOCALE INTERACTIVE (AUDIO DIRECT) */}
-              {/* ============================================================ */}
-              {roseChatMode === "voice" && (
-                <div className="ph-enter mt-3 flex-1 flex flex-col justify-between rounded-[26px] border border-[#f0d4de] bg-gradient-to-b from-[#fff7f9] to-[#faedf2] p-4 shadow-sm">
-                  {/* Statut Audio & Choix de la Langue Parlée */}
-                  <div>
-                    <div className="flex items-center justify-between border-b border-[#f4dee6] pb-2.5">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`h-2.5 w-2.5 rounded-full ${
-                            roseSpeaking
-                              ? "bg-emerald-500 ph-pulse"
-                              : isRecordingVoice
-                              ? "bg-rose-500 ph-pulse"
-                              : "bg-amber-400"
-                          }`}
-                        />
-                        <span className="text-xs font-bold text-[#452737]">
-                          {roseSpeaking
-                            ? "Rose IA vous répond à l'oral..."
-                            : isRecordingVoice
-                            ? "Rose IA vous écoute... Parlez"
-                            : "Prête pour la conversation orale"}
-                        </span>
-                      </div>
-
-                      {/* Sélecteur de langue orale */}
-                      <div className="flex gap-1">
-                        {(
-                          [
-                            { code: "fr", label: "FR" },
-                            { code: "moore", label: "Mooré" },
-                            { code: "dioula", label: "Dioula" },
-                            { code: "en", label: "EN" },
-                          ] as const
-                        ).map(({ code, label }) => (
-                          <button
-                            key={code}
-                            type="button"
-                            onClick={() => setOralVoiceLang(code)}
-                            className={`rounded-lg px-2 py-0.5 text-[10px] font-bold transition ${
-                              oralVoiceLang === code
-                                ? "bg-[#a14364] text-white shadow-xs"
-                                : "bg-white text-[#7d5668] border border-[#f0dfe4]"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Zone interactive centrale avec Avatar et Pulsations Sonores */}
-                    <div className="my-5 flex flex-col items-center justify-center text-center">
-                      <div className="relative">
-                        {(roseSpeaking || isRecordingVoice) && (
-                          <div className="absolute inset-0 -m-3 rounded-full bg-rose-400/20 animate-ping" />
-                        )}
-                        <div
-                          className={`relative grid h-24 w-24 place-items-center rounded-full shadow-lg transition-all duration-300 ${
-                            isRecordingVoice
-                              ? "bg-rose-600 text-white ring-4 ring-rose-300 scale-105"
-                              : roseSpeaking
-                              ? "bg-gradient-to-tr from-[#734059] to-[#a14364] text-white ring-4 ring-emerald-300 scale-105"
-                              : "bg-gradient-to-tr from-[#8a3857] to-[#cf5d83] text-white hover:scale-102"
-                          }`}
-                        >
-                          {roseSpeaking ? (
-                            <AudioLines size={42} className="animate-pulse text-amber-200" />
-                          ) : (
-                            <Sparkles size={38} className="text-amber-300" />
-                          )}
-                        </div>
-                      </div>
-
-                      <h3 className="ph-display mt-3 text-base font-bold text-[#452737]">
-                        {roseSpeaking ? "Écoutez le conseil de Rose IA" : "Discutez à voix haute avec Rose IA"}
-                      </h3>
-                      <p className="mt-1 max-w-[280px] text-xs text-[#735263] leading-relaxed">
-                        {isRecordingVoice
-                          ? "Posez votre question intime à voix haute, Rose répondra immédiatement à l'oral."
-                          : "Touchez le micro pour parler, ou choisissez une question rapide :"}
-                      </p>
-
-                      {/* Gros bouton microphone central tactile */}
-                      <button
-                        type="button"
-                        onClick={handleToggleVoiceRecognition}
-                        className={`mt-4 inline-flex items-center gap-2 rounded-full px-6 py-3 font-bold text-xs shadow-md transition ${
-                          isRecordingVoice
-                            ? "bg-rose-600 text-white animate-pulse"
-                            : "bg-[#a14364] text-white hover:bg-[#8e3856]"
-                        }`}
-                      >
-                        <Mic size={18} />
-                        <span>{isRecordingVoice ? "Arrêter l'enregistrement" : "Appuyer pour parler au micro"}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Capsules de questions orales immédiates */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[11px] font-bold text-[#452737] flex items-center gap-1">
-                        <Volume2 size={13} className="text-[#a14364]" /> Questions orales immédiates (1 tap) :
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-1.5 max-h-[160px] overflow-y-auto pr-1">
-                      {[
-                        {
-                          title: "🌸 Comment bien faire ma toilette intime ?",
-                          q: "Comment bien faire ma toilette intime ?",
-                        },
-                        {
-                          title: "🩸 Soulager mes douleurs de règles",
-                          q: "Comment apaiser mes crampes et douleurs de règles naturellement ?",
-                        },
-                        {
-                          title: "🔍 Petite boule dans le sein",
-                          q: "J'ai senti une petite boule dans mon sein, j'ai peur",
-                        },
-                        {
-                          title: "🌿 Remèdes locaux (Moringa, Baobab)",
-                          q: "Quels sont les bienfaits du moringa et du baobab pour ma santé ?",
-                        },
-                        {
-                          title: "🧘‍♀️ Je me sens très fatiguée et stressée",
-                          q: "Je me sens très fatiguée et stressée",
-                        },
-                        {
-                          title: "🎬 Voir la vidéo de démonstration d'autopalpation",
-                          q: "Montre-moi la vidéo d'autopalpation de la sage-femme",
-                          isVideo: true,
-                        },
-                      ].map((item, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => {
-                            if (item.isVideo) {
-                              setShowAutopalpationVideoModal(true);
-                            } else {
-                              handleSendRoseMessage(item.q, true);
-                            }
-                          }}
-                          className="flex items-center justify-between rounded-xl border border-[#ecd5df] bg-white px-3 py-2 text-left text-xs font-semibold text-[#5a3648] hover:bg-pink-50 transition shadow-2xs"
-                        >
-                          <span className="truncate pr-2">{item.title}</span>
-                          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-[#faedf2] text-[#a14364]">
-                            <Volume2 size={12} />
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Dernier échange vocal résumé */}
-                    {roseMessages.length > 1 && (
-                      <div className="mt-3 rounded-2xl bg-white border border-[#f0dee3] p-2.5 text-xs shadow-2xs">
-                        <div className="flex items-center justify-between text-[10px] text-[#865d70] font-bold mb-1">
-                          <span>Dernier conseil de Rose IA :</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const lastRose = [...roseMessages].reverse().find((m) => m.sender === "rose");
-                              if (lastRose) {
-                                const txt =
-                                  oralVoiceLang === "moore" && lastRose.mooreText
-                                    ? lastRose.mooreText
-                                    : oralVoiceLang === "dioula" && lastRose.dioulaText
-                                    ? lastRose.dioulaText
-                                    : oralVoiceLang === "en" && lastRose.englishText
-                                    ? lastRose.englishText
-                                    : lastRose.text;
-                                handlePlayAudio(txt, oralVoiceLang);
-                              }
-                            }}
-                            className="inline-flex items-center gap-1 text-[#a14364] hover:underline"
-                          >
-                            <Volume2 size={11} /> Réécouter ({oralVoiceLang.toUpperCase()})
-                          </button>
-                        </div>
-                        <p className="text-[11px] text-[#452737] line-clamp-2 italic">
-                          « {[...roseMessages].reverse().find((m) => m.sender === "rose")?.text} »
-                        </p>
-                      </div>
-                    )}
-                  </div>
                 </div>
               )}
 
-              {/* ============================================================ */}
-              {/* MODE 2 : DISCUSSION ÉCRITE CLASSIQUE & RICH CHAT             */}
-              {/* ============================================================ */}
-              {roseChatMode === "text" && (
-                <div className="flex-1 flex flex-col">
-                  {/* BANDEAU VIDÉO DÉMONSTRATIVE D'AUTOPALPATION (PERSONNAGE AFRICAIN) */}
-                  <div className="mt-2.5 flex items-center justify-between rounded-[22px] bg-gradient-to-r from-rose-600 via-[#a14364] to-[#734059] p-3 text-white shadow-sm">
-                    <div className="flex items-center gap-2.5">
-                      <div className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/20 text-white backdrop-blur-xs">
-                        <Play size={18} className="fill-white translate-x-0.5" />
-                        <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-xs">Vidéo d'Autopalpation</h4>
-                        <p className="text-[10px] text-white/85">
-                          Démonstration guidée pas-à-pas par notre sage-femme
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowAutopalpationVideoModal(true)}
-                      className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#a14364] shadow-xs hover:bg-pink-50 transition shrink-0"
-                    >
-                      Voir la vidéo 🎬
-                    </button>
+              {/* MINI-BANDEAU D'ÉTAT DISCRET DE ROSE IA */}
+              <div className="mt-2 flex items-center justify-between rounded-xl bg-white border border-[#f0dee3] px-3 py-1.5 text-xs shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-tr from-[#8a3857] to-[#cf5d83] text-white shadow-2xs">
+                      <Sparkles size={14} className="text-amber-300" />
+                    </span>
+                    <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white ph-pulse" />
                   </div>
-
-              {/* CARTE MOT DOUX & CONSEIL BIENVEILLANT EN LANGUE LOCALE */}
-              <div className="mt-2.5 rounded-[22px] border border-[#f0d4de] bg-[#fffbfd] p-3 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#a14364]">
-                      {roseDailyTips[dailyTipIndex].categoryLabel}
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-[#452737] text-xs">Rose IA</span>
+                    <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded-full border border-emerald-200">
+                      En ligne
                     </span>
                   </div>
-
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={handleRequestNotification}
-                      className={`inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] font-bold transition ${
-                        notificationEnabled
-                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                          : "bg-[#faedf2] text-[#8e3f5a] hover:bg-[#f3dbe4]"
-                      }`}
-                      title="Activer les notifications locales quotidiennes"
-                    >
-                      <Bell size={12} className={notificationEnabled ? "fill-emerald-800" : ""} />
-                      <span>{notificationEnabled ? "Rappels actifs" : "Me rappeler 🔔"}</span>
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        setDailyTipIndex((prev) => (prev + 1) % roseDailyTips.length)
-                      }
-                      className="rounded-lg bg-white border border-[#edd1dc] px-2 py-0.5 text-[10px] font-bold text-[#7a485c] hover:bg-[#fdf4f7]"
-                    >
-                      ✨ Suivant
-                    </button>
-                  </div>
                 </div>
 
-                {/* Sélecteur de langue Mooré / Dioula / FR / EN */}
-                <div className="mt-1.5 flex items-center justify-between">
-                  <p className="text-[11px] font-bold text-[#452737]">
-                    {roseDailyTips[dailyTipIndex].titleFr}
-                  </p>
-                  <div className="flex gap-1 text-[9px] font-bold">
-                    {(
-                      [
-                        { code: "fr", label: "FR" },
-                        { code: "moore", label: "Mooré" },
-                        { code: "dioula", label: "Dioula" },
-                        { code: "en", label: "EN" },
-                      ] as const
-                    ).map(({ code, label }) => (
-                      <button
-                        key={code}
-                        onClick={() => setDailyTipLang(code)}
-                        className={`rounded px-1.5 py-0.2 transition ${
-                          dailyTipLang === code
-                            ? "bg-[#a14364] text-white"
-                            : "bg-white text-[#7d5668] border border-[#f0dfe4]"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Message bienveillant */}
-                <p className="mt-1 text-[11px] leading-relaxed text-[#5a3648] italic">
-                  «{" "}
-                  {dailyTipLang === "moore"
-                    ? roseDailyTips[dailyTipIndex].moore
-                    : dailyTipLang === "dioula"
-                      ? roseDailyTips[dailyTipIndex].dioula
-                      : dailyTipLang === "en"
-                        ? roseDailyTips[dailyTipIndex].en
-                        : roseDailyTips[dailyTipIndex].fr}
-                  {" "}»
-                </p>
-
-                <div className="mt-1.5 flex justify-end">
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => {
-                      const tip = roseDailyTips[dailyTipIndex];
-                      const txt =
-                        dailyTipLang === "moore"
-                          ? tip.moore
-                          : dailyTipLang === "dioula"
-                            ? tip.dioula
-                            : dailyTipLang === "en"
-                              ? tip.en
-                              : tip.fr;
-                      handlePlayAudio(txt, dailyTipLang);
-                    }}
-                    className="inline-flex items-center gap-1 text-[10px] font-bold text-[#a14364] hover:underline"
+                    type="button"
+                    onClick={() => setShowPrivacyModal(true)}
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#863b55] hover:underline cursor-pointer"
+                    title="Confidentialité et éthique médicale"
                   >
-                    <Volume2 size={12} />
-                    <span>Écouter le mot doux ({dailyTipLang.toUpperCase()})</span>
+                    <ShieldCheck size={12} className="text-emerald-600" />
+                    <span>100% Confidentiel</span>
                   </button>
                 </div>
               </div>
 
-              {/* CAPSULES DE QUESTIONS RAPIDES SANTÉ GLOBALE & PRÉVENTION */}
-              <div className="ph-scroll mt-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
-                {/* Raccourci vidéo démonstrative direct demandé */}
-                <button
-                  type="button"
-                  onClick={() => setShowAutopalpationVideoModal(true)}
-                  className="shrink-0 rounded-full border border-rose-300 bg-rose-50 px-2.5 py-1 text-rose-800 font-bold hover:bg-rose-100 transition shadow-2xs flex items-center gap-1"
-                >
-                  <Play size={11} className="fill-rose-700" />
-                  <span>🎬 Voir la vidéo autopalpation</span>
-                </button>
-
+              {/* CAPSULES DE QUESTIONS RAPIDES (INSPIRATION & CONSEILS) */}
+              <div className="ph-scroll mt-2 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
                 {[
-                  { label: "🌸 Hygiène intime & flore", q: "Comment bien faire ma toilette intime ?" },
-                  { label: "🌿 Moringa, baobab & nutrition", q: "Quels sont les bienfaits du moringa et du baobab pour ma santé ?" },
-                  { label: "🩸 Soulager règles douloureuses", q: "Comment apaiser mes crampes et douleurs de règles naturellement ?" },
-                  { label: "🧘‍♀️ Sérénité & charge mentale", q: "Je me sens très fatiguée et stressée par ma famille" },
-                  { label: "🩺 Dépistage col utérus & seins", q: "Comment se passe le dépistage du col de l'utérus et des seins ?" },
-                  { label: "💰 Coût du dépistage (FCFA)", q: "Combien coûte le dépistage au Burkina Faso ?" },
-                  { label: "🔍 Petite boule au sein", q: "J'ai senti une petite boule dans mon sein" },
+                  { label: "🌸 Toilette intime", q: "Comment bien faire ma toilette intime ?" },
+                  { label: "🖐️ Comment se palper ?", q: "Comment bien faire l'autopalpation des seins étape par étape ?" },
+                  { label: "🔍 Petite boule au sein", q: "J'ai senti une petite boule dans mon sein, que faire ?" },
+                  { label: "🩸 Douleurs de règles", q: "Comment soulager mes crampes et douleurs de règles naturellement ?" },
+                  { label: "🌿 Moringa & Baobab", q: "Quels sont les bienfaits du moringa et du baobab pour ma santé ?" },
+                  { label: "📍 Centres de dépistage", q: "Où se faire dépister à Ouagadougou ?" },
+                  { label: "💰 Coût du dépistage", q: "Combien coûte le dépistage au Burkina Faso ?" },
+                  { label: "🧘‍♀️ Sérénité & moral", q: "Je me sens fatiguée et stressée, aide-moi" },
                 ].map(({ label, q }) => (
                   <button
                     key={label}
+                    type="button"
                     onClick={() => handleSendRoseMessage(q)}
-                    className="shrink-0 rounded-full border border-[#e4cad3] bg-white px-2.5 py-1 text-[#863b55] font-semibold hover:bg-[#faedf2] transition shadow-2xs"
+                    className="shrink-0 rounded-full border border-[#e4cad3] bg-white px-2.5 py-1 text-[#863b55] font-semibold hover:bg-[#faedf2] transition shadow-2xs cursor-pointer"
                   >
                     {label}
                   </button>
                 ))}
               </div>
 
-              {/* LISTE DES MESSAGES DU CHAT ROSE IA */}
-              <div className="mt-3 space-y-2.5 flex-1 overflow-y-auto">
-                {roseMessages.map((msg, i) => (
-                  <div key={i} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
-                    <div
-                      className={`max-w-[85%] rounded-[20px] p-3 text-xs leading-relaxed shadow-sm ${msg.sender === "user" ? "bg-[#a14364] text-white rounded-tr-sm" : "bg-white text-[#452737] border border-[#f0dfe4] rounded-tl-sm"}`}
-                    >
-                      <p>{msg.text}</p>
-                      {msg.englishText && (
-                        <div className="mt-1.5 border-t border-[#f4e4e9] pt-1 text-[10px] italic text-[#6f4b5d]">
-                          <strong>English :</strong> {msg.englishText}
-                        </div>
-                      )}
-                      {msg.mooreText && (
-                        <div className="mt-1 border-t border-[#f4e4e9] pt-1 text-[10px] italic text-[#845068]">
-                          <strong>Mooré :</strong> {msg.mooreText}
-                        </div>
-                      )}
-                      {msg.dioulaText && (
-                        <div className="mt-1 text-[10px] italic text-[#845068]">
-                          <strong>Dioula :</strong> {msg.dioulaText}
-                        </div>
-                      )}
+              {/* ZONE DES MESSAGES DU CHATBOT ROSE IA (HAUTEUR DYNAMIQUE PLEINE) */}
+              <div className="mt-2 space-y-2.5 flex-1 min-h-[300px] overflow-y-auto pr-1">
+                {roseMessages.map((msg, i) => {
+                  const isUser = msg.sender === "user";
+                  // Texte à afficher selon la langue choisie
+                  const displayedText = isUser
+                    ? msg.text
+                    : appLanguage === "moore" && msg.mooreText
+                    ? msg.mooreText
+                    : appLanguage === "dioula" && msg.dioulaText
+                    ? msg.dioulaText
+                    : appLanguage === "en" && msg.englishText
+                    ? msg.englishText
+                    : msg.text;
 
-                      {/* Bouton cliquable pour voir la vidéo démonstrative dans le chat */}
-                      {msg.sender === "rose" &&
-                        (msg.text.toLowerCase().includes("palpation") ||
-                          msg.text.toLowerCase().includes("geste") ||
-                          msg.text.toLowerCase().includes("boule") ||
-                          msg.text.toLowerCase().includes("sein") ||
-                          msg.text.toLowerCase().includes("nodule")) && (
+                  const hasVideoRecommendation =
+                    !isUser &&
+                    (msg.text.toLowerCase().includes("palpation") ||
+                      msg.text.toLowerCase().includes("geste") ||
+                      msg.text.toLowerCase().includes("boule") ||
+                      msg.text.toLowerCase().includes("sein") ||
+                      msg.text.toLowerCase().includes("nodule"));
+
+                  return (
+                    <div
+                      key={i}
+                      className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
+                    >
+                      <div
+                        className={`max-w-[88%] rounded-[20px] p-3 text-xs leading-relaxed shadow-xs ${
+                          isUser
+                            ? "bg-[#a14364] text-white rounded-tr-xs"
+                            : "bg-white text-[#452737] border border-[#f0dfe4] rounded-tl-xs"
+                        }`}
+                      >
+                        <p className="whitespace-pre-wrap">{displayedText}</p>
+
+                        {/* Bouton cliquable pour voir la vidéo si suggéré par Rose IA */}
+                        {hasVideoRecommendation && (
                           <button
                             type="button"
                             onClick={() => setShowAutopalpationVideoModal(true)}
-                            className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#a14364] to-rose-700 py-1.5 px-2.5 text-[11px] font-bold text-white shadow-xs hover:opacity-95 transition"
+                            className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#a14364] to-rose-700 py-1.5 px-2.5 text-[11px] font-bold text-white shadow-xs hover:opacity-95 transition cursor-pointer"
                           >
                             <Play size={12} className="fill-white" />
-                            <span>Voir la vidéo démonstrative (Sage-femme) 🎬</span>
-                          </button>
-                        )}
-                    </div>
-                    {msg.sender === "rose" && (
-                      <div className="mt-0.5 flex gap-2">
-                        <button
-                          onClick={() => handlePlayAudio(msg.text, "fr")}
-                          className="flex items-center gap-1 text-[10px] font-bold text-[#a14364] hover:underline"
-                        >
-                          <Volume2 size={12} /> Écouter FR
-                        </button>
-                        {msg.englishText && (
-                          <button
-                            onClick={() => handlePlayAudio(msg.englishText!, "en")}
-                            className="flex items-center gap-1 text-[10px] font-bold text-[#a14364] hover:underline"
-                          >
-                            <Volume2 size={12} /> EN
-                          </button>
-                        )}
-                        {msg.mooreText && (
-                          <button
-                            onClick={() => handlePlayAudio(msg.mooreText!, "moore")}
-                            className="flex items-center gap-1 text-[10px] font-bold text-[#845068] hover:underline"
-                          >
-                            <Volume2 size={12} /> Mooré
-                          </button>
-                        )}
-                        {msg.dioulaText && (
-                          <button
-                            onClick={() => handlePlayAudio(msg.dioulaText!, "dioula")}
-                            className="flex items-center gap-1 text-[10px] font-bold text-[#845068] hover:underline"
-                          >
-                            <Volume2 size={12} /> Dioula
+                            <span>Voir la démonstration vidéo (Sage-femme) 🎬</span>
                           </button>
                         )}
                       </div>
-                    )}
-                  </div>
-                ))}
-                {/* Point d'ancrage pour le défilement automatique vers le bas */}
+
+                      {/* ÉCOUTE VOCALE DISCRÈTE (DANS LA LANGUE CHOISIE) */}
+                      {!isUser && (
+                        <div className="mt-1 flex items-center gap-2 pl-1">
+                          <button
+                            type="button"
+                            onClick={() => handlePlayAudio(displayedText, appLanguage)}
+                            className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#a14364] hover:underline cursor-pointer"
+                            title={`Écouter à voix haute en ${appLanguage.toUpperCase()}`}
+                          >
+                            <Volume2 size={12} />
+                            <span>Écouter ({appLanguage === "moore" ? "Mooré" : appLanguage === "dioula" ? "Dioula" : appLanguage.toUpperCase()})</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {/* Point d'ancrage pour le défilement automatique */}
                 <div ref={roseChatBottomRef} />
               </div>
 
               {/* RAPPEL ÉTHIQUE MÉDICAL */}
-              <div className="mt-2 text-center text-[9px] text-[#936b7c] px-2 italic">
+              <div className="mt-1.5 text-center text-[9px] text-[#936b7c] px-2 italic">
                 🛡️ Rose IA est une conseillère préventive bienveillante. Elle ne remplace pas l'avis d'une sage-femme ou d'un médecin.
               </div>
 
-              {/* BARRE DE SAISIE VOCALE & TEXTUELLE */}
-              <div className="mt-2 rounded-2xl border border-[#e5ccd5] bg-white p-2 shadow-sm">
+              {/* BARRE DE SAISIE MODERNE & RÉACTIVE (<FORM> TOUCHE ENTRÉE + MICRO) */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendRoseMessage();
+                }}
+                className="mt-1.5 rounded-2xl border border-[#e5ccd5] bg-white p-2 shadow-sm"
+              >
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -4919,7 +4813,7 @@ export function PinkHubMobile() {
                         ? "bg-rose-600 text-white ph-pulse ring-2 ring-rose-300"
                         : "bg-[#f8e7ec] text-[#a14364] hover:bg-[#f2dbe2]"
                     }`}
-                    title={isRecordingVoice ? "Arrêter l'enregistrement micro" : "Parler à Rose IA au micro"}
+                    title={isRecordingVoice ? "Arrêter le micro" : "Parler à Rose IA au micro"}
                   >
                     <Mic size={17} className={isRecordingVoice ? "animate-pulse" : ""} />
                   </button>
@@ -4927,26 +4821,28 @@ export function PinkHubMobile() {
                     type="text"
                     value={roseInput}
                     onChange={(e) => setRoseInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSendRoseMessage()}
                     placeholder={
                       isRecordingVoice
                         ? "Rose IA vous écoute avec tendresse... Parlez"
-                        : "Posez votre question (intime, nutrition, règles...)"
+                        : "Posez votre question à Rose IA (écrit ou micro)..."
                     }
-                    className="flex-1 bg-transparent text-xs text-[#452737] outline-none"
+                    className="flex-1 bg-transparent text-xs text-[#452737] outline-none placeholder:text-gray-400"
                   />
                   <button
-                    onClick={() => handleSendRoseMessage()}
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#a14364] text-white hover:bg-[#8e3856] transition cursor-pointer"
+                    type="submit"
+                    disabled={!roseInput.trim()}
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition cursor-pointer ${
+                      roseInput.trim()
+                        ? "bg-[#a14364] text-white hover:bg-[#8e3856] shadow-xs"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    }`}
                     title="Envoyer le message"
                   >
                     <Send size={15} />
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
-        </section>
+              </form>
+            </section>
           )}
 
           {/* ------------------------------------------------------------------ */}
