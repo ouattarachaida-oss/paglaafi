@@ -652,6 +652,17 @@ export function PinkHubMobile() {
   // Modal Partage Wi-Fi local sans Expo pour les collègues
   const [showWifiModal, setShowWifiModal] = useState(false);
 
+  // Détection dynamique de l'URL d'accès réseau local (Wi-Fi) pour smartphones
+  const localShareUrl = useMemo(() => {
+    if (typeof window === "undefined") return "http://192.168.1.22:5173/";
+    const host = window.location.hostname;
+    const port = window.location.port ? `:${window.location.port}` : "";
+    if (host !== "localhost" && host !== "127.0.0.1") {
+      return `${window.location.protocol}//${window.location.host}/`;
+    }
+    return `http://192.168.1.22${port || ":5173"}/`;
+  }, []);
+
   // Fonction universelle de déconnexion
   const handleLogout = () => {
     setCurrentUser(null);
@@ -2282,10 +2293,10 @@ export function PinkHubMobile() {
                   Vos collègues sur le même réseau Wi-Fi peuvent tester l'application directement dans Safari ou Chrome sur leur téléphone :
                 </p>
                 <div className="mt-2.5 flex items-center justify-between rounded-xl bg-slate-800 p-2 border border-slate-700">
-                  <span className="font-mono text-xs font-bold text-emerald-400 select-all">http://192.168.1.88:5173/</span>
+                  <span className="font-mono text-xs font-bold text-emerald-400 select-all">{localShareUrl}</span>
                   <button
                     onClick={() => {
-                      navigator.clipboard?.writeText("http://192.168.1.88:5173/");
+                      navigator.clipboard?.writeText(localShareUrl);
                       notify("Lien local copié dans le presse-papier !");
                     }}
                     className="rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
@@ -4142,12 +4153,12 @@ export function PinkHubMobile() {
                   </div>
                   <div className="flex items-center justify-between gap-2 rounded-xl bg-slate-950 p-2.5 border border-slate-800">
                     <span className="font-mono text-xs font-bold text-emerald-400 select-all">
-                      http://192.168.1.88:5173/
+                      {localShareUrl}
                     </span>
                     <button
                       onClick={() => {
-                        navigator.clipboard?.writeText("http://192.168.1.88:5173/");
-                        notify("Lien http://192.168.1.88:5173/ copié !");
+                        navigator.clipboard?.writeText(localShareUrl);
+                        notify(`Lien ${localShareUrl} copié !`);
                       }}
                       className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-500 shadow-sm"
                     >
@@ -4161,7 +4172,7 @@ export function PinkHubMobile() {
                   <ol className="list-decimal list-inside space-y-1 text-slate-300 text-[10.5px]">
                     <li>Connecter le téléphone au même réseau Wi-Fi.</li>
                     <li>Ouvrir le navigateur (Safari sur iPhone, Chrome sur Android).</li>
-                    <li>Taper ou coller <strong className="text-emerald-400">http://192.168.1.88:5173/</strong></li>
+                    <li>Taper ou coller <strong className="text-emerald-400">{localShareUrl}</strong></li>
                   </ol>
                 </div>
 

@@ -64,11 +64,11 @@ Le projet est structuré sous forme de monorepo géré avec `pnpm workspaces` :
 
 - **URL locale sur cet ordinateur** : [http://localhost:5173/](http://localhost:5173/)
 - **Lien Mobile Wi-Fi (Pour les collègues sur leur smartphone, sans rien installer)** :
-  - **URL réseau local** : **`http://192.168.1.88:5173/`**
+  - **URL réseau local active** : **`http://192.168.1.22:5173/`** *(détectée automatiquement par `demarrer-en-local.bat` et `PinkHubMobile.tsx` selon votre réseau Wi-Fi)*
   - **Procédure pour les collègues** :
     1. Connecter le téléphone au même Wi-Fi.
     2. Ouvrir le navigateur mobile (Safari sur iPhone, Chrome sur Android).
-    3. Taper `http://192.168.1.88:5173/` pour accéder à toute l'application.
+    3. Taper `http://192.168.1.22:5173/` (ou copier le lien directement depuis l'application) pour accéder à toute l'application.
 
 ---
 
@@ -125,12 +125,12 @@ Le projet est structuré sous forme de monorepo géré avec `pnpm workspaces` :
    - **Menu déroulant gauche épuré** : affiche un bouton direct et bien visible **"Se déconnecter"** dès qu'un compte est connecté.
    - **Don Solidaire Anonyme & Chiffré** : option permettant de faire un don Orange Money avec chiffrement des informations personnelles (nom masqué en `Donatrice Anonyme`, numéro masqué sous la forme `+226 70 ** ** XX`, reçu `OM-ANON-XXXXXX`).
    - **L'Accompagnant - SMS Simple GSM** : lien direct `sms:?body=...` permettant d'envoyer une invitation d'accompagnement par SMS standard sans connexion internet, disponible en Français et en Mooré.
-   - **Partage Wi-Fi Local (Sans Expo)** : modal et bouton direct d'information avec l'adresse IP `http://192.168.1.88:5173/` et bouton Copier pour les collègues.
+   - **Partage Wi-Fi Local (Sans Expo)** : modal et bouton direct d'information avec détection automatique de l'adresse IP réseau (actuellement `http://192.168.1.22:5173/`) et bouton Copier pour les collègues.
 
 ---
 
 ## 5. Maintenance & Standards Techniques
-- **Point de contrôle Git** : Tags `backup-checkpoint-avant-maj`, `backup-connexion-wifi-local` et commits pas-à-pas.
+- **Point de contrôle Git** : Tags `backup-checkpoint-avant-maj`, `backup-connexion-wifi-local`, `backup-stabilisation-v1` et commits pas-à-pas.
 - **Encodage** : Fichiers encodés en **UTF-8 sans BOM**.
 - **Langue des commentaires** : Rédigés en français pédagogique.
 - **Stack** : 100% TypeScript, React, Leaflet/OpenStreetMap, HTML5, CSS et Web Speech API (zéro Python).
