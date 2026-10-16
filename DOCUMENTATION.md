@@ -366,7 +366,12 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
   - **Navigation tactile instantanée** : Clic direct sur l'un des 4 temps (1. Regarder, 2. Palper, 3. Aisselle, 4. Mamelon) pour sauter sans attendre à la séquence choisie.
 
 - **Liens de Test Actifs (Smartphone & Ordinateur)** :
-  - **Lien Public Direct (accessible partout en 4G/5G et sans mot de passe - Cloudflare Tunnel)** :
+  - **Lien Direct Hors Connexion (PC & Réseau Local)** :
+    👉 **http://localhost:5173/** *(Fonctionne 100% sans internet)*
+    👉 Fichier raccourci direct : `Acceder-PagLaafi-Hors-Connexion.url`
+    👉 Page passerelle : `Lien-Hors-Connexion.html`
+  - **Lien Public Direct (accessible partout en 4G/5G sans mot de passe - Cloudflare Tunnel)** :
     👉 **https://spanking-nsw-consolidated-jpeg.trycloudflare.com**
-    *(Accès direct instantané : aucun mot de passe ni saisie d'IP requise)*
+    *(Pour installer l'application PWA sur smartphone une première fois, puis l'utiliser en Mode Avion sans internet)*
   - **Accès Réseau Local (même réseau Wi-Fi)** : `http://192.168.1.22:5173/`
+

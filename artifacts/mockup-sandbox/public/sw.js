@@ -46,53 +46,73 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Interception des requêtes : Stratégie Stale-While-Revalidate / Cache-First avec repli hors ligne
+// Interception des requêtes : Stratégie Cache-First avec mise à jour en arrière-plan (Stale-While-Revalidate)
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
-  // Ignorer les requêtes non-GET et les extensions Chrome
+  // Ignorer les requêtes non-GET et protocoles spéciaux
   if (request.method !== "GET" || !request.url.startsWith("http")) {
     return;
   }
 
-  // Pour les requêtes de tuiles de carte OpenStreetMap
+  // Cas 1 : Requêtes de tuiles cartographiques OpenStreetMap
   if (request.url.includes("tile.openstreetmap.org")) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) return cachedResponse;
-        return fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-          }
-          return networkResponse;
-        }).catch(() => {
-          // Tuile indisponible hors-ligne : renvoie une tuile vide transparente
-          return new Response("", { status: 200, headers: { "Content-Type": "image/png" } });
-        });
+        return fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+            }
+            return networkResponse;
+          })
+          .catch(() => {
+            // Tuile hors-ligne transparente
+            return new Response("", { status: 200, headers: { "Content-Type": "image/png" } });
+          });
       })
     );
     return;
   }
 
-  // Pour les pages et assets de l'application
+  // Cas 2 : Navigation et Assets de l'application (HTML, JS, CSS, Images, Polices)
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-        }
-        return networkResponse;
-      }).catch((fetchErr) => {
-        // En cas de panne totale du réseau, si c'est une navigation HTML, retourner l'index en cache
-        if (request.mode === "navigate") {
-          return caches.match("/") || caches.match("/index.html");
-        }
-        throw fetchErr;
-      });
+      // 1. Si la ressource est déjà en cache local, la servir IMMÉDIATEMENT (0 ms, 100% hors ligne)
+      if (cachedResponse) {
+        // En tâche de fond, rafraîchir silencieusement si internet est présent
+        fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+            }
+          })
+          .catch(() => {
+            // Mode hors-ligne : aucune erreur, le cache local a déjà répondu
+          });
 
-      return cachedResponse || fetchPromise;
+        return cachedResponse;
+      }
+
+      // 2. Si pas encore en cache, tenter le réseau puis enregistrer dans le cache
+      return fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch((fetchErr) => {
+          // 3. Repli hors ligne garanti : si c'est une page HTML, servir l'application locale
+          if (request.mode === "navigate") {
+            return caches.match("/index.html").then((resp) => resp || caches.match("/"));
+          }
+          throw fetchErr;
+        });
     })
   );
 });
