@@ -130,8 +130,58 @@ Le projet est structuré sous forme de monorepo géré avec `pnpm workspaces` :
 ---
 
 ## 5. Maintenance & Standards Techniques
-- **Point de contrôle Git** : Tags `backup-checkpoint-avant-maj`, `backup-connexion-wifi-local`, `backup-stabilisation-v1` et commits pas-à-pas.
+- **Point de contrôle Git** : Tags `backup-checkpoint-avant-maj`, `backup-connexion-wifi-local`, `backup-stabilisation-v1`, `backup-gps-offline-micro-v2` et commits pas-à-pas.
 - **Encodage** : Fichiers encodés en **UTF-8 sans BOM**.
 - **Langue des commentaires** : Rédigés en français pédagogique.
 - **Stack** : 100% TypeScript, React, Leaflet/OpenStreetMap, HTML5, CSS et Web Speech API (zéro Python).
 - **Responsive Mobile-First** : Optimisé pour tous les smartphones avec navigation tactile ergonomique.
+
+---
+
+## 6. Mises à Jour & Nouvelles Fonctionnalités Majeures (Octobre 2026)
+
+### A. Navigation GPS Intégrée (Google Maps & Apple Maps)
+- **Fonction `openNavigation(lat, lng, name)`** :
+  - Détecte dynamiquement le terminal de l'utilisatrice (Apple iOS vs Android / Ordinateur).
+  - Génère l'URL officielle de navigation en itinéraire de conduite (`travelmode=driving`) vers les coordonnées exactes du centre.
+- **Accès multicanal** :
+  1. **Directement depuis la carte** : bouton "📍 Itinéraire" dans le popup Leaflet de chaque repère.
+  2. **Sur la fiche détaillée** : bouton émeraude mis en avant "Itinéraire GPS".
+  3. **Dans la vue liste des centres** : bouton badge "GPS" à côté des pistes audio.
+  4. **Appel téléphonique en 1 clic** : bouton direct `tel:${phone}` relié au secrétariat du centre.
+
+### B. Mode Hors-Connexion & PWA (Disponibilité Sans Internet)
+- **Manifest Web (`public/manifest.json`)** :
+  - Configuration PWA complète (`standalone`, thème `#9c3d61`, icônes 192x192 et 512x512).
+  - Permet d'installer PagLaafi directement sur l'écran d'accueil du smartphone comme une application native.
+- **Service Worker (`public/sw.js`)** :
+  - Préchargement de l'app shell (HTML, CSS Leaflet, JS Leaflet, logo, polices).
+  - Stratégie Stale-While-Revalidate avec mise en cache dynamique des tuiles de carte OpenStreetMap consultées.
+  - Repli automatique hors-ligne en cas de coupure de réseau.
+- **Indicateur visuel d'état réseau** :
+  - Détection en temps réel des événements `window.online` et `window.offline`.
+  - Bandeau d'information ambré discret : *"Mode Hors-Ligne actif · Vos données médicales et centres restent accessibles"*.
+
+### C. Reconnaissance Vocale Réelle pour Rose IA (Web Speech API)
+- **Passage à l'API native `window.SpeechRecognition || window.webkitSpeechRecognition`** :
+  - Remplacement du délai statique par une capture micro réelle en langue française (`fr-FR`).
+  - Transcription en direct au fil de la parole dans le champ texte.
+  - Gestion ergonomique des permissions et retours haptiques / visuels (animation d'impulsion sur le bouton micro).
+  - Défilement automatique du chat vers le dernier message généré.
+
+### D. Fiabilisation de l'Affichage de la Carte sur Tous les Profils
+- **Correction du cycle de vie Leaflet** :
+  - Dépendances étendues : prise en compte de `selectedCenter`, `currentUser` et du filtre de ville.
+  - Élimination des bugs de tuiles grises grâce à un triple appel `invalidateSize()` (120ms, 350ms, 700ms) et à l'écoute des redimensionnements de fenêtre (`window.resize`).
+  - Nettoyage rigoureux des anciennes instances pour éviter tout conflit DOM.
+
+### E. Confort de Navigation & Réinitialisation du Défilement
+- **Hook de défilement automatique** :
+  - À chaque bascule d'onglet ou retour de fiche détaillée, le conteneur principal se repositionne automatiquement en haut (`scrollTop = 0`).
+  - Popover de profil enrichi permettant de basculer en 1 clic entre les 5 profils (Utilisatrice, Centre, Docteur, Asso, Superadmin).
+
+### F. Audit et Activation de 100% des Boutons
+- Correction du bouton "Aider →" sur l'encadré de don de la page d'accueil.
+- Branchement complet des actions d'enregistrement des rappels personnalisés du calendrier.
+- Nettoyage et vérification de l'ensemble des déclencheurs de modales et de formulaires.
+

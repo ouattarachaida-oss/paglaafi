@@ -882,9 +882,146 @@ export function PinkHubMobile() {
   // Accompagnant : choix de la langue du SMS
   const [smsLanguage, setSmsLanguage] = useState<"fr" | "moore">("fr");
 
-  // Référence conteneur carte OpenStreetMap
+  // Référence conteneur carte OpenStreetMap et instances
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<any>(null);
+
+  // Référence pour le défilement fluide du conteneur principal lors des changements de page
+  const mainScrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Référence pour le défilement automatique du chat Rose IA
+  const roseChatBottomRef = useRef<HTMLDivElement | null>(null);
+
+  // Référence pour la reconnaissance vocale Web Speech de Rose IA
+  const recognitionRef = useRef<any>(null);
+
+  // Détection de l'état de connexion internet (Mode Hors-Ligne PWA)
+  const [isOffline, setIsOffline] = useState(
+    typeof navigator !== "undefined" ? !navigator.onLine : false,
+  );
+
+  // Surveillance des transitions réseau en direct
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      notify("Connexion internet rétablie !");
+    };
+    const handleOffline = () => {
+      setIsOffline(true);
+      notify("Mode hors-connexion actif : vos données médicales restent disponibles sans réseau.");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Réinitialisation automatique du défilement lors de tout changement de page ou sélection de centre
+  useEffect(() => {
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTop = 0;
+    }
+  }, [section, selectedCenter]);
+
+  // Défilement automatique du chat Rose IA vers le dernier message
+  useEffect(() => {
+    if (section === "RoseIA") {
+      roseChatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [roseMessages, section]);
+
+  /**
+   * Ouvre l'itinéraire GPS vers le centre de soins dans Google Maps (Android/Web) ou Apple Maps (iOS)
+   */
+  const openNavigation = (lat: number, lng: number, name: string) => {
+    const isApple =
+      typeof navigator !== "undefined" &&
+      /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
+    const encodedName = encodeURIComponent(name);
+    let url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=&travelmode=driving`;
+    if (isApple) {
+      url = `https://maps.apple.com/?daddr=${lat},${lng}&q=${encodedName}`;
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
+    notify(`Ouverture de la navigation GPS vers ${name}...`);
+  };
+
+  /**
+   * Gestion de la reconnaissance vocale temps réel pour Rose IA (Web Speech API)
+   */
+  const handleToggleVoiceRecognition = () => {
+    // Si l'écoute est déjà en cours, on l'arrête
+    if (isRecordingVoice) {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      setIsRecordingVoice(false);
+      return;
+    }
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      notify("La reconnaissance vocale directe n'est pas supportée sur ce navigateur. Vous pouvez poser une question par écrit ou utiliser les raccourcis.");
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "fr-FR";
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsRecordingVoice(true);
+        notify("Microphone actif : parlez maintenant à Rose IA en français...");
+      };
+
+      recognition.onresult = (event: any) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        if (transcript) {
+          setRoseInput(transcript);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn("[Rose IA Speech]", event.error);
+        setIsRecordingVoice(false);
+        if (event.error === "not-allowed") {
+          notify("Accès micro refusé. Veuillez autoriser le microphone dans votre navigateur.");
+        } else if (event.error === "no-speech") {
+          notify("Aucune voix détectée. Appuyez sur le micro pour réessayer.");
+        } else {
+          notify(`Microphone : ${event.error || "erreur"}`);
+        }
+      };
+
+      recognition.onend = () => {
+        setIsRecordingVoice(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error(err);
+      setIsRecordingVoice(false);
+      notify("Impossible de démarrer l'écoute au microphone.");
+    }
+  };
 
   // Helper Toast
   const notify = (msg: string) => {
@@ -901,10 +1038,12 @@ export function PinkHubMobile() {
   }, []);
 
   /**
-   * Intégration de la carte OpenStreetMap via Leaflet
+   * Intégration fiabilisée de la carte OpenStreetMap via Leaflet
+   * Fonctionne de manière synchrone sur tous les profils et réactualise
+   * automatiquement les tuiles à chaque transition d'onglet.
    */
   useEffect(() => {
-    if (section !== "Centres" || viewMode !== "map") return;
+    if (section !== "Centres" || viewMode !== "map" || selectedCenter !== null) return;
 
     let isMounted = true;
 
@@ -926,6 +1065,11 @@ export function PinkHubMobile() {
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
       }).addTo(map);
+
+      // Invalidation progressive pour garantir le rendu complet même après transition CSS
+      setTimeout(() => { if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize(); }, 120);
+      setTimeout(() => { if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize(); }, 350);
+      setTimeout(() => { if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize(); }, 700);
 
       centers.forEach((center) => {
         const markerColor =
@@ -954,14 +1098,20 @@ export function PinkHubMobile() {
         const marker = L.marker([center.lat, center.lng], { icon: customIcon }).addTo(map);
 
         marker.bindPopup(`
-          <div style="font-family:'DM Sans', sans-serif; min-width:180px; padding:2px;">
+          <div style="font-family:'DM Sans', sans-serif; min-width:200px; padding:3px;">
             <b style="color:#452737; font-size:12px; display:block;">${center.shortName}</b>
-            <span style="display:inline-block; font-size:10px; font-weight:bold; color:${markerColor}; margin-top:2px;">${center.statusLabel}</span>
+            <span style="display:inline-block; font-size:10px; font-weight:bold; color:${markerColor}; margin-top:2px;">● ${center.statusLabel}</span>
             <div style="font-size:10px; color:#6b4d5d; margin-top:3px;">Attente : <b>${center.estimatedWait}</b></div>
             <div style="font-size:10px; color:#6b4d5d;">Agents : <b>${center.agentsPresent}</b></div>
-            <button id="osm-btn-${center.id}" style="margin-top:6px; width:100%; border:none; background:#a14364; color:#ffffff; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:6px; cursor:pointer;">
-              Consulter la fiche →
-            </button>
+            <div style="font-size:9.5px; color:#846b77; margin-top:2px;">📍 ${center.place}</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:8px;">
+              <button id="osm-nav-${center.id}" style="border:none; background:#10b981; color:#ffffff; font-size:10px; font-weight:bold; padding:5px 6px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:3px;">
+                📍 Itinéraire
+              </button>
+              <button id="osm-btn-${center.id}" style="border:none; background:#a14364; color:#ffffff; font-size:10px; font-weight:bold; padding:5px 6px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                Fiche →
+              </button>
+            </div>
           </div>
         `);
 
@@ -972,11 +1122,24 @@ export function PinkHubMobile() {
               setSelectedCenter(center);
             };
           }
+          const navBtn = document.getElementById(`osm-nav-${center.id}`);
+          if (navBtn) {
+            navBtn.onclick = () => {
+              openNavigation(center.lat, center.lng, center.name);
+            };
+          }
         });
       });
 
       mapInstanceRef.current = map;
     };
+
+    const handleResize = () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    };
+    window.addEventListener("resize", handleResize);
 
     if (!(window as any).L) {
       if (!document.getElementById("leaflet-css")) {
@@ -1002,12 +1165,13 @@ export function PinkHubMobile() {
 
     return () => {
       isMounted = false;
+      window.removeEventListener("resize", handleResize);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, [section, viewMode, centers]);
+  }, [section, viewMode, centers, selectedCenter, currentUser]);
 
   /**
    * Moteur Audio Multi-langues (Français, English, Mooré, Dioula)
@@ -1943,13 +2107,49 @@ export function PinkHubMobile() {
                         )}
                       </div>
 
-                      <div className="mt-3 pt-2 border-t border-[#f7e6ec] space-y-1.5">
-                        {/* BOUTON DÉCONNEXION DIRECTE EXIGÉ */}
+                      <div className="mt-3 pt-2 border-t border-[#f7e6ec] space-y-2">
+                        <div>
+                          <p className="text-[10px] font-bold text-[#8c4d66] mb-1.5">Changer de profil (1-clic) :</p>
+                          <div className="grid grid-cols-2 gap-1 text-[10px]">
+                            <button
+                              onClick={() => { quickLoginAs("user"); setShowProfileMenu(false); }}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.role === 'user' ? 'bg-[#a14364] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
+                            >
+                              👩 Utilisatrice
+                            </button>
+                            <button
+                              onClick={() => { quickLoginAs("center"); setShowProfileMenu(false); }}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'center' ? 'bg-[#a14364] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
+                            >
+                              🏥 Centre Santé
+                            </button>
+                            <button
+                              onClick={() => { quickLoginAs("doctor"); setShowProfileMenu(false); }}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'doctor' ? 'bg-[#a14364] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
+                            >
+                              🩺 Docteur
+                            </button>
+                            <button
+                              onClick={() => { quickLoginAs("association"); setShowProfileMenu(false); }}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'association' ? 'bg-[#a14364] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
+                            >
+                              🎗️ Association
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => { quickLoginAs("superadmin"); setShowProfileMenu(false); }}
+                            className={`w-full mt-1 rounded-lg px-2 py-1 font-semibold text-left text-[10px] transition ${currentUser.role === 'superadmin' ? 'bg-purple-900 text-white' : 'bg-purple-50 text-purple-900 hover:bg-purple-100'}`}
+                          >
+                            🛡️ Superadmin National
+                          </button>
+                        </div>
+
+                        {/* BOUTON DÉCONNEXION DIRECTE */}
                         <button
                           onClick={handleLogout}
-                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 border border-rose-200 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
+                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
                         >
-                          <LogOut size={14} className="text-rose-600" />
+                          <LogOut size={13} className="text-rose-600" />
                           <span>Se déconnecter</span>
                         </button>
                       </div>
@@ -1962,9 +2162,19 @@ export function PinkHubMobile() {
         </header>
 
         {/* ==================================================================== */}
+        {/* BANDEAU MODE HORS-LIGNE (PWA & OFFLINE)                              */}
+        {/* ==================================================================== */}
+        {isOffline && (
+          <div className="z-20 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 to-amber-700 px-3 py-1.5 text-center text-[10.5px] font-bold text-white shadow-xs">
+            <AlertCircle size={13} className="shrink-0 animate-pulse text-amber-200" />
+            <span>Mode Hors-Ligne actif · Vos données médicales et centres restent accessibles</span>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
         {/* CONTENU PRINCIPAL DES ONGLETS                                        */}
         {/* ==================================================================== */}
-        <div className="ph-scroll flex-1 overflow-y-auto pb-6">
+        <div ref={mainScrollRef} className="ph-scroll flex-1 overflow-y-auto pb-10">
 
           {/* ================================================================== */}
           {/* PAGE GÉNÉRALE DE CONNEXION & INSCRIPTION (SI NON CONNECTÉ)        */}
@@ -2475,7 +2685,13 @@ export function PinkHubMobile() {
                         </p>
                       </div>
                     </div>
-                    <button className="rounded-full bg-[#a14364] px-3.5 py-1.5 text-xs font-bold text-white shadow hover:bg-[#8e3856]">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowDonationModal(true);
+                      }}
+                      className="rounded-full bg-[#a14364] px-3.5 py-1.5 text-xs font-bold text-white shadow hover:bg-[#8e3856] transition"
+                    >
                       Aider →
                     </button>
                   </div>
@@ -2639,6 +2855,13 @@ export function PinkHubMobile() {
                       </button>
                       <button onClick={() => handlePlayAudio(center.audioMessageDioula, "dioula")} className="inline-flex items-center gap-1 rounded-full border border-[#e4bfcd] bg-white px-2 py-0.5 font-bold text-[#92405d]">
                         <Volume2 size={11} /> Dioula
+                      </button>
+                      <button
+                        onClick={() => openNavigation(center.lat, center.lng, center.name)}
+                        className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 font-bold text-white shadow-xs hover:bg-emerald-700 transition"
+                        title="Démarrer l'itinéraire dans Google Maps / Apple Maps"
+                      >
+                        <Navigation size={10} /> GPS
                       </button>
                       <button onClick={() => setSelectedCenter(center)} className="rounded-full bg-[#a14364] px-2.5 py-1 font-bold text-white">
                         Détails
@@ -3096,34 +3319,40 @@ export function PinkHubMobile() {
                     )}
                   </div>
                 ))}
+                {/* Point d'ancrage pour le défilement automatique vers le bas */}
+                <div ref={roseChatBottomRef} />
               </div>
 
               <div className="mt-2.5 rounded-2xl border border-[#e5ccd5] bg-white p-2 shadow-sm">
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => {
-                      notify("Micro activé. Posez votre question à voix haute...");
-                      setIsRecordingVoice(true);
-                      window.setTimeout(() => {
-                        setIsRecordingVoice(false);
-                        handleSendRoseMessage("Est-ce que la mammographie fait mal ?");
-                      }, 2000);
-                    }}
-                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition ${isRecordingVoice ? "bg-rose-600 text-white ph-pulse" : "bg-[#f8e7ec] text-[#a14364]"}`}
+                    type="button"
+                    onClick={handleToggleVoiceRecognition}
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition cursor-pointer ${
+                      isRecordingVoice
+                        ? "bg-rose-600 text-white ph-pulse ring-2 ring-rose-300"
+                        : "bg-[#f8e7ec] text-[#a14364] hover:bg-[#f2dbe2]"
+                    }`}
+                    title={isRecordingVoice ? "Arrêter l'enregistrement micro" : "Parler à Rose IA au micro"}
                   >
-                    <Mic size={17} />
+                    <Mic size={17} className={isRecordingVoice ? "animate-pulse" : ""} />
                   </button>
                   <input
                     type="text"
                     value={roseInput}
                     onChange={(e) => setRoseInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSendRoseMessage()}
-                    placeholder={isRecordingVoice ? "Rose IA vous écoute..." : "Écrivez ou appuyez sur le micro..."}
+                    placeholder={
+                      isRecordingVoice
+                        ? "Rose IA vous écoute... Parlez en français"
+                        : "Écrivez ou touchez le micro pour parler..."
+                    }
                     className="flex-1 bg-transparent text-xs text-[#452737] outline-none"
                   />
                   <button
                     onClick={() => handleSendRoseMessage()}
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#a14364] text-white"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#a14364] text-white hover:bg-[#8e3856] transition cursor-pointer"
+                    title="Envoyer le message"
                   >
                     <Send size={15} />
                   </button>
@@ -3350,24 +3579,60 @@ export function PinkHubMobile() {
           {selectedCenter && (
             <section className="ph-enter px-5 pt-4">
               <button
-                onClick={() => setSelectedCenter(null)}
-                className="mb-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#a14364] hover:underline"
+                onClick={() => {
+                  setSelectedCenter(null);
+                  setTimeout(() => {
+                    if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+                  }, 150);
+                }}
+                className="mb-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#a14364] hover:underline cursor-pointer"
               >
                 <ArrowLeft size={16} /> Retour à la carte des centres
               </button>
 
-              <div className="rounded-[26px] bg-[#f8e7ec] p-4 shadow-sm">
-                <h1 className="ph-display text-xl font-bold text-[#472738]">{selectedCenter.name}</h1>
-                <p className="text-xs text-[#805e6f]">{selectedCenter.address}</p>
+              <div className="rounded-[26px] bg-[#f8e7ec] p-4 shadow-sm border border-[#eed6de]">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold text-[#8f4a64] shadow-2xs">
+                      <span className={`h-2 w-2 rounded-full ${selectedCenter.statusColor}`} />
+                      {selectedCenter.statusLabel}
+                    </span>
+                    <h1 className="ph-display text-xl font-bold text-[#472738] mt-1.5">{selectedCenter.name}</h1>
+                    <p className="text-xs text-[#805e6f] mt-0.5 flex items-center gap-1">
+                      <MapPin size={13} className="text-[#a14364] shrink-0" /> {selectedCenter.address} ({selectedCenter.place})
+                    </p>
+                    <p className="text-xs text-[#805e6f] mt-0.5 flex items-center gap-1">
+                      <Phone size={13} className="text-[#a14364] shrink-0" /> {selectedCenter.phone}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Boutons d'Action Principaux : Itinéraire GPS & Téléphone */}
+                <div className="mt-3.5 grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => openNavigation(selectedCenter.lat, selectedCenter.lng, selectedCenter.name)}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition cursor-pointer"
+                    title="Ouvrir dans Google Maps ou Apple Maps selon votre appareil"
+                  >
+                    <Navigation size={15} /> Itinéraire GPS
+                  </button>
+                  <a
+                    href={`tel:${selectedCenter.phone}`}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[#a14364] px-3 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#8e3856] transition text-center"
+                    title="Appeler le secrétariat du centre"
+                  >
+                    <Phone size={15} /> Appeler
+                  </a>
+                </div>
 
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded-xl bg-white/90 p-2">
+                  <div className="rounded-xl bg-white/90 p-2.5 border border-[#eed6de]">
                     <p className="text-[9px] font-bold uppercase text-[#9f697d]">Équipement</p>
-                    <p className="font-bold text-[#452737]">{selectedCenter.apparatus}</p>
+                    <p className="font-bold text-[#452737] mt-0.5">{selectedCenter.apparatus}</p>
                   </div>
-                  <div className="rounded-xl bg-white/90 p-2">
+                  <div className="rounded-xl bg-white/90 p-2.5 border border-[#eed6de]">
                     <p className="text-[9px] font-bold uppercase text-[#9f697d]">File d'attente</p>
-                    <p className="font-bold text-[#452737]">{selectedCenter.queueCount} personnes ({selectedCenter.estimatedWait})</p>
+                    <p className="font-bold text-[#452737] mt-0.5">{selectedCenter.queueCount} personnes ({selectedCenter.estimatedWait})</p>
                   </div>
                 </div>
               </div>
