@@ -375,3 +375,23 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
     *(Pour installer l'application PWA sur smartphone une première fois, puis l'utiliser en Mode Avion sans internet)*
   - **Accès Réseau Local (même réseau Wi-Fi)** : `http://192.168.1.22:5173/`
 
+#### 7. Séparation Stricte des Rôles, Rose IA Dédiée Patiente & Modes de Discussion Écrite et Orale (Octobre 2026)
+- **Séparation Nette des Espaces Utilisatrice vs Corps Médical** :
+  - **Écran Rose IA Patiente** : 100% centré sur l'écoute empathique et la santé intime des femmes (hygiène intime, flore, règles douloureuses, petite boule au sein, remèdes traditionnels sahéliens, équilibre mental).
+  - **Suppression du simulateur docteur de l'écran Utilisatrice** : Tout bouton de formation ou d'entraînement réservé aux soignants a été supprimé de la vue de la patiente.
+  - **Masquage dans les Menus Standards** : Le bouton « Simuler Entraînement Docteur » est désormais strictement réservé aux utilisateurs connectés en tant que Praticien/Docteur ou Superadmin National.
+  - **Accès Pro Préservé** : Le simulateur interactif en 4 étapes (Sélection du cas, reformulation empathique, banc d'essai et signature déontologique) reste pleinement fonctionnel dans le profil Docteur et le Tableau de bord du Superadmin.
+
+- **Nouveaux Modes de Discussion dans Rose IA** :
+  - **Mode 1 : Discussion Orale & Vocale (Audio Interactif en Direct)** :
+    - Interface dédiée avec aura et pulsation sonore animée selon l'état (Écoute / Parole de Rose IA / Prête).
+    - Reconnaissance vocale tactile au micro avec détection automatique de fin de parole et soumission immédiate.
+    - **Synthèse Vocale Automatique** : Rose IA lit sa réponse immédiatement à haute voix sans nécessiter de clic supplémentaire.
+    - **Questions Orales en 1 Tap** : Permet de tester et converser à l'oral même sur des navigateurs limitant les permissions microphone (Français, Mooré, Dioula, Anglais).
+    - Sélecteur de langue audio instantané (FR, Mooré, Dioula, EN).
+  - **Mode 2 : Discussion Écrite (Chatbot Textuel & Multimédia)** :
+    - Dialogue textuel fluide avec scroll automatique.
+    - Badges thématiques rapides (hygiène intime, soulagement des règles, nutrition, dépistage).
+    - Réponses complètes traduites en Mooré et Dioula avec boutons d'écoute audio individuels.
+    - **Bouton Vidéo Démonstratif Intégré** : Accès direct en un clic vers la vidéo d'autopalpation de la sage-femme burkinabè dès qu'une question aborde les seins ou le dépistage.
+

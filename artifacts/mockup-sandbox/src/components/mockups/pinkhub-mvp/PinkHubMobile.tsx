@@ -961,6 +961,11 @@ export function PinkHubMobile() {
   const [roseInput, setRoseInput] = useState("");
   const [isRecordingVoice, setIsRecordingVoice] = useState(false);
   const [roseSpeaking, setRoseSpeaking] = useState(false);
+  // Mode de discussion avec Rose IA : "text" (discussion écrite) ou "voice" (discussion orale/audio directe)
+  const [roseChatMode, setRoseChatMode] = useState<"text" | "voice">("text");
+  const [oralVoiceLang, setOralVoiceLang] = useState<"fr" | "moore" | "dioula" | "en">("fr");
+  const lastVoiceTranscriptRef = useRef<string>("");
+  const handleSendRoseMessageRef = useRef<(text?: string, speak?: boolean) => void>(() => {});
 
   // 9. Espace Docteur : Entraîner Rose IA
   const [clinicalKnowledgeList, setClinicalKnowledgeList] = useState<MedicalKnowledge[]>([
@@ -1217,14 +1222,15 @@ export function PinkHubMobile() {
 
     try {
       const recognition = new SpeechRecognition();
-      recognition.lang = "fr-FR";
+      recognition.lang = oralVoiceLang === "en" ? "en-US" : "fr-FR";
       recognition.continuous = false;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         setIsRecordingVoice(true);
-        notify("Microphone actif : parlez maintenant à Rose IA en français...");
+        lastVoiceTranscriptRef.current = "";
+        notify("Microphone actif : parlez maintenant à Rose IA...");
       };
 
       recognition.onresult = (event: any) => {
@@ -1233,6 +1239,7 @@ export function PinkHubMobile() {
           transcript += event.results[i][0].transcript;
         }
         if (transcript) {
+          lastVoiceTranscriptRef.current = transcript;
           setRoseInput(transcript);
         }
       };
@@ -1251,6 +1258,11 @@ export function PinkHubMobile() {
 
       recognition.onend = () => {
         setIsRecordingVoice(false);
+        const spoken = lastVoiceTranscriptRef.current;
+        if (spoken && spoken.trim().length > 1) {
+          handleSendRoseMessageRef.current(spoken, true);
+          lastVoiceTranscriptRef.current = "";
+        }
       };
 
       recognitionRef.current = recognition;
@@ -2172,7 +2184,7 @@ export function PinkHubMobile() {
   /**
    * Envoi de message à Rose IA avec analyse empathique & santé globale
    */
-  const handleSendRoseMessage = (textOverride?: string) => {
+  const handleSendRoseMessage = (textOverride?: string, speakAloud = false) => {
     const textToSend = textOverride || roseInput;
     if (!textToSend.trim()) return;
 
@@ -2325,8 +2337,25 @@ export function PinkHubMobile() {
           time: "Maintenant",
         },
       ]);
+
+      // Si le mode oral est actif ou si la question a été posée au micro / à voix haute
+      if (speakAloud || roseChatMode === "voice") {
+        const textToSpeak =
+          oralVoiceLang === "moore" && aiAnswer.moore
+            ? aiAnswer.moore
+            : oralVoiceLang === "dioula" && aiAnswer.dioula
+            ? aiAnswer.dioula
+            : oralVoiceLang === "en" && aiAnswer.en
+            ? aiAnswer.en
+            : aiAnswer.fr;
+        handlePlayAudio(textToSpeak, oralVoiceLang);
+      }
     }, 600);
   };
+
+  useEffect(() => {
+    handleSendRoseMessageRef.current = handleSendRoseMessage;
+  });
 
   /**
    * Processus Don Orange Money (avec support Don Anonyme Chiffré)
@@ -2712,18 +2741,21 @@ export function PinkHubMobile() {
                     <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Local</span>
                   </button>
 
-                  <button
-                    onClick={() => {
-                      setSidebarOpen(false);
-                      setShowDoctorTrainModal(true);
-                    }}
-                    className="flex w-full items-center justify-between rounded-2xl bg-amber-50 border border-amber-200 px-3.5 py-2 font-semibold text-amber-950 hover:bg-amber-100"
-                  >
-                    <span className="flex items-center gap-2.5 text-xs">
-                      <GraduationCap size={16} className="text-amber-700" /> Simuler Entraînement Docteur
-                    </span>
-                    <span className="text-[9.5px] font-bold text-amber-800 bg-amber-200 px-1.5 py-0.5 rounded">4 étapes</span>
-                  </button>
+                  {/* Simulation d'entraînement réservée exclusivement aux soignants et superadmin */}
+                  {currentUser && (currentUser.role === "superadmin" || (currentUser.role === "admin" && currentUser.adminType === "doctor")) && (
+                    <button
+                      onClick={() => {
+                        setSidebarOpen(false);
+                        setShowDoctorTrainModal(true);
+                      }}
+                      className="flex w-full items-center justify-between rounded-2xl bg-amber-50 border border-amber-200 px-3.5 py-2 font-semibold text-amber-950 hover:bg-amber-100"
+                    >
+                      <span className="flex items-center gap-2.5 text-xs">
+                        <GraduationCap size={16} className="text-amber-700" /> Simuler Entraînement Docteur
+                      </span>
+                      <span className="text-[9.5px] font-bold text-amber-800 bg-amber-200 px-1.5 py-0.5 rounded">4 étapes</span>
+                    </button>
+                  )}
                 </div>
 
                 {/* BOUTON SE DÉCONNECTER DU MENU DÉROULANT GAUCHE EXIGÉ */}
@@ -2910,19 +2942,22 @@ export function PinkHubMobile() {
                             <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">100% Local</span>
                           </button>
 
-                          <button
-                            onClick={() => {
-                              setShowDoctorTrainModal(true);
-                              setShowProfileMenu(false);
-                            }}
-                            className="flex w-full items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[10.5px] font-bold text-amber-900 hover:bg-amber-100 transition shadow-xs"
-                          >
-                            <span className="flex items-center gap-1.5">
-                              <GraduationCap size={13} className="text-amber-600" />
-                              <span>Simuler Entraînement Docteur</span>
-                            </span>
-                            <span className="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">4 étapes</span>
-                          </button>
+                          {/* Simulation réservée aux soignants et superadmin */}
+                          {currentUser && (currentUser.role === "superadmin" || (currentUser.role === "admin" && currentUser.adminType === "doctor")) && (
+                            <button
+                              onClick={() => {
+                                setShowDoctorTrainModal(true);
+                                setShowProfileMenu(false);
+                              }}
+                              className="flex w-full items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[10.5px] font-bold text-amber-900 hover:bg-amber-100 transition shadow-xs"
+                            >
+                              <span className="flex items-center gap-1.5">
+                                <GraduationCap size={13} className="text-amber-600" />
+                                <span>Simuler Entraînement Docteur</span>
+                              </span>
+                              <span className="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">4 étapes</span>
+                            </button>
+                          )}
                         </div>
 
                         {/* BOUTON DÉCONNEXION DIRECTE */}
@@ -4391,46 +4426,272 @@ export function PinkHubMobile() {
                   </span>
                 </div>
 
-                {/* Raccourcis Soignant & Confidentialité Rose IA */}
-                <div className="mt-3 flex flex-col gap-1.5">
+                {/* Sélecteur de Mode : Discussion Écrite vs Discussion Orale/Vocale (Utilisatrice) */}
+                <div className="mt-3 flex items-center gap-2">
                   <button
-                    onClick={() => setShowDoctorTrainModal(true)}
-                    className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-2 text-xs font-bold text-purple-950 shadow-sm hover:from-amber-300 hover:to-amber-400 transition"
+                    type="button"
+                    onClick={() => setRoseChatMode("text")}
+                    className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition shadow-xs ${
+                      roseChatMode === "text"
+                        ? "bg-white text-[#734059] shadow-sm ring-2 ring-white/60"
+                        : "bg-white/20 text-white/95 hover:bg-white/30"
+                    }`}
                   >
-                    <GraduationCap size={15} /> 🩺 Simuler l'entraînement de Rose IA par un docteur (4 étapes)
+                    <MessageCircle size={14} />
+                    <span>Discussion Écrite</span>
                   </button>
                   <button
-                    onClick={() => setShowPrivacyModal(true)}
-                    className="flex items-center justify-center gap-1 text-[10px] text-white/90 hover:text-white underline underline-offset-2 transition"
+                    type="button"
+                    onClick={() => {
+                      setRoseChatMode("voice");
+                      handlePlayAudio(
+                        "Je t'écoute à voix haute ma sœur. Tu peux me parler au micro ou choisir ta question.",
+                        oralVoiceLang,
+                      );
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition shadow-xs ${
+                      roseChatMode === "voice"
+                        ? "bg-gradient-to-r from-amber-400 to-amber-500 text-purple-950 font-extrabold shadow-sm ring-2 ring-amber-300"
+                        : "bg-white/20 text-white/95 hover:bg-white/30"
+                    }`}
                   >
-                    <ShieldCheck size={12} className="text-emerald-300" />
-                    <span>Zéro collecte personnelle sans demande · Confidentialité & Éthique</span>
+                    <Mic size={14} className={roseSpeaking || isRecordingVoice ? "animate-pulse" : ""} />
+                    <span>Discussion Orale 🎙️</span>
+                  </button>
+                </div>
+
+                {/* Confidentialité & Éthique 100% locale */}
+                <div className="mt-2 text-center">
+                  <button
+                    onClick={() => setShowPrivacyModal(true)}
+                    className="inline-flex items-center gap-1 text-[10px] text-white/85 hover:text-white underline underline-offset-2 transition"
+                  >
+                    <ShieldCheck size={11} className="text-emerald-300" />
+                    <span>Zéro collecte de données personnelles · 100% confidentiel</span>
                   </button>
                 </div>
               </div>
 
-              {/* BANDEAU VIDÉO DÉMONSTRATIVE D'AUTOPALPATION (PERSONNAGE AFRICAIN) */}
-              <div className="mt-2.5 flex items-center justify-between rounded-[22px] bg-gradient-to-r from-rose-600 via-[#a14364] to-[#734059] p-3 text-white shadow-sm">
-                <div className="flex items-center gap-2.5">
-                  <div className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/20 text-white backdrop-blur-xs">
-                    <Play size={18} className="fill-white translate-x-0.5" />
-                    <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
-                  </div>
+
+              {/* ============================================================ */}
+              {/* MODE 1 : DISCUSSION ORALE & VOCALE INTERACTIVE (AUDIO DIRECT) */}
+              {/* ============================================================ */}
+              {roseChatMode === "voice" && (
+                <div className="ph-enter mt-3 flex-1 flex flex-col justify-between rounded-[26px] border border-[#f0d4de] bg-gradient-to-b from-[#fff7f9] to-[#faedf2] p-4 shadow-sm">
+                  {/* Statut Audio & Choix de la Langue Parlée */}
                   <div>
-                    <h4 className="font-bold text-xs">Vidéo d'Autopalpation</h4>
-                    <p className="text-[10px] text-white/85">
-                      Démonstration guidée pas-à-pas par notre sage-femme
-                    </p>
+                    <div className="flex items-center justify-between border-b border-[#f4dee6] pb-2.5">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`h-2.5 w-2.5 rounded-full ${
+                            roseSpeaking
+                              ? "bg-emerald-500 ph-pulse"
+                              : isRecordingVoice
+                              ? "bg-rose-500 ph-pulse"
+                              : "bg-amber-400"
+                          }`}
+                        />
+                        <span className="text-xs font-bold text-[#452737]">
+                          {roseSpeaking
+                            ? "Rose IA vous répond à l'oral..."
+                            : isRecordingVoice
+                            ? "Rose IA vous écoute... Parlez"
+                            : "Prête pour la conversation orale"}
+                        </span>
+                      </div>
+
+                      {/* Sélecteur de langue orale */}
+                      <div className="flex gap-1">
+                        {(
+                          [
+                            { code: "fr", label: "FR" },
+                            { code: "moore", label: "Mooré" },
+                            { code: "dioula", label: "Dioula" },
+                            { code: "en", label: "EN" },
+                          ] as const
+                        ).map(({ code, label }) => (
+                          <button
+                            key={code}
+                            type="button"
+                            onClick={() => setOralVoiceLang(code)}
+                            className={`rounded-lg px-2 py-0.5 text-[10px] font-bold transition ${
+                              oralVoiceLang === code
+                                ? "bg-[#a14364] text-white shadow-xs"
+                                : "bg-white text-[#7d5668] border border-[#f0dfe4]"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Zone interactive centrale avec Avatar et Pulsations Sonores */}
+                    <div className="my-5 flex flex-col items-center justify-center text-center">
+                      <div className="relative">
+                        {(roseSpeaking || isRecordingVoice) && (
+                          <div className="absolute inset-0 -m-3 rounded-full bg-rose-400/20 animate-ping" />
+                        )}
+                        <div
+                          className={`relative grid h-24 w-24 place-items-center rounded-full shadow-lg transition-all duration-300 ${
+                            isRecordingVoice
+                              ? "bg-rose-600 text-white ring-4 ring-rose-300 scale-105"
+                              : roseSpeaking
+                              ? "bg-gradient-to-tr from-[#734059] to-[#a14364] text-white ring-4 ring-emerald-300 scale-105"
+                              : "bg-gradient-to-tr from-[#8a3857] to-[#cf5d83] text-white hover:scale-102"
+                          }`}
+                        >
+                          {roseSpeaking ? (
+                            <AudioLines size={42} className="animate-pulse text-amber-200" />
+                          ) : (
+                            <Sparkles size={38} className="text-amber-300" />
+                          )}
+                        </div>
+                      </div>
+
+                      <h3 className="ph-display mt-3 text-base font-bold text-[#452737]">
+                        {roseSpeaking ? "Écoutez le conseil de Rose IA" : "Discutez à voix haute avec Rose IA"}
+                      </h3>
+                      <p className="mt-1 max-w-[280px] text-xs text-[#735263] leading-relaxed">
+                        {isRecordingVoice
+                          ? "Posez votre question intime à voix haute, Rose répondra immédiatement à l'oral."
+                          : "Touchez le micro pour parler, ou choisissez une question rapide :"}
+                      </p>
+
+                      {/* Gros bouton microphone central tactile */}
+                      <button
+                        type="button"
+                        onClick={handleToggleVoiceRecognition}
+                        className={`mt-4 inline-flex items-center gap-2 rounded-full px-6 py-3 font-bold text-xs shadow-md transition ${
+                          isRecordingVoice
+                            ? "bg-rose-600 text-white animate-pulse"
+                            : "bg-[#a14364] text-white hover:bg-[#8e3856]"
+                        }`}
+                      >
+                        <Mic size={18} />
+                        <span>{isRecordingVoice ? "Arrêter l'enregistrement" : "Appuyer pour parler au micro"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Capsules de questions orales immédiates */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[11px] font-bold text-[#452737] flex items-center gap-1">
+                        <Volume2 size={13} className="text-[#a14364]" /> Questions orales immédiates (1 tap) :
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-1.5 max-h-[160px] overflow-y-auto pr-1">
+                      {[
+                        {
+                          title: "🌸 Comment bien faire ma toilette intime ?",
+                          q: "Comment bien faire ma toilette intime ?",
+                        },
+                        {
+                          title: "🩸 Soulager mes douleurs de règles",
+                          q: "Comment apaiser mes crampes et douleurs de règles naturellement ?",
+                        },
+                        {
+                          title: "🔍 Petite boule dans le sein",
+                          q: "J'ai senti une petite boule dans mon sein, j'ai peur",
+                        },
+                        {
+                          title: "🌿 Remèdes locaux (Moringa, Baobab)",
+                          q: "Quels sont les bienfaits du moringa et du baobab pour ma santé ?",
+                        },
+                        {
+                          title: "🧘‍♀️ Je me sens très fatiguée et stressée",
+                          q: "Je me sens très fatiguée et stressée",
+                        },
+                        {
+                          title: "🎬 Voir la vidéo de démonstration d'autopalpation",
+                          q: "Montre-moi la vidéo d'autopalpation de la sage-femme",
+                          isVideo: true,
+                        },
+                      ].map((item, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            if (item.isVideo) {
+                              setShowAutopalpationVideoModal(true);
+                            } else {
+                              handleSendRoseMessage(item.q, true);
+                            }
+                          }}
+                          className="flex items-center justify-between rounded-xl border border-[#ecd5df] bg-white px-3 py-2 text-left text-xs font-semibold text-[#5a3648] hover:bg-pink-50 transition shadow-2xs"
+                        >
+                          <span className="truncate pr-2">{item.title}</span>
+                          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-[#faedf2] text-[#a14364]">
+                            <Volume2 size={12} />
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Dernier échange vocal résumé */}
+                    {roseMessages.length > 1 && (
+                      <div className="mt-3 rounded-2xl bg-white border border-[#f0dee3] p-2.5 text-xs shadow-2xs">
+                        <div className="flex items-center justify-between text-[10px] text-[#865d70] font-bold mb-1">
+                          <span>Dernier conseil de Rose IA :</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const lastRose = [...roseMessages].reverse().find((m) => m.sender === "rose");
+                              if (lastRose) {
+                                const txt =
+                                  oralVoiceLang === "moore" && lastRose.mooreText
+                                    ? lastRose.mooreText
+                                    : oralVoiceLang === "dioula" && lastRose.dioulaText
+                                    ? lastRose.dioulaText
+                                    : oralVoiceLang === "en" && lastRose.englishText
+                                    ? lastRose.englishText
+                                    : lastRose.text;
+                                handlePlayAudio(txt, oralVoiceLang);
+                              }
+                            }}
+                            className="inline-flex items-center gap-1 text-[#a14364] hover:underline"
+                          >
+                            <Volume2 size={11} /> Réécouter ({oralVoiceLang.toUpperCase()})
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-[#452737] line-clamp-2 italic">
+                          « {[...roseMessages].reverse().find((m) => m.sender === "rose")?.text} »
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowAutopalpationVideoModal(true)}
-                  className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#a14364] shadow-xs hover:bg-pink-50 transition shrink-0"
-                >
-                  Voir la vidéo 🎬
-                </button>
-              </div>
+              )}
+
+              {/* ============================================================ */}
+              {/* MODE 2 : DISCUSSION ÉCRITE CLASSIQUE & RICH CHAT             */}
+              {/* ============================================================ */}
+              {roseChatMode === "text" && (
+                <div className="flex-1 flex flex-col">
+                  {/* BANDEAU VIDÉO DÉMONSTRATIVE D'AUTOPALPATION (PERSONNAGE AFRICAIN) */}
+                  <div className="mt-2.5 flex items-center justify-between rounded-[22px] bg-gradient-to-r from-rose-600 via-[#a14364] to-[#734059] p-3 text-white shadow-sm">
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/20 text-white backdrop-blur-xs">
+                        <Play size={18} className="fill-white translate-x-0.5" />
+                        <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs">Vidéo d'Autopalpation</h4>
+                        <p className="text-[10px] text-white/85">
+                          Démonstration guidée pas-à-pas par notre sage-femme
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAutopalpationVideoModal(true)}
+                      className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#a14364] shadow-xs hover:bg-pink-50 transition shrink-0"
+                    >
+                      Voir la vidéo 🎬
+                    </button>
+                  </div>
 
               {/* CARTE MOT DOUX & CONSEIL BIENVEILLANT EN LANGUE LOCALE */}
               <div className="mt-2.5 rounded-[22px] border border-[#f0d4de] bg-[#fffbfd] p-3 shadow-xs">
@@ -4683,7 +4944,9 @@ export function PinkHubMobile() {
                   </button>
                 </div>
               </div>
-            </section>
+            </div>
+          )}
+        </section>
           )}
 
           {/* ------------------------------------------------------------------ */}
@@ -5361,6 +5624,22 @@ export function PinkHubMobile() {
                   🏥 Inscriptions ({pendingRegistrations.filter((r) => r.status === "pending").length})
                 </button>
               </div>
+
+              {/* Raccourci Audit & Simulation Entraînement Docteur pour Superadmin */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSuperadminModal(false);
+                  setShowDoctorTrainModal(true);
+                }}
+                className="mt-2.5 flex w-full items-center justify-between rounded-xl bg-amber-50 border border-amber-300 p-2 text-xs font-bold text-amber-950 hover:bg-amber-100 transition shadow-2xs"
+              >
+                <span className="flex items-center gap-1.5">
+                  <GraduationCap size={15} className="text-amber-700" />
+                  <span>Audit : Simuler l'Entraînement Docteur</span>
+                </span>
+                <span className="bg-amber-200 text-amber-900 text-[10px] px-2 py-0.5 rounded-full font-bold">4 étapes →</span>
+              </button>
 
               {/* ONGLET 1 : STATISTIQUES DE VISITES DU SITE & RECENSEMENT DES CENTRES PAR VILLE/RÉGION */}
               {superadminActiveTab === "stats" && (
