@@ -483,3 +483,16 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
   - Serveur de développement : `http://localhost:5173/`
   - URL Publique Sécurisée (HTTPS pour smartphones et tablettes) : `https://teenage-magazine-circuit-safely.trycloudflare.com`
 
+#### 13. Rénovation Visuelle & Ergonomique de l'Écran de Démarrage (Splash Screen 5s)
+- **Nouveau Fond d'Écran Plein Écran Héroïnes & Santé** :
+  - Intégration de l'image haute définition `splash-paglaafi-heroines.jpg` représentant des femmes souriantes et un médecin en blouse blanche portant le ruban rose de la solidarité.
+  - Dégradés doux supérieur et inférieur préservant les visages tout en assurant un contraste impeccable des textes et logos sur fond rose tendre.
+- **Mise en Valeur du Logo PagLaafi & Typographie** :
+  - Agrandissement du logo central (80x80px) avec cadre blanc nacré, ombre portée rose douce (`shadow-[0_10px_25px_rgba(234,45,109,0.22)]`) et anneau d'accentuation vibrant.
+  - Titre principal en bordeaux profond `#580e36` et slogan préservé : `Mieux s'informer · Mieux s'orienter · Jamais seule`.
+  - Sous-titre plus précis : « *Sensibilisation, dépistage précoce du cancer du sein & accompagnement solidaire au Burkina Faso* ».
+- **Réorganisation des Piliers Clés & Réassurance** :
+  - 3 tuiles ergonomiques en pilules tactiles : 🩺 **Dépistage** · 📍 **Centres de santé** · 🤝 **Écoute solidaire**.
+  - Barre de progression 5 secondes aux couleurs de la charte PagLaafi (dégradé bordeaux vers rose éclatant) avec compte à rebours précis.
+  - Badge d'autorité en bas : « *Plateforme Nationale de Santé · Propulsé par Rose IA* » avec icône `ShieldCheck`.
+

@@ -2911,23 +2911,23 @@ export function PinkHubMobile() {
         {/* ÉCRAN DE DÉMARRAGE (SPLASH SCREEN) : 5 SECONDES                     */}
         {/* ==================================================================== */}
         {showSplash && (
-          <div className="absolute inset-0 z-50 flex flex-col justify-between overflow-hidden bg-[#240d1a] text-white ph-enter sm:rounded-[36px]">
-            {/* Image de fond plein écran : Solidarité des femmes burkinabè & Monument des Héros Nationaux */}
+          <div className="absolute inset-0 z-50 flex flex-col justify-between overflow-hidden bg-[#fff0f5] text-[#580e36] ph-enter sm:rounded-[36px]">
+            {/* Image de fond plein écran : Femmes & Médecin en blouse avec rubans roses */}
             <div className="absolute inset-0">
               <img
-                src="/images/splash-paglaafi-burkina.jpg"
+                src="/images/splash-paglaafi-heroines.jpg"
                 alt="Solidarité PagLaafi - Lutte contre le cancer du sein au Burkina Faso"
-                className="h-full w-full object-cover object-center transform scale-100 transition-transform duration-5000 ease-out"
+                className="h-full w-full object-cover object-top transform scale-100 transition-transform duration-5000 ease-out"
               />
-              {/* Voile dégradé supérieur pour contraster l'en-tête */}
-              <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/85 via-black/45 to-transparent" />
-              {/* Voile dégradé inférieur pour assurer une lisibilité parfaite des textes et du chargement */}
-              <div className="absolute inset-x-0 bottom-0 h-[420px] bg-gradient-to-t from-[#200a16] via-[#200a16]/90 via-55% to-transparent" />
+              {/* Voile supérieur subtil pour contraster l'en-tête sans masquer les visages */}
+              <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/70 via-white/20 to-transparent pointer-events-none" />
+              {/* Voile inférieur dégradé doux pour assurer la lisibilité sur la partie texte */}
+              <div className="absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-[#fff5f8] via-[#fff5f8]/95 via-45% to-transparent pointer-events-none" />
             </div>
 
             {/* En-tête du Splash : Drapeau et bouton passer */}
-            <div className="relative z-10 flex items-center justify-between p-5 pt-7">
-              <div className="inline-flex items-center gap-2 rounded-full border border-pink-400/30 bg-black/45 px-3 py-1.5 text-[11px] font-bold text-pink-100 backdrop-blur-md shadow-sm">
+            <div className="relative z-10 flex items-center justify-between p-4 pt-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-pink-300/60 bg-white/85 px-3 py-1.5 text-[11px] font-bold text-[#580e36] backdrop-blur-md shadow-xs">
                 <span>🇧🇫</span>
                 <span>Burkina Faso</span>
               </div>
@@ -2939,55 +2939,73 @@ export function PinkHubMobile() {
                   setShowSplash(false);
                   setCurrentUser(null);
                 }}
-                className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/45 px-3.5 py-1.5 text-[11px] font-bold text-white/95 backdrop-blur-md hover:bg-black/65 transition shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-full border border-pink-300/60 bg-white/85 px-3.5 py-1.5 text-[11px] font-bold text-[#580e36] backdrop-blur-md hover:bg-white transition shadow-xs active:scale-95"
               >
                 <span>Passer</span>
-                <ChevronRight size={13} />
+                <ChevronRight size={13} className="text-[#ea2d6d]" />
               </button>
             </div>
 
-            {/* Pied de page du Splash : Logo, Titre, Slogan et barre de chargement de 5 secondes */}
-            <div className="relative z-10 p-6 pb-8 text-center">
-              <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/95 p-2 shadow-2xl backdrop-blur-md ring-4 ring-pink-500/25">
+            {/* Pied de page du Splash : Logo agrandi, Titre, Slogan, Icônes réorganisées et barre de chargement de 5 secondes */}
+            <div className="relative z-10 p-5 pb-7 text-center">
+              {/* Logo PagLaafi agrandi avec mise en valeur */}
+              <div className="mx-auto mb-2.5 flex h-20 w-20 items-center justify-center rounded-2xl bg-white p-2.5 shadow-[0_10px_25px_rgba(234,45,109,0.22)] ring-4 ring-[#ea2d6d]/20 transition-transform duration-300 hover:scale-105">
                 <img
                   src="/images/pinkhub-mvp-paglaafi.png"
                   alt="Logo PagLaafi"
-                  className="h-full w-full object-contain mix-blend-multiply"
+                  className="h-full w-full object-contain"
                 />
               </div>
 
-              <h1 className="ph-display text-3xl font-extrabold tracking-tight text-white drop-shadow-md">
+              <h1 className="ph-display text-3xl font-extrabold tracking-tight text-[#580e36] drop-shadow-xs">
                 PagLaafi
               </h1>
-              <p className="mt-1 text-xs font-bold text-pink-200 drop-shadow-sm">
-                Mieux informée · Mieux orientée · Jamais seule.
+              <p className="mt-1 text-[13px] font-bold text-[#ea2d6d] tracking-wide">
+                Mieux s'informer · Mieux s'orienter · Jamais seule
               </p>
-              <p className="mt-0.5 text-[10.5px] text-pink-300/85">
-                Sensibilisation, dépistage & solidarité au Burkina Faso
+              <p className="mx-auto mt-1 max-w-[320px] text-[11px] font-medium leading-tight text-[#783e58]">
+                Sensibilisation, dépistage précoce du cancer du sein & accompagnement solidaire au Burkina Faso
               </p>
 
+              {/* Icônes de réassurance et services clés réorganisées */}
+              <div className="mx-auto mt-3 flex items-center justify-center gap-2 max-w-[360px]">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-pink-200/90 bg-white/90 px-2.5 py-1 text-[10.5px] font-semibold text-[#580e36] shadow-xs backdrop-blur-sm">
+                  <Stethoscope size={12} className="text-[#ea2d6d]" />
+                  <span>Dépistage</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-pink-200/90 bg-white/90 px-2.5 py-1 text-[10.5px] font-semibold text-[#580e36] shadow-xs backdrop-blur-sm">
+                  <MapPin size={12} className="text-[#ea2d6d]" />
+                  <span>Centres de santé</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-pink-200/90 bg-white/90 px-2.5 py-1 text-[10.5px] font-semibold text-[#580e36] shadow-xs backdrop-blur-sm">
+                  <HeartHandshake size={12} className="text-[#ea2d6d]" />
+                  <span>Écoute solidaire</span>
+                </div>
+              </div>
+
               {/* Barre de progression animée de 5 secondes */}
-              <div className="mx-auto mt-5 max-w-[250px]">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-white/25 backdrop-blur-sm shadow-inner">
+              <div className="mx-auto mt-4 max-w-[270px]">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-pink-200/60 shadow-inner">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-pink-400 via-rose-300 to-amber-200 transition-all duration-75 ease-linear shadow-[0_0_12px_rgba(244,114,182,0.9)]"
+                    className="h-full rounded-full bg-gradient-to-r from-[#580e36] via-[#ea2d6d] to-pink-400 transition-all duration-75 ease-linear shadow-[0_0_10px_rgba(234,45,109,0.7)]"
                     style={{ width: `${splashProgress}%` }}
                   />
                 </div>
-                <div className="mt-2 flex items-center justify-between text-[10px] font-semibold text-pink-200/90">
+                <div className="mt-2 flex items-center justify-between text-[10.5px] font-semibold text-[#6a2948]">
                   <span className="flex items-center gap-1.5">
-                    <Sparkles size={11} className="text-amber-300 animate-spin" />
-                    <span>Chargement de l'application...</span>
+                    <Sparkles size={12} className="text-[#ea2d6d] animate-spin" />
+                    <span>Chargement de votre espace santé...</span>
                   </span>
-                  <span className="font-mono text-pink-300 font-bold">
+                  <span className="font-mono text-[11px] font-bold text-[#580e36]">
                     {Math.max(0, Math.ceil((5000 - splashProgress * 50) / 1000))}s
                   </span>
                 </div>
               </div>
 
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-pink-400/30 bg-black/40 px-3.5 py-1 text-[10.5px] font-bold text-pink-200 backdrop-blur-md">
-                <Sparkles size={12} className="text-amber-300" />
-                <span>Plateforme Nationale · Powered by Rose IA</span>
+              {/* Badge d'autorité et précision en bas */}
+              <div className="mt-3.5 inline-flex items-center gap-2 rounded-full border border-pink-300/80 bg-white/90 px-3.5 py-1.5 text-[10.5px] font-bold text-[#580e36] shadow-xs backdrop-blur-md">
+                <ShieldCheck size={13} className="text-[#ea2d6d]" />
+                <span>Plateforme Nationale de Santé · Propulsé par Rose IA</span>
               </div>
             </div>
           </div>
