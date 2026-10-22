@@ -777,8 +777,9 @@ const roseKnowledge = {
  * ============================================================================
  */
 export function PinkHubMobile() {
-  // 1. Écran de démarrage (Splash Screen) "Powered by Rose IA"
+  // 1. Écran de démarrage (Splash Screen) "Powered by Rose IA" avec décompte de 5 secondes
   const [showSplash, setShowSplash] = useState(true);
+  const [splashProgress, setSplashProgress] = useState(0);
 
   // 2. Navigation & État global
   const [section, setSection] = useState<Section>("Accueil");
@@ -821,16 +822,8 @@ export function PinkHubMobile() {
     }
   };
 
-  // Utilisateur actuellement connecté (avec persistance automatique dans la mémoire du téléphone)
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const saved = localStorage.getItem("paglaafi_current_user");
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  // Utilisateur actuellement connecté (initialisé à null au démarrage pour atterrir sur l'écran de connexion après le splash de 5 secondes)
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   // Sauvegarde persistante de la session utilisateur
   useEffect(() => {
@@ -1449,13 +1442,31 @@ export function PinkHubMobile() {
     window.setTimeout(() => setToast(""), 3500);
   };
 
-  // Splash Screen Timer (2.2 secondes)
+  // Splash Screen Timer : 5 secondes avec progression fluide pour apprécier le travail visuel
   useEffect(() => {
+    if (!showSplash) return;
+    const duration = 5000;
+    const startTime = Date.now();
+
+    const interval = window.setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(100, Math.round((elapsed / duration) * 100));
+      setSplashProgress(progress);
+      if (progress >= 100) {
+        window.clearInterval(interval);
+      }
+    }, 40);
+
     const timer = window.setTimeout(() => {
       setShowSplash(false);
-    }, 2200);
-    return () => window.clearTimeout(timer);
-  }, []);
+      setCurrentUser(null);
+    }, duration);
+
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(timer);
+    };
+  }, [showSplash]);
 
   /**
    * Préchauffage instantané du moteur de synthèse vocale (Web Speech API)
@@ -2796,37 +2807,88 @@ export function PinkHubMobile() {
         {/* ==================================================================== */}
         {/* ÉCRAN DE DÉMARRAGE (SPLASH SCREEN) : LOGO & POWERED BY ROSE IA       */}
         {/* ==================================================================== */}
+        {/* ==================================================================== */}
+        {/* ÉCRAN DE DÉMARRAGE (SPLASH SCREEN) : 5 SECONDES                     */}
+        {/* ==================================================================== */}
         {showSplash && (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-between bg-gradient-to-b from-[#fff8fa] via-[#faedf1] to-[#f7e4eb] p-8 text-center ph-enter sm:rounded-[36px]">
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <div className="relative">
-                <div className="h-32 w-32 rounded-full bg-[#fde9ef] ph-pulse absolute -inset-2" />
+          <div className="absolute inset-0 z-50 flex flex-col justify-between overflow-hidden bg-[#240d1a] text-white ph-enter sm:rounded-[36px]">
+            {/* Image de fond plein écran : Solidarité des femmes burkinabè & Monument des Héros Nationaux */}
+            <div className="absolute inset-0">
+              <img
+                src="/images/splash-paglaafi-burkina.jpg"
+                alt="Solidarité PagLaafi - Lutte contre le cancer du sein au Burkina Faso"
+                className="h-full w-full object-cover object-center transform scale-100 transition-transform duration-5000 ease-out"
+              />
+              {/* Voile dégradé supérieur pour contraster l'en-tête */}
+              <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/85 via-black/45 to-transparent" />
+              {/* Voile dégradé inférieur pour assurer une lisibilité parfaite des textes et du chargement */}
+              <div className="absolute inset-x-0 bottom-0 h-[420px] bg-gradient-to-t from-[#200a16] via-[#200a16]/90 via-55% to-transparent" />
+            </div>
+
+            {/* En-tête du Splash : Drapeau et bouton passer */}
+            <div className="relative z-10 flex items-center justify-between p-5 pt-7">
+              <div className="inline-flex items-center gap-2 rounded-full border border-pink-400/30 bg-black/45 px-3 py-1.5 text-[11px] font-bold text-pink-100 backdrop-blur-md shadow-sm">
+                <span>🇧🇫</span>
+                <span>Burkina Faso</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  hapticFeedback(15);
+                  setShowSplash(false);
+                  setCurrentUser(null);
+                }}
+                className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/45 px-3.5 py-1.5 text-[11px] font-bold text-white/95 backdrop-blur-md hover:bg-black/65 transition shadow-sm"
+              >
+                <span>Passer</span>
+                <ChevronRight size={13} />
+              </button>
+            </div>
+
+            {/* Pied de page du Splash : Logo, Titre, Slogan et barre de chargement de 5 secondes */}
+            <div className="relative z-10 p-6 pb-8 text-center">
+              <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/95 p-2 shadow-2xl backdrop-blur-md ring-4 ring-pink-500/25">
                 <img
                   src="/images/pinkhub-mvp-paglaafi.png"
                   alt="Logo PagLaafi"
-                  className="relative h-28 w-28 object-contain mix-blend-multiply drop-shadow-md"
+                  className="h-full w-full object-contain mix-blend-multiply"
                 />
               </div>
 
-              <h1 className="ph-display mt-5 text-[32px] font-bold tracking-tight text-[#472738]">
+              <h1 className="ph-display text-3xl font-extrabold tracking-tight text-white drop-shadow-md">
                 PagLaafi
               </h1>
-              <p className="mt-1 text-xs font-semibold text-[#8e4966]">
-                Mieux  informée-Mieux orientée- Jamais seule.
+              <p className="mt-1 text-xs font-bold text-pink-200 drop-shadow-sm">
+                Mieux informée · Mieux orientée · Jamais seule.
               </p>
-            </div>
+              <p className="mt-0.5 text-[10.5px] text-pink-300/85">
+                Sensibilisation, dépistage & solidarité au Burkina Faso
+              </p>
 
-            <div className="pb-4">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#e8c0ce] bg-white/80 px-4 py-1.5 text-xs font-bold text-[#79344f] shadow-sm">
-                <Sparkles size={15} className="text-amber-500 animate-spin" />
-                <span>Powered by Rose IA</span>
+              {/* Barre de progression animée de 5 secondes */}
+              <div className="mx-auto mt-5 max-w-[250px]">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/25 backdrop-blur-sm shadow-inner">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-pink-400 via-rose-300 to-amber-200 transition-all duration-75 ease-linear shadow-[0_0_12px_rgba(244,114,182,0.9)]"
+                    style={{ width: `${splashProgress}%` }}
+                  />
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[10px] font-semibold text-pink-200/90">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles size={11} className="text-amber-300 animate-spin" />
+                    <span>Chargement de l'application...</span>
+                  </span>
+                  <span className="font-mono text-pink-300 font-bold">
+                    {Math.max(0, Math.ceil((5000 - splashProgress * 50) / 1000))}s
+                  </span>
+                </div>
               </div>
-              <button
-                onClick={() => setShowSplash(false)}
-                className="mt-3 block text-[11px] font-semibold text-[#9b657a] hover:underline"
-              >
-                Accéder directement →
-              </button>
+
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-pink-400/30 bg-black/40 px-3.5 py-1 text-[10.5px] font-bold text-pink-200 backdrop-blur-md">
+                <Sparkles size={12} className="text-amber-300" />
+                <span>Plateforme Nationale · Powered by Rose IA</span>
+              </div>
             </div>
           </div>
         )}
@@ -3250,41 +3312,38 @@ export function PinkHubMobile() {
               )}
             </div>
 
-            {/* Bouton direct Rose IA */}
-            <button
-              onClick={() => {
-                setSection("RoseIA");
-                setShowLanguageMenu(false);
-              }}
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10.5px] font-bold transition shadow-sm ${section === "RoseIA" ? "bg-[#a14364] text-white" : "border border-[#e7bcc9] bg-[#fbf0f4] text-[#8e3857]"}`}
-            >
-              <Sparkles size={12} className="text-amber-500" />
-              <span>Rose IA</span>
-            </button>
+            {/* Bouton direct Rose IA (affiché uniquement quand l'utilisateur est connecté) */}
+            {currentUser && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSection("RoseIA");
+                  setShowLanguageMenu(false);
+                }}
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10.5px] font-bold transition shadow-sm ${section === "RoseIA" ? "bg-[#a14364] text-white" : "border border-[#e7bcc9] bg-[#fbf0f4] text-[#8e3857]"}`}
+              >
+                <Sparkles size={12} className="text-amber-500" />
+                <span>Rose IA</span>
+              </button>
+            )}
 
-            {/* ICÔNE DE PROFIL PERSONNALISÉE POUR TOUS AVEC DÉCONNEXION DIRECTE */}
-            {(() => {
+            {/* ICÔNE DE PROFIL PERSONNALISÉE AVEC DÉCONNEXION (affiché quand connecté) */}
+            {currentUser && (() => {
               const headerProfileIdentity = getProfileIdentity(currentUser);
               return (
                 <div className="relative">
                   <button
-                    onClick={() => {
-                      if (currentUser) {
-                        setShowProfileMenu(!showProfileMenu);
-                      } else {
-                        setAuthMode("login");
-                        setShowProfileMenu(false);
-                      }
-                    }}
+                    type="button"
+                    onClick={() => setShowProfileMenu(!showProfileMenu)}
                     className={`relative grid h-10 w-10 place-items-center rounded-full border-2 ${headerProfileIdentity.border} ${headerProfileIdentity.bg} ${headerProfileIdentity.text} shadow-md transition hover:scale-105`}
-                    title={currentUser ? `${currentUser.prenom} (${currentUser.roleLabel}) - Cliquez pour gérer` : "Connexion"}
+                    title={`${currentUser.prenom} (${currentUser.roleLabel}) - Cliquez pour gérer`}
                   >
                     {headerProfileIdentity.icon}
                     <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white ${headerProfileIdentity.dotColor}`} />
                   </button>
 
                   {/* Menu Popover Déconnexion Directe */}
-                  {showProfileMenu && currentUser && (
+                  {showProfileMenu && (
                     <div
                       className="ph-enter absolute right-0 top-12 z-50 w-64 rounded-2xl border border-[#ebd4dd] bg-white p-3.5 shadow-2xl"
                       onClick={(e) => e.stopPropagation()}
@@ -3436,33 +3495,38 @@ export function PinkHubMobile() {
                 </div>
               </div>
 
-              {/* Sélecteur Onglet : Connexion vs Inscription */}
+              {/* Sélecteur Onglet : Connexion vs Inscription avec icônes */}
               <div className="grid grid-cols-2 rounded-2xl bg-[#f5e3e8] p-1 text-xs font-bold">
                 <button
+                  type="button"
                   onClick={() => setAuthMode("login")}
-                  className={`rounded-xl py-2.5 transition ${authMode === "login" ? "bg-white text-[#a14364] shadow-sm" : "text-[#7b5364]"}`}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 transition ${authMode === "login" ? "bg-white text-[#a14364] shadow-sm font-extrabold" : "text-[#7b5364]"}`}
                 >
-                  Se connecter
+                  <Lock size={13} />
+                  <span>Se connecter</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => setAuthMode("register")}
-                  className={`rounded-xl py-2.5 transition ${authMode === "register" ? "bg-white text-[#a14364] shadow-sm" : "text-[#7b5364]"}`}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 transition ${authMode === "register" ? "bg-white text-[#a14364] shadow-sm font-extrabold" : "text-[#7b5364]"}`}
                 >
-                  Créer un compte
+                  <UserPlus size={13} />
+                  <span>Créer un compte</span>
                 </button>
               </div>
 
               {/* SI ONGLET CONNEXION */}
               {authMode === "login" && (
                 <div className="space-y-4">
-                  <form onSubmit={handleLoginSubmit} className="space-y-3 rounded-3xl bg-white p-4 border border-[#edd6df] shadow-xs">
+                  <form onSubmit={handleLoginSubmit} className="space-y-3.5 rounded-3xl bg-white p-4.5 border border-[#edd6df] shadow-xs">
                     <div>
-                      <label className="text-[11px] font-bold text-[#452737] block mb-1">
+                      <label className="text-[11px] font-bold text-[#452737] block mb-1.5">
                         Numéro de téléphone (+226)
                       </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-xs font-bold text-gray-500">
-                          🇧🇫 +226
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3.5 flex items-center gap-1.5 text-xs font-bold text-[#713f53] pointer-events-none">
+                          <Phone size={13} className="text-[#a14364]" />
+                          <span>🇧🇫 +226</span>
                         </span>
                         <input
                           type="tel"
@@ -3470,28 +3534,32 @@ export function PinkHubMobile() {
                           value={loginForm.telephone}
                           onChange={(e) => setLoginForm({ ...loginForm, telephone: e.target.value })}
                           placeholder="70 12 34 56"
-                          className="w-full rounded-xl border border-[#d6a9b9] py-2.5 pl-20 pr-3 text-xs font-semibold text-[#452737] focus:border-[#a14364] focus:outline-none"
+                          className="w-full rounded-2xl border border-[#d6a9b9] py-3 pl-24 pr-3.5 text-xs font-semibold text-[#452737] focus:border-[#a14364] focus:ring-2 focus:ring-[#a14364]/15 focus:outline-none"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-[11px] font-bold text-[#452737] block mb-1">
+                      <label className="text-[11px] font-bold text-[#452737] block mb-1.5">
                         Mot de passe
                       </label>
-                      <div className="relative">
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3.5 text-[#a14364] pointer-events-none">
+                          <Lock size={14} />
+                        </span>
                         <input
                           type={showPassword ? "text" : "password"}
                           required
                           value={loginForm.motDePasse}
                           onChange={(e) => setLoginForm({ ...loginForm, motDePasse: e.target.value })}
                           placeholder="Votre mot de passe"
-                          className="w-full rounded-xl border border-[#d6a9b9] p-2.5 pr-10 text-xs text-[#452737] focus:border-[#a14364] focus:outline-none"
+                          className="w-full rounded-2xl border border-[#d6a9b9] py-3 pl-10 pr-10 text-xs font-semibold text-[#452737] focus:border-[#a14364] focus:ring-2 focus:ring-[#a14364]/15 focus:outline-none"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-700"
+                          className="absolute right-3.5 text-gray-400 hover:text-[#a14364] p-1 transition"
+                          title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                         >
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
@@ -3500,85 +3568,112 @@ export function PinkHubMobile() {
 
                     <button
                       type="submit"
-                      className="w-full rounded-2xl bg-[#a14364] py-3 text-xs font-bold text-white shadow-md hover:bg-[#8f3956] transition"
+                      className="w-full rounded-2xl bg-gradient-to-r from-[#943657] to-[#ba486e] py-3.5 text-xs font-bold text-white shadow-md hover:opacity-95 transition flex items-center justify-center gap-2"
                     >
-                      Se connecter à mon compte
+                      <CheckCircle2 size={15} />
+                      <span>Se connecter à mon compte</span>
                     </button>
                   </form>
 
-                  {/* Accès Démo Rapide (1-Clic) pour tester chaque profil */}
+                  {/* Accès Démo Rapide (1-Clic) : Disposition optimisée et équilibrée des icônes de profils */}
                   <div className="rounded-3xl bg-[#fdf5f7] border border-[#f0d4de] p-4">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#9a4564] mb-2.5 flex items-center justify-between">
-                      <span>Accès Rapide Démo (1-Clic)</span>
-                      <span className="text-[9px] font-normal lowercase bg-pink-100 text-[#a14364] px-2 py-0.5 rounded-full">sélectionnez un profil</span>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#9a4564] mb-3 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <UsersRound size={13} className="text-[#a14364]" />
+                        <span>Accès Rapide Démo (1-Clic)</span>
+                      </span>
+                      <span className="text-[9px] font-normal lowercase bg-pink-100 text-[#a14364] px-2 py-0.5 rounded-full font-bold">
+                        5 profils au choix
+                      </span>
                     </p>
 
-                    <div className="grid grid-cols-1 gap-2">
+                    {/* Grille 2x2 des 4 rôles opérationnels */}
+                    <div className="grid grid-cols-2 gap-2 mb-2">
                       {[
                         {
                           type: "user" as const,
-                          title: "Aminata Ouedraogo",
-                          role: "Utilisatrice standard",
-                          desc: "Cycle menstruel, autopalpation & dons anonymes",
+                          title: "Aminata O.",
+                          roleName: "Utilisatrice",
+                          desc: "Autopalpation & Cycle",
                           profile: { role: "user" as const, roleLabel: "Utilisatrice" },
                         },
                         {
                           type: "center" as const,
-                          title: "Mme Mariam Sawadogo",
-                          role: "Admin Centre (CMA Schiphra)",
-                          desc: "Mettre à jour le centre sur la carte & stats",
-                          profile: { role: "admin" as const, adminType: "center" as const, roleLabel: "Admin Centre" },
+                          title: "Mme Sawadogo",
+                          roleName: "Centre de Santé",
+                          desc: "CMA Schiphra",
+                          profile: { role: "admin" as const, adminType: "center" as const, roleLabel: "Centre Médical" },
                         },
                         {
                           type: "doctor" as const,
-                          title: "Dr. Ibrahim Sanou",
-                          role: "Docteur (CHU Bogodogo)",
-                          desc: "Entraîner Rose IA & Orientation urgente",
-                          profile: { role: "admin" as const, adminType: "doctor" as const, roleLabel: "Docteur" },
+                          title: "Dr. Sanou",
+                          roleName: "Docteur / Praticien",
+                          desc: "CHU Bogodogo",
+                          profile: { role: "admin" as const, adminType: "doctor" as const, roleLabel: "Praticien" },
                         },
                         {
                           type: "association" as const,
-                          title: "Dr. Salif Sawadogo",
-                          role: "Admin Association (ABAC)",
-                          desc: "Annonces du mois en cours & suivi des dons",
-                          profile: { role: "admin" as const, adminType: "association" as const, roleLabel: "Admin Asso" },
-                        },
-                        {
-                          type: "superadmin" as const,
-                          title: "Alimata Kaboré",
-                          role: "Superadmin National",
-                          desc: "Modération des annonces & Stats de visites",
-                          profile: { role: "superadmin" as const, roleLabel: "Superadmin" },
+                          title: "Dr. Sawadogo",
+                          roleName: "Association ONG",
+                          desc: "ABAC Solidarité",
+                          profile: { role: "admin" as const, adminType: "association" as const, roleLabel: "ONG / Asso" },
                         },
                       ].map((p) => {
                         const ident = getProfileIdentity(p.profile as any);
                         return (
                           <button
                             key={p.type}
+                            type="button"
                             onClick={() => quickLoginAs(p.type)}
-                            className="flex items-center gap-3 rounded-2xl bg-white p-2.5 text-left border border-[#ecd5de] hover:border-[#a14364] hover:shadow-2xs transition"
+                            className="flex flex-col items-start gap-1.5 rounded-2xl bg-white p-3 text-left border border-[#ecd5de] hover:border-[#a14364] hover:shadow-xs transition group"
                           >
-                            <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${ident.bg} ${ident.text} border ${ident.border} shadow-2xs`}>
-                              {ident.icon}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between">
-                                <p className="text-xs font-bold text-[#452737] truncate">{p.title}</p>
-                                <span className={`text-[8.5px] font-bold px-1.5 py-0.2 rounded-full ${ident.badgeBg}`}>
-                                  {ident.badgeText}
-                                </span>
+                            <div className="flex w-full items-center justify-between">
+                              <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${ident.bg} ${ident.text} border ${ident.border} shadow-2xs group-hover:scale-105 transition`}>
+                                {ident.icon}
                               </div>
+                              <span className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded-full ${ident.badgeBg}`}>
+                                {ident.badgeText}
+                              </span>
+                            </div>
+                            <div className="min-w-0 w-full mt-0.5">
+                              <p className="text-[11.5px] font-bold text-[#452737] truncate">{p.title}</p>
                               <p className="text-[10px] text-[#7d5668] truncate">{p.desc}</p>
                             </div>
                           </button>
                         );
                       })}
                     </div>
+
+                    {/* 5e rôle : Superadmin National en carte pleine largeur */}
+                    {(() => {
+                      const superadminIdentity = getProfileIdentity({ role: "superadmin", roleLabel: "Superadmin" } as any);
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => quickLoginAs("superadmin")}
+                          className="w-full flex items-center gap-3 rounded-2xl bg-gradient-to-r from-purple-950/5 via-purple-900/10 to-indigo-950/5 p-3 text-left border border-purple-200/80 hover:border-purple-400 hover:shadow-xs transition group"
+                        >
+                          <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${superadminIdentity.bg} ${superadminIdentity.text} border ${superadminIdentity.border} shadow-xs group-hover:scale-105 transition`}>
+                            {superadminIdentity.icon}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-bold text-[#351a42]">Alimata Kaboré</p>
+                              <span className={`text-[8.5px] font-black px-2 py-0.5 rounded-full ${superadminIdentity.badgeBg}`}>
+                                Superadmin National
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-purple-900/80">Supervision nationale, modération des annonces & statistiques</p>
+                          </div>
+                        </button>
+                      );
+                    })()}
                   </div>
 
                   {/* Bouton pour tester sans compte */}
-                  <div className="text-center pt-1">
+                  <div className="text-center pt-1 pb-2">
                     <button
+                      type="button"
                       onClick={() => {
                         setCurrentUser({
                           nom: "Visiteur",
@@ -3589,10 +3684,11 @@ export function PinkHubMobile() {
                         });
                         notify("Bienvenue en mode découverte libre !");
                       }}
-                      className="text-xs font-bold text-[#a14364] hover:underline inline-flex items-center gap-1.5"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-[#ecd5de] bg-white px-4 py-2.5 text-xs font-bold text-[#a14364] shadow-2xs hover:bg-pink-50 transition"
                     >
+                      <Sparkles size={14} className="text-amber-500" />
                       <span>Explorer l'application sans compte (Mode Découverte)</span>
-                      <ChevronRight size={14} />
+                      <ArrowRight size={13} />
                     </button>
                   </div>
                 </div>

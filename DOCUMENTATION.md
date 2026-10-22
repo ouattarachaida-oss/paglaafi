@@ -435,5 +435,19 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
   - **Lien Réseau Wi-Fi local** : `http://192.168.1.14:5173/`
 - **Pérennité & Déploiement Permanent (24h/24 sans dépendre de l'ordinateur allumé)** :
   - **Lien de Réclamation Directe Vercel (1-clic)** : `https://vercel.com/claim-deployment?code=a430829a-12dc-4d95-8cb4-7fb1ad923e63`
-  - Le bundle de production statique (`dist/`) est compilé avec succès et prêt à être hébergé de façon 100% permanente sur Vercel/Netlify (ex: `https://paglaafi.vercel.app`) ou sur l'infrastructure O2Switch du projet.
-
+#### 10. Écran de Chargement Immersif (5 secondes) & Réorganisation des Icônes de Connexion (Octobre 2026)
+- **Splash Screen Immersif Haute Définition (5 secondes)** :
+  - **Photographie Officielle de Solidarité** : Intégration plein écran de l'image de solidarité des femmes burkinabè vêtues de tenues roses traditionnelles en face du Monument des Héros Nationaux de Ouagadougou (`/images/splash-paglaafi-burkina.jpg`).
+  - **Durée Calibrée à 5 Secondes** : Affichage prolongé à 5 000 ms permettant d'admirer la composition visuelle et le message d'espoir avant l'entrée dans l'application.
+  - **Barre de Progression Animée & Décompte Dynamique** : Jauge fluide en dégradé rose/or avec affichage en direct du temps restant (5s, 4s, 3s...) et bouton "Passer" d'accessibilité rapide.
+  - **Transition Directe vers l'Écran de Connexion** : Atterrissage automatique sur l'écran d'authentification à l'issue des 5 secondes de chargement.
+- **Réorganisation Aérée des Icônes sur l'Écran de Connexion** :
+  - **En-tête Allégé & Sans Encombrement** : Suppression des raccourcis non pertinents avant connexion (Rose IA et profil vide masqués temporairement) pour laisser place nette au sélecteur de langue (`Languages` avec drapeaux) et au bouton de partage Wi-Fi (`Globe`).
+  - **Icônes des Champs de Saisie Rééquilibrées** :
+    - Téléphone : Icône `<Phone />` et drapeau `🇧🇫 +226` harmonieusement intégrés dans le champ.
+    - Mot de passe : Icône cadenas `<Lock />` à gauche et œillet interactif `<Eye /> / <EyeOff />` à droite.
+    - Bouton principal : Icône de validation `<CheckCircle2 />` centrée avec le texte.
+  - **Grille Tactile 2x2 des Profils Démo (1-Clic)** :
+    - Organisation des 4 rôles opérationnels (Utilisatrice standard, Centre médical CMA Schiphra, Docteur CHU Bogodogo, Association ABAC) sous forme de tuiles ergonomiques 2 colonnes avec badges d'icônes contrastés.
+    - Carte d'honneur pleine largeur pour le Super-Administrateur National (`<ShieldCheck />` pourpre et or).
+    - Raccourci vers le mode découverte libre avec `<Sparkles />` et flèche d'accès rapide.
