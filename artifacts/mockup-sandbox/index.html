@@ -55,19 +55,49 @@
     <div id="root" style="height: 100%"></div>
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Enregistrement du Service Worker PagLaafi pour le fonctionnement hors ligne -->
+    <!-- Gestion du Service Worker PagLaafi : désenregistrement sur localhost (dev) pour éviter les collisions de modules React, et activation en production -->
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js')
-            .then(function(reg) {
-              console.log('[PagLaafi] Service Worker actif (hors-ligne prêt):', reg.scope);
-            })
-            .catch(function(err) {
-              console.warn('[PagLaafi] Enregistrement Service Worker reporté:', err);
+      (function() {
+        if ('serviceWorker' in navigator) {
+          var isLocalhost = Boolean(
+            window.location.hostname === 'localhost' ||
+            window.location.hostname === '[::1]' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+          );
+
+          if (isLocalhost) {
+            // Désenregistrement systématique de tout Service Worker résiduel sur l'environnement de développement
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              for (var i = 0; i < registrations.length; i++) {
+                registrations[i].unregister().then(function() {
+                  console.log('[PagLaafi Dev] Service Worker local désenregistré avec succès pour éviter les caches obsolètes.');
+                });
+              }
             });
-        });
-      }
+
+            // Purge des caches du navigateur pour garantir le rechargement à chaud (HMR) direct depuis Vite
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                for (var j = 0; j < names.length; j++) {
+                  caches.delete(names[j]);
+                }
+              });
+            }
+          } else {
+            // En production uniquement : activation du Service Worker pour le mode hors-ligne
+            window.addEventListener('load', function() {
+              navigator.serviceWorker.register('/sw.js')
+                .then(function(reg) {
+                  console.log('[PagLaafi] Service Worker actif (mode hors-ligne prêt):', reg.scope);
+                })
+                .catch(function(err) {
+                  console.warn('[PagLaafi] Enregistrement Service Worker reporté:', err);
+                });
+            });
+          }
+        }
+      })();
     </script>
   </body>
 </html>

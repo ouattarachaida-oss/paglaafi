@@ -55,6 +55,19 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  const reqUrl = new URL(request.url);
+
+  // En environnement de développement local ou requêtes Vite internes, ne jamais intercepter
+  if (
+    reqUrl.hostname === "localhost" ||
+    reqUrl.hostname === "127.0.0.1" ||
+    reqUrl.pathname.startsWith("/@") ||
+    reqUrl.pathname.startsWith("/src/") ||
+    reqUrl.pathname.includes("node_modules")
+  ) {
+    return;
+  }
+
   // Cas 1 : Requêtes de tuiles cartographiques OpenStreetMap
   if (request.url.includes("tile.openstreetmap.org")) {
     event.respondWith(

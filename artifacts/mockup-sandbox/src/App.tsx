@@ -1,4 +1,5 @@
 import { useEffect, useState, type ComponentType } from "react";
+import PagLaafiV2 from "./components/mockups/pinkhub-v2/PagLaafiV2";
 
 import { modules as discoveredModules } from "./.generated/mockup-components";
 
@@ -149,29 +150,8 @@ function App() {
     );
   }
 
-  // Chargement automatique de PagLaafi V2 par défaut avec fallback sur la V1
-  const v2Mockup = "pinkhub-v2/PagLaafiV2";
-  const v1Mockup = "pinkhub-mvp/PinkHubMobile";
-
-  if (discoveredModules[`./components/mockups/${v2Mockup}.tsx`]) {
-    return (
-      <PreviewRenderer
-        componentPath={v2Mockup}
-        modules={discoveredModules}
-      />
-    );
-  }
-
-  if (discoveredModules[`./components/mockups/${v1Mockup}.tsx`]) {
-    return (
-      <PreviewRenderer
-        componentPath={v1Mockup}
-        modules={discoveredModules}
-      />
-    );
-  }
-
-  return <Gallery />;
+  // Chargement direct et immédiat de PagLaafi V2 sur la racine
+  return <PagLaafiV2 />;
 }
 
 export default App;

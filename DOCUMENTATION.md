@@ -491,4 +491,15 @@ Au lieu d'un fichier monolithique de plus de 7 500 lignes, l'architecture V2 est
   - Typecheck : `npm run typecheck` (dans `artifacts/mockup-sandbox`)
   - Compilation : `npm run build` (dans `artifacts/mockup-sandbox`)
 
+##### 4. Résolution Technique du Problème de Hooks React & Service Worker (Dev Local)
+- **Symptôme rencontré** : `Cannot read properties of null (reading 'useState')` dans la console/overlay Vite.
+- **Cause racine** : Le Service Worker PWA (`public/sw.js`) mettait en cache agressif les modules Vite sur `localhost:5173`. Lors du rechargement à chaud ou du redémarrage du serveur, des modules anciens servis par le cache entraient en collision avec de nouveaux modules, créant une double instance de React ou un dispatcher nul.
+- **Correctifs appliqués** :
+  1. `artifacts/mockup-sandbox/vite.config.ts` : Ajout de `dedupe: ['react', 'react-dom']` et résolution explicite d'alias pour garantir une instance unique de React.
+  2. `artifacts/mockup-sandbox/src/App.tsx` : Montée directe de `<PagLaafiV2 />` sur la route racine `/` sans passer par le loader asynchrone dynamique pour la vue par défaut.
+  3. `artifacts/mockup-sandbox/index.html` : Script de détection `localhost` qui désenregistre automatiquement tout Service Worker résiduel et vide les caches locaux en environnement de développement.
+  4. `artifacts/mockup-sandbox/public/sw.js` : Bypass systématique des requêtes locales (`localhost`, `127.0.0.1`, `/@vite/`, `/src/`) dans le listener `fetch`.
+  5. `artifacts/mockup-sandbox/src/components/mockups/pinkhub-mvp/PinkHubMobile.tsx` : Ajout de l'export par défaut `export default PinkHubMobile;`.
+
+
 

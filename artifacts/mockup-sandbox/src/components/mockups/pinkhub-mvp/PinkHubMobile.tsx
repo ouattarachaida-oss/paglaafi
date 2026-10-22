@@ -7571,3 +7571,6 @@ export function PinkHubMobile() {
     </main>
   );
 }
+
+export default PinkHubMobile;
+
