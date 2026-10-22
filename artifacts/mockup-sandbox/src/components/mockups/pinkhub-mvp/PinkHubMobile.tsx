@@ -839,9 +839,6 @@ export function PinkHubMobile() {
     }
   }, [currentUser]);
 
-  // Modal Partage Wi-Fi local sans Expo pour les collègues
-  const [showWifiModal, setShowWifiModal] = useState(false);
-
   // Gestion de l'installation PWA & Détection Mode Application Standalone
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isStandaloneApp, setIsStandaloneApp] = useState(false);
@@ -879,17 +876,6 @@ export function PinkHubMobile() {
       setShowPwaInstallModal(true);
     }
   };
-
-  // Détection dynamique de l'URL d'accès réseau local (Wi-Fi) pour smartphones
-  const localShareUrl = useMemo(() => {
-    if (typeof window === "undefined") return "http://192.168.1.14:5173/";
-    const host = window.location.hostname;
-    const port = window.location.port ? `:${window.location.port}` : "";
-    if (host !== "localhost" && host !== "127.0.0.1") {
-      return `${window.location.protocol}//${window.location.host}/`;
-    }
-    return `http://192.168.1.14${port || ":5173"}/`;
-  }, []);
 
   // Fonction universelle de déconnexion
   const handleLogout = () => {
@@ -970,11 +956,11 @@ export function PinkHubMobile() {
     // Utilisatrice standard
     return {
       icon: <Heart size={17} className="text-white fill-white" />,
-      bg: "bg-gradient-to-tr from-[#943657] to-[#ba486e]",
+      bg: "bg-gradient-to-tr from-[#6c1543] to-[#ba486e]",
       text: "text-white",
       border: "border-rose-300",
       badgeText: "Utilisatrice",
-      badgeBg: "bg-[#943657] text-white",
+      badgeBg: "bg-[#6c1543] text-white",
       dotColor: "bg-pink-400",
       label: "Utilisatrice / Patiente",
     };
@@ -1137,12 +1123,52 @@ export function PinkHubMobile() {
   const [orientationForm, setOrientationForm] = useState({
     patientName: "K. Fatoumata",
     patientPhone: "70 88 99 00",
-    urgencyLevel: "high" as "high" | "medium" | "routine",
+    urgencyLevel: "immediate" as "immediate" | "priority" | "routine",
     targetCenterId: 1,
     clinicalObservations: "Masse rétro-aréolaire droite de 2.5 cm, indolore, évoluant depuis 2 mois. Pas d'adénopathie palpable.",
     recommendedExam: "Mammographie numérique bilatérale + Échographie mammaire",
   });
   const [generatedOrientationCode, setGeneratedOrientationCode] = useState<string | null>(null);
+
+  // Registre partagé des orientations d'urgence (Docteur ➔ Centre de Santé)
+  const [urgentOrientations, setUrgentOrientations] = useState([
+    {
+      id: "PAG-URG-2026-4821",
+      patientName: "K. Fatoumata",
+      patientPhone: "+226 70 88 99 00",
+      patientAge: 42,
+      doctorName: "Dr. Ouédraogo Aminata",
+      doctorSpecialty: "Gynécologue-Obstétricienne",
+      targetCenterId: 1,
+      targetCenterName: "CMA Schiphra",
+      urgencyLevel: "immediate" as "immediate" | "priority" | "routine",
+      urgencyLabel: "🚨 Immédiat (< 24h)",
+      clinicalObservations: "Masse rétro-aréolaire droite de 2.5 cm, indolore, évoluant depuis 2 mois. Rétraction cutanée légère constatée.",
+      recommendedExam: "Mammographie numérique bilatérale + Échographie mammaire",
+      status: "pending_center" as "pending_center" | "accepted_urgent" | "scheduled_wait",
+      centerValidationMessage: "",
+      centerEstimatedDelay: "",
+      createdAt: "Aujourd'hui à 08h45",
+    },
+    {
+      id: "PAG-URG-2026-3190",
+      patientName: "T. Salimata",
+      patientPhone: "+226 76 11 22 33",
+      patientAge: 38,
+      doctorName: "Dr. Kaboré Jean-Baptiste",
+      doctorSpecialty: "Médecin Généraliste",
+      targetCenterId: 1,
+      targetCenterName: "CMA Schiphra",
+      urgencyLevel: "priority" as "immediate" | "priority" | "routine",
+      urgencyLabel: "⚠️ Prioritaire (48h-72h)",
+      clinicalObservations: "Écoulement unilatéral suspect mamelon gauche sans nodule franc à la palpation. Antécédents familiaux de cancer du sein.",
+      recommendedExam: "Échographie mammaire ciblée",
+      status: "accepted_urgent" as "pending_center" | "accepted_urgent" | "scheduled_wait",
+      centerValidationMessage: "Patiente attendue ! Équipe Schiphra prévenue. Accueil direct guichet 3.",
+      centerEstimatedDelay: "Prise en charge directe (< 15 min)",
+      createdAt: "Hier à 16h20",
+    },
+  ]);
 
   // 11. Tableau de bord Administrateurs
   const [showAdminDashboardModal, setShowAdminDashboardModal] = useState(false);
@@ -1585,7 +1611,7 @@ export function PinkHubMobile() {
 
         marker.bindPopup(`
           <div style="font-family:'DM Sans', sans-serif; min-width:200px; padding:3px;">
-            <b style="color:#452737; font-size:12px; display:block;">${center.shortName}</b>
+            <b style="color:#580e36; font-size:12px; display:block;">${center.shortName}</b>
             <span style="display:inline-block; font-size:10px; font-weight:bold; color:${markerColor}; margin-top:2px;">● ${center.statusLabel}</span>
             <div style="font-size:10px; color:#6b4d5d; margin-top:3px;">Attente : <b>${center.estimatedWait}</b></div>
             <div style="font-size:10px; color:#6b4d5d;">Agents : <b>${center.agentsPresent}</b></div>
@@ -1594,7 +1620,7 @@ export function PinkHubMobile() {
               <button id="osm-nav-${center.id}" style="border:none; background:#10b981; color:#ffffff; font-size:10px; font-weight:bold; padding:5px 6px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:3px;">
                 📍 Itinéraire
               </button>
-              <button id="osm-btn-${center.id}" style="border:none; background:#a14364; color:#ffffff; font-size:10px; font-weight:bold; padding:5px 6px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+              <button id="osm-btn-${center.id}" style="border:none; background:#ea2d6d; color:#ffffff; font-size:10px; font-weight:bold; padding:5px 6px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
                 Fiche →
               </button>
             </div>
@@ -2302,13 +2328,79 @@ export function PinkHubMobile() {
   };
 
   /**
-   * Recommander et orienter un patient selon l'urgence
+   * Recommander et orienter un patient selon l'urgence clinique vers un Centre de Santé
    */
   const handleCreatePatientOrientation = (e: React.FormEvent) => {
     e.preventDefault();
-    const code = `ORIENT-BF-${Math.floor(1000 + Math.random() * 9000)}`;
+    hapticFeedback(25);
+    const code = `PAG-URG-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const targetCenter = centers.find((c) => c.id === Number(orientationForm.targetCenterId)) || centers[0];
+
+    const newRecord = {
+      id: code,
+      patientName: orientationForm.patientName,
+      patientPhone: orientationForm.patientPhone,
+      patientAge: 40,
+      doctorName: currentUser?.prenom ? `${currentUser.prenom} ${currentUser.nom}` : "Dr. Partenaire PagLaafi",
+      doctorSpecialty: "Médecin / Soignant(e)",
+      targetCenterId: targetCenter.id,
+      targetCenterName: targetCenter.shortName,
+      urgencyLevel: orientationForm.urgencyLevel,
+      urgencyLabel:
+        orientationForm.urgencyLevel === "immediate"
+          ? "🚨 Immédiat (< 24h)"
+          : orientationForm.urgencyLevel === "priority"
+          ? "⚠️ Prioritaire (48h-72h)"
+          : "ℹ️ Routine / Surveillance",
+      clinicalObservations: orientationForm.clinicalObservations,
+      recommendedExam: orientationForm.recommendedExam,
+      status: "pending_center" as const,
+      centerValidationMessage: "",
+      centerEstimatedDelay: "",
+      createdAt: "À l'instant",
+    };
+
+    setUrgentOrientations((prev) => [newRecord, ...prev]);
     setGeneratedOrientationCode(code);
-    notify(`Fiche d'orientation ${code} générée avec succès.`);
+    notify(`Orientation ${code} émise d'urgence vers ${targetCenter.shortName} !`);
+  };
+
+  /**
+   * Validation d'une orientation d'urgence par l'équipe du Centre de Santé
+   */
+  const handleValidateOrientationByCenter = (
+    orientationId: string,
+    action: "immediate" | "scheduled",
+    customDelay?: string
+  ) => {
+    hapticFeedback(20);
+    setUrgentOrientations((prev) =>
+      prev.map((item) => {
+        if (item.id === orientationId) {
+          if (action === "immediate") {
+            return {
+              ...item,
+              status: "accepted_urgent" as const,
+              centerValidationMessage: "Envoyez-la vite ! Équipe alertée et créneau d'urgence réservé.",
+              centerEstimatedDelay: "Prise en charge directe (< 15 min)",
+            };
+          } else {
+            return {
+              ...item,
+              status: "scheduled_wait" as const,
+              centerValidationMessage: `Affluence en cours : Patiente prioritaire enregistrée. Accueil garanti sous ${customDelay || "~45 min"}.`,
+              centerEstimatedDelay: customDelay || "~45 min",
+            };
+          }
+        }
+        return item;
+      })
+    );
+    notify(
+      action === "immediate"
+        ? "Confirmation envoyée : Patiente attendue d'urgence !"
+        : "Créneau prioritaire programmé avec succès."
+    );
   };
 
   /**
@@ -2913,7 +3005,7 @@ export function PinkHubMobile() {
                     className="h-10 w-10 object-contain mix-blend-multiply"
                   />
                   <div>
-                    <h2 className="ph-display text-lg font-bold text-[#472738]">PagLaafi</h2>
+                    <h2 className="ph-display text-lg font-bold text-[#580e36]">PagLaafi</h2>
                     <p className="text-[10px] font-medium text-[#92546e]">Burkina Faso</p>
                   </div>
                 </div>
@@ -2939,7 +3031,7 @@ export function PinkHubMobile() {
                           <span className={`inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${drawerIdentity.badgeBg}`}>
                             {currentUser.roleLabel}
                           </span>
-                          <p className="mt-0.5 font-bold text-[#472738] truncate">{currentUser.prenom} {currentUser.nom}</p>
+                          <p className="mt-0.5 font-bold text-[#580e36] truncate">{currentUser.prenom} {currentUser.nom}</p>
                           <p className="text-[10px] text-[#7d5d6c] truncate">{currentUser.telephone}</p>
                         </div>
                       </div>
@@ -3036,14 +3128,14 @@ export function PinkHubMobile() {
               <nav className="mt-3 space-y-1 flex-1 overflow-y-auto text-xs">
                 <button
                   onClick={() => { setSection("Accueil"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Accueil" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Accueil" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
                   <Heart size={17} /> <span>Accueil</span>
                 </button>
 
                 <button
                   onClick={() => { setSection("Centres"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Centres" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Centres" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
                   <span className="flex items-center gap-3"><MapPin size={17} /> Carte des Soins (OpenStreetMap)</span>
                   <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-800">En direct</span>
@@ -3051,23 +3143,23 @@ export function PinkHubMobile() {
 
                 <button
                   onClick={() => { setSection("Calendrier"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Calendrier" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Calendrier" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
                   <span className="flex items-center gap-3"><CalendarDays size={17} /> Règles & Autopalpation</span>
-                  <span className="rounded-full bg-pink-100 px-1.5 py-0.5 text-[9px] font-bold text-[#a14364]">Cycle</span>
+                  <span className="rounded-full bg-pink-100 px-1.5 py-0.5 text-[9px] font-bold text-[#ea2d6d]">Cycle</span>
                 </button>
 
                 <button
                   onClick={() => { setSection("Comprendre"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Comprendre" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Comprendre" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
                   <span className="flex items-center gap-3"><BookOpen size={17} /> Comprendre (Français · Anglais · Mooré · Dioula)</span>
-                  <span className="rounded-full bg-pink-100 px-1.5 py-0.5 text-[9px] font-bold text-[#a14364]">Audio</span>
+                  <span className="rounded-full bg-pink-100 px-1.5 py-0.5 text-[9px] font-bold text-[#ea2d6d]">Audio</span>
                 </button>
 
                 <button
                   onClick={() => { setSection("RoseIA"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "RoseIA" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "RoseIA" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
                   <span className="flex items-center gap-3"><Sparkles size={17} /> Rose IA (Assistance Vocale)</span>
                   <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900">IA</span>
@@ -3075,14 +3167,14 @@ export function PinkHubMobile() {
 
                 <button
                   onClick={() => { setSection("Annonces"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Annonces" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Annonces" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
                   <Megaphone size={17} /> <span>Annonces & Événements</span>
                 </button>
 
                 <button
                   onClick={() => { setSection("Accompagnant"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Accompagnant" ? "bg-[#f5e3e8] text-[#a14364]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Accompagnant" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
                 >
                   <UserPlus size={17} /> <span>L'Accompagnant (À deux)</span>
                 </button>
@@ -3110,10 +3202,10 @@ export function PinkHubMobile() {
                       setSidebarOpen(false);
                       setShowDonationModal(true);
                     }}
-                    className="flex w-full items-center justify-between rounded-2xl bg-rose-50 px-3.5 py-2.5 font-bold text-[#a14364] hover:bg-rose-100"
+                    className="flex w-full items-center justify-between rounded-2xl bg-rose-50 px-3.5 py-2.5 font-bold text-[#ea2d6d] hover:bg-rose-100"
                   >
                     <span className="flex items-center gap-3">
-                      <Heart size={17} className="text-[#a14364] fill-[#a14364]" /> Faire un don
+                      <Heart size={17} className="text-[#ea2d6d] fill-[#ea2d6d]" /> Faire un don
                     </span>
                     <span className="text-[10px] text-rose-800">Solidarité</span>
                   </button>
@@ -3172,7 +3264,7 @@ export function PinkHubMobile() {
                     setSidebarOpen(false);
                     handleTriggerInstall();
                   }}
-                  className="flex w-full items-center justify-between rounded-xl bg-gradient-to-r from-[#a14364] to-[#7f2f4c] px-3 py-2 text-xs font-bold text-white shadow-md hover:opacity-95 transition"
+                  className="flex w-full items-center justify-between rounded-xl bg-gradient-to-r from-[#ea2d6d] to-[#580e36] px-3 py-2 text-xs font-bold text-white shadow-md hover:opacity-95 transition"
                 >
                   <span className="flex items-center gap-2">
                     <Smartphone size={15} className="text-amber-300" />
@@ -3184,20 +3276,38 @@ export function PinkHubMobile() {
                 </button>
               </div>
 
-              {/* Bouton Partage Wi-Fi pour les collègues */}
-              <div className="mt-1.5">
-                <button
-                  onClick={() => {
-                    setSidebarOpen(false);
-                    setShowWifiModal(true);
-                  }}
-                  className="flex w-full items-center justify-between rounded-xl bg-slate-800 px-3 py-2 text-xs font-bold text-emerald-400 hover:bg-slate-700 transition"
-                >
-                  <span className="flex items-center gap-2">
-                    <Globe size={14} className="text-emerald-400" /> Partage Wi-Fi Collègues
+              {/* SÉLECTEUR DE LANGUE DISCRET & TACTILE DANS LA SIDEBAR DÉROULANTE */}
+              <div className="mt-2 rounded-2xl bg-[#fff2f6] p-2.5 border border-[#fce4ec]">
+                <div className="flex items-center justify-between mb-1.5 px-1">
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#ea2d6d]">
+                    <Languages size={13} /> Langue de l'App
                   </span>
-                  <span className="text-[10px] text-slate-300">Sans Expo</span>
-                </button>
+                  <span className="text-[9.5px] font-extrabold text-[#580e36]">
+                    {appLanguage === "moore" ? "Mooré" : appLanguage === "dioula" ? "Dioula" : appLanguage.toUpperCase()}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { code: "fr" as const, label: "Français", flag: "🇫🇷" },
+                    { code: "moore" as const, label: "Mooré", flag: "🇧🇫" },
+                    { code: "dioula" as const, label: "Dioula", flag: "🇧🇫" },
+                    { code: "en" as const, label: "English", flag: "🇬🇧" },
+                  ].map((l) => (
+                    <button
+                      key={l.code}
+                      type="button"
+                      onClick={() => handleSelectAppLanguage(l.code)}
+                      className={`flex items-center justify-center gap-1 rounded-xl py-1.5 px-2 text-[11px] font-bold transition cursor-pointer ${
+                        appLanguage === l.code
+                          ? "bg-[#ea2d6d] text-white shadow-xs"
+                          : "bg-white text-[#580e36] border border-[#fce4ec] hover:bg-pink-100/60"
+                      }`}
+                    >
+                      <span>{l.flag}</span>
+                      <span>{l.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Ligne d'urgence */}
@@ -3230,87 +3340,24 @@ export function PinkHubMobile() {
                 alt="Logo PagLaafi"
                 className="h-8 w-8 object-contain mix-blend-multiply"
               />
-              <span className="ph-display text-lg font-bold text-[#452737]">PagLaafi</span>
+              <span className="ph-display text-lg font-bold text-[#580e36]">PagLaafi</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             {/* Bouton d'installation PWA Mobile rapide */}
             <button
               onClick={handleTriggerInstall}
-              className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-bold transition shadow-2xs ${
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-bold transition shadow-2xs ${
                 isStandaloneApp
                   ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                  : "border-[#e5b6c7] bg-gradient-to-r from-pink-50 to-rose-50 text-[#8e3553] hover:bg-pink-100"
+                  : "border-[#fce4ec] bg-gradient-to-r from-pink-50 to-rose-50 text-[#ea2d6d] hover:bg-pink-100"
               }`}
               title={isStandaloneApp ? "Application PagLaafi active en mode autonome" : "Installer l'application sur smartphone"}
             >
-              <Smartphone size={11} className={isStandaloneApp ? "text-emerald-600" : "text-[#a14364]"} />
+              <Smartphone size={11} className={isStandaloneApp ? "text-emerald-600" : "text-[#ea2d6d]"} />
               <span>{isStandaloneApp ? "Installé" : "Installer"}</span>
             </button>
-
-            {/* Bouton direct Partage Wi-Fi local sans Expo */}
-            <button
-              onClick={() => setShowWifiModal(true)}
-              className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-800 transition hover:bg-emerald-100 shadow-2xs"
-              title="Lien Mobile Wi-Fi (Sans Expo)"
-            >
-              <Globe size={11} className="text-emerald-600" />
-              <span>Wi-Fi</span>
-            </button>
-
-            {/* SÉLECTEUR DE LANGUE DISCRET & INTUITIF (TOUS ÉCRANS & TOUS PROFILS) */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowLanguageMenu(!showLanguageMenu);
-                  setShowProfileMenu(false);
-                }}
-                className="inline-flex items-center gap-1 rounded-full border border-[#ecd2dc] bg-[#fff6f8] px-2 py-1 text-[10px] font-bold text-[#863b55] hover:bg-[#faedf2] transition shadow-2xs cursor-pointer"
-                title="Changer de langue (Français, Mooré, Dioula, English)"
-              >
-                <Languages size={12} className="text-[#a14364]" />
-                <span className="font-extrabold">{appLanguage === "moore" ? "Mooré" : appLanguage === "dioula" ? "Dioula" : appLanguage.toUpperCase()}</span>
-              </button>
-
-              {/* Popover compact de sélection de langue */}
-              {showLanguageMenu && (
-                <div
-                  className="ph-enter absolute right-0 top-10 z-50 w-44 rounded-2xl border border-[#ebd4dd] bg-white p-2 shadow-2xl"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-[#a14364] border-b border-[#f4dee6] mb-1">
-                    Langue / Language
-                  </div>
-                  {[
-                    { code: "fr" as const, label: "Français", flag: "🇫🇷", sub: "Officielle" },
-                    { code: "moore" as const, label: "Mooré", flag: "🇧🇫", sub: "Nationale" },
-                    { code: "dioula" as const, label: "Dioula", flag: "🇧🇫", sub: "Nationale" },
-                    { code: "en" as const, label: "English", flag: "🇬🇧", sub: "English" },
-                  ].map((l) => (
-                    <button
-                      key={l.code}
-                      type="button"
-                      onClick={() => handleSelectAppLanguage(l.code)}
-                      className={`w-full flex items-center justify-between rounded-xl px-2 py-1.5 text-xs font-semibold transition ${
-                        appLanguage === l.code
-                          ? "bg-[#a14364] text-white font-bold"
-                          : "text-[#5a3648] hover:bg-pink-50"
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <span>{l.flag}</span>
-                        <span>{l.label}</span>
-                      </span>
-                      <span className={`text-[9px] ${appLanguage === l.code ? "text-white/80" : "text-gray-400"}`}>
-                        {l.sub}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
 
             {/* Bouton direct Rose IA (affiché uniquement quand l'utilisateur est connecté) */}
             {currentUser && (
@@ -3320,7 +3367,7 @@ export function PinkHubMobile() {
                   setSection("RoseIA");
                   setShowLanguageMenu(false);
                 }}
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10.5px] font-bold transition shadow-sm ${section === "RoseIA" ? "bg-[#a14364] text-white" : "border border-[#e7bcc9] bg-[#fbf0f4] text-[#8e3857]"}`}
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10.5px] font-bold transition shadow-sm ${section === "RoseIA" ? "bg-[#ea2d6d] text-white" : "border border-[#e7bcc9] bg-[#fbf0f4] text-[#d81f5c]"}`}
               >
                 <Sparkles size={12} className="text-amber-500" />
                 <span>Rose IA</span>
@@ -3353,7 +3400,7 @@ export function PinkHubMobile() {
                           {headerProfileIdentity.icon}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-bold text-[#452737] text-xs truncate">
+                          <p className="font-bold text-[#580e36] text-xs truncate">
                             {currentUser.prenom} {currentUser.nom}
                           </p>
                           <span className={`inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${headerProfileIdentity.badgeBg}`}>
@@ -3362,9 +3409,9 @@ export function PinkHubMobile() {
                         </div>
                       </div>
                       <div className="mt-2 text-[10.5px] text-[#7a5969] space-y-0.5">
-                        <p className="flex items-center gap-1.5"><Phone size={12} className="text-[#a14364]" /> {currentUser.telephone}</p>
+                        <p className="flex items-center gap-1.5"><Phone size={12} className="text-[#ea2d6d]" /> {currentUser.telephone}</p>
                         {currentUser.structureName && (
-                          <p className="flex items-center gap-1.5"><MapPin size={12} className="text-[#a14364]" /> {currentUser.structureName}</p>
+                          <p className="flex items-center gap-1.5"><MapPin size={12} className="text-[#ea2d6d]" /> {currentUser.structureName}</p>
                         )}
                       </div>
 
@@ -3374,25 +3421,25 @@ export function PinkHubMobile() {
                           <div className="grid grid-cols-2 gap-1 text-[10px]">
                             <button
                               onClick={() => { quickLoginAs("user"); setShowProfileMenu(false); }}
-                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.role === 'user' ? 'bg-[#a14364] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.role === 'user' ? 'bg-[#ea2d6d] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
                             >
                               👩 Utilisatrice
                             </button>
                             <button
                               onClick={() => { quickLoginAs("center"); setShowProfileMenu(false); }}
-                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'center' ? 'bg-[#a14364] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'center' ? 'bg-[#ea2d6d] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
                             >
                               🏥 Centre Santé
                             </button>
                             <button
                               onClick={() => { quickLoginAs("doctor"); setShowProfileMenu(false); }}
-                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'doctor' ? 'bg-[#a14364] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'doctor' ? 'bg-[#ea2d6d] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
                             >
                               🩺 Docteur
                             </button>
                             <button
                               onClick={() => { quickLoginAs("association"); setShowProfileMenu(false); }}
-                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'association' ? 'bg-[#a14364] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'association' ? 'bg-[#ea2d6d] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
                             >
                               🎗️ Association
                             </button>
@@ -3485,7 +3532,7 @@ export function PinkHubMobile() {
                     className="h-full w-full object-contain mix-blend-multiply"
                   />
                 </div>
-                <h2 className="ph-display text-2xl font-bold text-[#452737]">PagLaafi</h2>
+                <h2 className="ph-display text-2xl font-bold text-[#580e36]">PagLaafi</h2>
                 <p className="text-xs text-[#82445e] font-semibold mt-0.5">
                   Plateforme Nationale de Dépistage & Solidarité Cancer du Sein
                 </p>
@@ -3500,7 +3547,7 @@ export function PinkHubMobile() {
                 <button
                   type="button"
                   onClick={() => setAuthMode("login")}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 transition ${authMode === "login" ? "bg-white text-[#a14364] shadow-sm font-extrabold" : "text-[#7b5364]"}`}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 transition ${authMode === "login" ? "bg-white text-[#ea2d6d] shadow-sm font-extrabold" : "text-[#7b5364]"}`}
                 >
                   <Lock size={13} />
                   <span>Se connecter</span>
@@ -3508,7 +3555,7 @@ export function PinkHubMobile() {
                 <button
                   type="button"
                   onClick={() => setAuthMode("register")}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 transition ${authMode === "register" ? "bg-white text-[#a14364] shadow-sm font-extrabold" : "text-[#7b5364]"}`}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 transition ${authMode === "register" ? "bg-white text-[#ea2d6d] shadow-sm font-extrabold" : "text-[#7b5364]"}`}
                 >
                   <UserPlus size={13} />
                   <span>Créer un compte</span>
@@ -3520,12 +3567,12 @@ export function PinkHubMobile() {
                 <div className="space-y-4">
                   <form onSubmit={handleLoginSubmit} className="space-y-3.5 rounded-3xl bg-white p-4.5 border border-[#edd6df] shadow-xs">
                     <div>
-                      <label className="text-[11px] font-bold text-[#452737] block mb-1.5">
+                      <label className="text-[11px] font-bold text-[#580e36] block mb-1.5">
                         Numéro de téléphone (+226)
                       </label>
                       <div className="relative flex items-center">
                         <span className="absolute left-3.5 flex items-center gap-1.5 text-xs font-bold text-[#713f53] pointer-events-none">
-                          <Phone size={13} className="text-[#a14364]" />
+                          <Phone size={13} className="text-[#ea2d6d]" />
                           <span>🇧🇫 +226</span>
                         </span>
                         <input
@@ -3534,17 +3581,17 @@ export function PinkHubMobile() {
                           value={loginForm.telephone}
                           onChange={(e) => setLoginForm({ ...loginForm, telephone: e.target.value })}
                           placeholder="70 12 34 56"
-                          className="w-full rounded-2xl border border-[#d6a9b9] py-3 pl-24 pr-3.5 text-xs font-semibold text-[#452737] focus:border-[#a14364] focus:ring-2 focus:ring-[#a14364]/15 focus:outline-none"
+                          className="w-full rounded-2xl border border-[#d6a9b9] py-3 pl-24 pr-3.5 text-xs font-semibold text-[#580e36] focus:border-[#ea2d6d] focus:ring-2 focus:ring-[#ea2d6d]/15 focus:outline-none"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-[11px] font-bold text-[#452737] block mb-1.5">
+                      <label className="text-[11px] font-bold text-[#580e36] block mb-1.5">
                         Mot de passe
                       </label>
                       <div className="relative flex items-center">
-                        <span className="absolute left-3.5 text-[#a14364] pointer-events-none">
+                        <span className="absolute left-3.5 text-[#ea2d6d] pointer-events-none">
                           <Lock size={14} />
                         </span>
                         <input
@@ -3553,12 +3600,12 @@ export function PinkHubMobile() {
                           value={loginForm.motDePasse}
                           onChange={(e) => setLoginForm({ ...loginForm, motDePasse: e.target.value })}
                           placeholder="Votre mot de passe"
-                          className="w-full rounded-2xl border border-[#d6a9b9] py-3 pl-10 pr-10 text-xs font-semibold text-[#452737] focus:border-[#a14364] focus:ring-2 focus:ring-[#a14364]/15 focus:outline-none"
+                          className="w-full rounded-2xl border border-[#d6a9b9] py-3 pl-10 pr-10 text-xs font-semibold text-[#580e36] focus:border-[#ea2d6d] focus:ring-2 focus:ring-[#ea2d6d]/15 focus:outline-none"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3.5 text-gray-400 hover:text-[#a14364] p-1 transition"
+                          className="absolute right-3.5 text-gray-400 hover:text-[#ea2d6d] p-1 transition"
                           title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                         >
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -3568,7 +3615,7 @@ export function PinkHubMobile() {
 
                     <button
                       type="submit"
-                      className="w-full rounded-2xl bg-gradient-to-r from-[#943657] to-[#ba486e] py-3.5 text-xs font-bold text-white shadow-md hover:opacity-95 transition flex items-center justify-center gap-2"
+                      className="w-full rounded-2xl bg-gradient-to-r from-[#6c1543] to-[#ba486e] py-3.5 text-xs font-bold text-white shadow-md hover:opacity-95 transition flex items-center justify-center gap-2"
                     >
                       <CheckCircle2 size={15} />
                       <span>Se connecter à mon compte</span>
@@ -3579,10 +3626,10 @@ export function PinkHubMobile() {
                   <div className="rounded-3xl bg-[#fdf5f7] border border-[#f0d4de] p-4">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-[#9a4564] mb-3 flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
-                        <UsersRound size={13} className="text-[#a14364]" />
+                        <UsersRound size={13} className="text-[#ea2d6d]" />
                         <span>Accès Rapide Démo (1-Clic)</span>
                       </span>
-                      <span className="text-[9px] font-normal lowercase bg-pink-100 text-[#a14364] px-2 py-0.5 rounded-full font-bold">
+                      <span className="text-[9px] font-normal lowercase bg-pink-100 text-[#ea2d6d] px-2 py-0.5 rounded-full font-bold">
                         5 profils au choix
                       </span>
                     </p>
@@ -3625,7 +3672,7 @@ export function PinkHubMobile() {
                             key={p.type}
                             type="button"
                             onClick={() => quickLoginAs(p.type)}
-                            className="flex flex-col items-start gap-1.5 rounded-2xl bg-white p-3 text-left border border-[#ecd5de] hover:border-[#a14364] hover:shadow-xs transition group"
+                            className="flex flex-col items-start gap-1.5 rounded-2xl bg-white p-3 text-left border border-[#ecd5de] hover:border-[#ea2d6d] hover:shadow-xs transition group"
                           >
                             <div className="flex w-full items-center justify-between">
                               <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${ident.bg} ${ident.text} border ${ident.border} shadow-2xs group-hover:scale-105 transition`}>
@@ -3636,7 +3683,7 @@ export function PinkHubMobile() {
                               </span>
                             </div>
                             <div className="min-w-0 w-full mt-0.5">
-                              <p className="text-[11.5px] font-bold text-[#452737] truncate">{p.title}</p>
+                              <p className="text-[11.5px] font-bold text-[#580e36] truncate">{p.title}</p>
                               <p className="text-[10px] text-[#7d5668] truncate">{p.desc}</p>
                             </div>
                           </button>
@@ -3684,7 +3731,7 @@ export function PinkHubMobile() {
                         });
                         notify("Bienvenue en mode découverte libre !");
                       }}
-                      className="inline-flex items-center gap-2 rounded-2xl border border-[#ecd5de] bg-white px-4 py-2.5 text-xs font-bold text-[#a14364] shadow-2xs hover:bg-pink-50 transition"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-[#ecd5de] bg-white px-4 py-2.5 text-xs font-bold text-[#ea2d6d] shadow-2xs hover:bg-pink-50 transition"
                     >
                       <Sparkles size={14} className="text-amber-500" />
                       <span>Explorer l'application sans compte (Mode Découverte)</span>
@@ -3699,41 +3746,41 @@ export function PinkHubMobile() {
                 <form onSubmit={handleRegisterSubmit} className="space-y-3 rounded-3xl bg-white p-4 border border-[#edd6df] shadow-xs">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[11px] font-bold text-[#452737] block mb-1">Prénom</label>
+                      <label className="text-[11px] font-bold text-[#580e36] block mb-1">Prénom</label>
                       <input
                         type="text"
                         required
                         value={registerForm.prenom}
                         onChange={(e) => setRegisterForm({ ...registerForm, prenom: e.target.value })}
-                        className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#452737] focus:outline-none"
+                        className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#580e36] focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] font-bold text-[#452737] block mb-1">Nom</label>
+                      <label className="text-[11px] font-bold text-[#580e36] block mb-1">Nom</label>
                       <input
                         type="text"
                         required
                         value={registerForm.nom}
                         onChange={(e) => setRegisterForm({ ...registerForm, nom: e.target.value })}
-                        className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#452737] focus:outline-none"
+                        className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#580e36] focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-[#452737] block mb-1">Numéro de téléphone (+226)</label>
+                    <label className="text-[11px] font-bold text-[#580e36] block mb-1">Numéro de téléphone (+226)</label>
                     <input
                       type="tel"
                       required
                       value={registerForm.telephone}
                       onChange={(e) => setRegisterForm({ ...registerForm, telephone: e.target.value })}
                       placeholder="70 12 34 56"
-                      className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#452737] focus:outline-none"
+                      className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#580e36] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-[#452737] block mb-1">Type de profil</label>
+                    <label className="text-[11px] font-bold text-[#580e36] block mb-1">Type de profil</label>
                     <select
                       value={registerForm.role === "user" ? "user" : registerForm.adminType}
                       onChange={(e) => {
@@ -3748,7 +3795,7 @@ export function PinkHubMobile() {
                           });
                         }
                       }}
-                      className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#452737] bg-white focus:outline-none"
+                      className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#580e36] bg-white focus:outline-none"
                     >
                       <option value="user">👩 Utilisatrice / Patiente</option>
                       <option value="association">🎗️ Association / ONG Partenaire</option>
@@ -3759,7 +3806,7 @@ export function PinkHubMobile() {
 
                   {registerForm.role === "admin" && (
                     <div>
-                      <label className="text-[11px] font-bold text-[#452737] block mb-1">
+                      <label className="text-[11px] font-bold text-[#580e36] block mb-1">
                         Nom de la structure / Établissement
                       </label>
                       <input
@@ -3768,7 +3815,7 @@ export function PinkHubMobile() {
                         value={registerForm.structureName}
                         onChange={(e) => setRegisterForm({ ...registerForm, structureName: e.target.value })}
                         placeholder="Ex: ABAC Burkina, CMA Schiphra..."
-                        className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#452737] focus:outline-none"
+                        className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#580e36] focus:outline-none"
                       />
                       <p className="text-[10px] text-amber-700 bg-amber-50 p-2 rounded-xl mt-1.5 border border-amber-200">
                         ℹ️ Ce profil requiert une validation du Superadmin avant activation complète.
@@ -3777,14 +3824,14 @@ export function PinkHubMobile() {
                   )}
 
                   <div>
-                    <label className="text-[11px] font-bold text-[#452737] block mb-1">Mot de passe</label>
+                    <label className="text-[11px] font-bold text-[#580e36] block mb-1">Mot de passe</label>
                     <div className="relative">
                       <input
                         type={showPassword ? "text" : "password"}
                         required
                         value={registerForm.motDePasse}
                         onChange={(e) => setRegisterForm({ ...registerForm, motDePasse: e.target.value })}
-                        className="w-full rounded-xl border border-[#d6a9b9] p-2 pr-10 text-xs text-[#452737] focus:outline-none"
+                        className="w-full rounded-xl border border-[#d6a9b9] p-2 pr-10 text-xs text-[#580e36] focus:outline-none"
                       />
                       <button
                         type="button"
@@ -3797,14 +3844,14 @@ export function PinkHubMobile() {
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-[#452737] block mb-1">Confirmer le mot de passe</label>
+                    <label className="text-[11px] font-bold text-[#580e36] block mb-1">Confirmer le mot de passe</label>
                     <div className="relative">
                       <input
                         type={showConfirmPassword ? "text" : "password"}
                         required
                         value={registerForm.confirmerMotDePasse}
                         onChange={(e) => setRegisterForm({ ...registerForm, confirmerMotDePasse: e.target.value })}
-                        className="w-full rounded-xl border border-[#d6a9b9] p-2 pr-10 text-xs text-[#452737] focus:outline-none"
+                        className="w-full rounded-xl border border-[#d6a9b9] p-2 pr-10 text-xs text-[#580e36] focus:outline-none"
                       />
                       <button
                         type="button"
@@ -3818,35 +3865,12 @@ export function PinkHubMobile() {
 
                   <button
                     type="submit"
-                    className="w-full rounded-2xl bg-[#a14364] py-3 text-xs font-bold text-white shadow-md hover:bg-[#8f3956] transition"
+                    className="w-full rounded-2xl bg-[#ea2d6d] py-3 text-xs font-bold text-white shadow-md hover:bg-[#d81f5c] transition"
                   >
                     Créer mon compte
                   </button>
                 </form>
               )}
-
-              {/* CARTE PARTAGE WI-FI LOCAL POUR LES COLLÈGUES */}
-              <div className="rounded-3xl bg-slate-900 text-white p-4 shadow-lg border border-slate-700">
-                <div className="flex items-center gap-2 text-amber-400 text-xs font-bold">
-                  <Globe size={15} />
-                  <span>Lien Mobile Local (Sans Expo)</span>
-                </div>
-                <p className="mt-1 text-[11px] text-slate-300">
-                  Vos collègues sur le même réseau Wi-Fi peuvent tester l'application directement dans Safari ou Chrome sur leur téléphone :
-                </p>
-                <div className="mt-2.5 flex items-center justify-between rounded-xl bg-slate-800 p-2 border border-slate-700">
-                  <span className="font-mono text-xs font-bold text-emerald-400 select-all">{localShareUrl}</span>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard?.writeText(localShareUrl);
-                      notify("Lien local copié dans le presse-papier !");
-                    }}
-                    className="rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
-                  >
-                    Copier
-                  </button>
-                </div>
-              </div>
             </section>
           ) : (
             <>
@@ -3869,7 +3893,7 @@ export function PinkHubMobile() {
                   )}
                 </div>
 
-                <h1 className="ph-display relative mt-3 text-[33px] leading-[1.02] tracking-[-.025em] text-[#452637]">
+                <h1 className="ph-display relative mt-3 text-[33px] leading-[1.02] tracking-[-.025em] text-[#580e36]">
                   Une question ?<br />
                   <span className="text-[#b94e70]">Vous n'êtes pas seule.</span>
                 </h1>
@@ -3881,7 +3905,7 @@ export function PinkHubMobile() {
                 <div className="relative mt-4 flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => { setSection("Centres"); setViewMode("map"); }}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#a14364] px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-[#8f3956]"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#ea2d6d] px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-[#d81f5c]"
                   >
                     <MapPin size={15} /> Voir la carte en direct
                   </button>
@@ -3903,10 +3927,10 @@ export function PinkHubMobile() {
                         <Sparkles size={16} className="text-amber-300 animate-pulse" />
                       </span>
                       <div>
-                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#a14364]">
+                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#ea2d6d]">
                           Rose IA · Conseil Bienveillant du Jour
                         </span>
-                        <h3 className="ph-display text-xs font-bold text-[#452737]">
+                        <h3 className="ph-display text-xs font-bold text-[#580e36]">
                           {roseDailyTips[dailyTipIndex].titleFr}
                         </h3>
                       </div>
@@ -3945,7 +3969,7 @@ export function PinkHubMobile() {
                           onClick={() => setDailyTipLang(code)}
                           className={`rounded-lg px-2 py-0.5 transition ${
                             dailyTipLang === code
-                              ? "bg-[#a14364] text-white shadow-xs"
+                              ? "bg-[#ea2d6d] text-white shadow-xs"
                               : "bg-white text-[#7d5668] hover:bg-[#f6e7ee]"
                           }`}
                         >
@@ -4003,7 +4027,7 @@ export function PinkHubMobile() {
 
                     <button
                       onClick={() => setSection("RoseIA")}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#a14364] hover:underline"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#ea2d6d] hover:underline"
                     >
                       <span>Confier à Rose IA</span>
                       <ChevronRight size={14} />
@@ -4020,25 +4044,25 @@ export function PinkHubMobile() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#a14364] text-white shadow-sm">
+                      <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#ea2d6d] text-white shadow-sm">
                         <CalendarDays size={20} />
                       </span>
                       <div>
-                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#a14364]">
+                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#ea2d6d]">
                           Suivi du cycle & Seins
                         </span>
-                        <h3 className="ph-display text-sm font-bold text-[#452737]">
+                        <h3 className="ph-display text-sm font-bold text-[#580e36]">
                           Mon Calendrier & Autopalpation
                         </h3>
                       </div>
                     </div>
-                    <ChevronRight size={18} className="text-[#a14364]" />
+                    <ChevronRight size={18} className="text-[#ea2d6d]" />
                   </div>
 
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                     <div className="rounded-xl bg-white/90 p-2 border border-[#f3e1e7]">
                       <p className="text-[9px] font-bold text-[#955c71] uppercase">Prochaines règles</p>
-                      <p className="font-extrabold text-[#452737]">{cycleInfo.nextPeriodStr}</p>
+                      <p className="font-extrabold text-[#580e36]">{cycleInfo.nextPeriodStr}</p>
                     </div>
                     <div className="rounded-xl bg-white/90 p-2 border border-[#f3e1e7]">
                       <p className="text-[9px] font-bold text-[#955c71] uppercase">Fenêtre autopalpation</p>
@@ -4063,7 +4087,7 @@ export function PinkHubMobile() {
                         <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-800">
                           Disponibilités en direct
                         </span>
-                        <h4 className="ph-display text-sm font-bold text-[#452737]">
+                        <h4 className="ph-display text-sm font-bold text-[#580e36]">
                           Carte Vivante des Centres
                         </h4>
                       </div>
@@ -4099,15 +4123,15 @@ export function PinkHubMobile() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#a14364] text-white">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#ea2d6d] text-white">
                         <UserPlus size={19} />
                       </span>
                       <div>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-[#a14364]">Aller à deux</span>
-                        <h3 className="ph-display text-base font-bold text-[#472738]">Inviter mon accompagnant(e)</h3>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-[#ea2d6d]">Aller à deux</span>
+                        <h3 className="ph-display text-base font-bold text-[#580e36]">Inviter mon accompagnant(e)</h3>
                       </div>
                     </div>
-                    <ChevronRight size={18} className="text-[#a14364]" />
+                    <ChevronRight size={18} className="text-[#ea2d6d]" />
                   </div>
                 </div>
               </div>
@@ -4120,14 +4144,14 @@ export function PinkHubMobile() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#a14364] text-white shadow-md">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#ea2d6d] text-white shadow-md">
                         <Heart size={22} className="fill-white" />
                       </span>
                       <div>
-                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#a14364]">
+                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#ea2d6d]">
                           Solidarité 100% Burkina Faso
                         </span>
-                        <h4 className="ph-display text-base font-bold text-[#452737]">
+                        <h4 className="ph-display text-base font-bold text-[#580e36]">
                           Faire un don
                         </h4>
                         <p className="text-[10.5px] text-[#7a5867]">
@@ -4140,7 +4164,7 @@ export function PinkHubMobile() {
                         e.stopPropagation();
                         setShowDonationModal(true);
                       }}
-                      className="rounded-full bg-[#a14364] px-3.5 py-1.5 text-xs font-bold text-white shadow hover:bg-[#8e3856] transition"
+                      className="rounded-full bg-[#ea2d6d] px-3.5 py-1.5 text-xs font-bold text-white shadow hover:bg-[#8e3856] transition"
                     >
                       Aider →
                     </button>
@@ -4160,7 +4184,7 @@ export function PinkHubMobile() {
                   <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
                     Temps réel · Burkina Faso
                   </span>
-                  <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+                  <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">
                     Carte des soins
                   </h1>
                 </div>
@@ -4188,7 +4212,7 @@ export function PinkHubMobile() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Rechercher centre, ville, examen..."
-                  className="w-full rounded-2xl border border-[#ebd8de] bg-white py-2 pl-9 pr-8 text-xs text-[#4b2f3e] focus:border-[#a14364] focus:outline-none"
+                  className="w-full rounded-2xl border border-[#ebd8de] bg-white py-2 pl-9 pr-8 text-xs text-[#4b2f3e] focus:border-[#ea2d6d] focus:outline-none"
                 />
               </div>
 
@@ -4200,7 +4224,7 @@ export function PinkHubMobile() {
                     setCityFilter("all");
                     if (mapInstanceRef.current) mapInstanceRef.current.setView([12.3714, -1.5197], 12);
                   }}
-                  className={`shrink-0 rounded-full px-3 py-1 font-bold ${statusFilter === "all" && cityFilter === "all" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`shrink-0 rounded-full px-3 py-1 font-bold ${statusFilter === "all" && cityFilter === "all" ? "bg-[#ea2d6d] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   Tous ({centers.length})
                 </button>
@@ -4212,7 +4236,7 @@ export function PinkHubMobile() {
                 </button>
                 <button
                   onClick={() => setStatusFilter(statusFilter === "free" ? "all" : "free")}
-                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${statusFilter === "free" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${statusFilter === "free" ? "bg-[#ea2d6d] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   0 FCFA (Gratuit)
                 </button>
@@ -4221,7 +4245,7 @@ export function PinkHubMobile() {
                     setCityFilter(cityFilter === "Ouagadougou" ? "all" : "Ouagadougou");
                     if (mapInstanceRef.current) mapInstanceRef.current.flyTo([12.3714, -1.5197], 12);
                   }}
-                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Ouagadougou" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Ouagadougou" ? "bg-[#ea2d6d] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   Ouaga
                 </button>
@@ -4230,7 +4254,7 @@ export function PinkHubMobile() {
                     setCityFilter(cityFilter === "Bobo-Dioulasso" ? "all" : "Bobo-Dioulasso");
                     if (mapInstanceRef.current) mapInstanceRef.current.flyTo([11.178, -4.295], 13);
                   }}
-                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Bobo-Dioulasso" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Bobo-Dioulasso" ? "bg-[#ea2d6d] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   Bobo
                 </button>
@@ -4239,7 +4263,7 @@ export function PinkHubMobile() {
                     setCityFilter(cityFilter === "Koudougou" ? "all" : "Koudougou");
                     if (mapInstanceRef.current) mapInstanceRef.current.flyTo([12.251, -2.366], 13);
                   }}
-                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Koudougou" ? "bg-[#a14364] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Koudougou" ? "bg-[#ea2d6d] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   Koudougou
                 </button>
@@ -4251,7 +4275,7 @@ export function PinkHubMobile() {
                   <div className="relative h-[280px] w-full overflow-hidden rounded-[24px] border-2 border-[#e5d0d8] bg-[#f8edf1] shadow-inner">
                     <div ref={mapContainerRef} className="h-full w-full z-10" />
 
-                    <div className="absolute bottom-2 left-2 z-20 flex items-center gap-2 rounded-xl bg-white/90 px-2.5 py-1 text-[9px] font-bold text-[#452737] shadow backdrop-blur-xs">
+                    <div className="absolute bottom-2 left-2 z-20 flex items-center gap-2 rounded-xl bg-white/90 px-2.5 py-1 text-[9px] font-bold text-[#580e36] shadow backdrop-blur-xs">
                       <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Dispo</span>
                       <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-500" /> Affluence</span>
                       <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rose-500" /> Panne</span>
@@ -4260,15 +4284,140 @@ export function PinkHubMobile() {
                 </div>
               )}
 
-              {/* Bouton de mise à jour sur la carte : VISIBLE UNIQUEMENT POUR ADMIN CENTRE OU DOCTEUR */}
+              {/* ENCART D'URGENCE INTERACTIF : ORIENTATIONS REÇUES PAR LE CENTRE OU SUIVIES PAR LE DOCTEUR */}
               {currentUser?.role === "admin" && (currentUser?.adminType === "center" || currentUser?.adminType === "doctor") && (
-                <div className="mt-3">
+                <div className="mt-3 space-y-2">
+                  <div className="rounded-2xl border-2 border-rose-300 bg-gradient-to-br from-rose-50 via-white to-pink-50 p-3.5 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-rose-100 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="grid h-8 w-8 place-items-center rounded-xl bg-rose-600 text-white shadow-xs animate-pulse">
+                          <AlertTriangle size={16} />
+                        </span>
+                        <div>
+                          <h4 className="font-bold text-xs text-[#580e36]">
+                            {currentUser.adminType === "center"
+                              ? "🚨 Orientations d'Urgence Reçues"
+                              : "🩺 Vos Orientations Patientes en Cours"}
+                          </h4>
+                          <p className="text-[10px] text-rose-700 font-semibold">
+                            {currentUser.adminType === "center"
+                              ? "Coordination directe avec les médecins prescripteurs"
+                              : "Suivi en direct de la prise en charge au centre"}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="rounded-full bg-rose-600 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
+                        {urgentOrientations.length} active(s)
+                      </span>
+                    </div>
+
+                    {/* Liste des fiches d'orientation urgentes */}
+                    <div className="mt-2.5 space-y-2 text-xs">
+                      {urgentOrientations.map((orient) => (
+                        <div
+                          key={orient.id}
+                          className="rounded-xl border border-rose-200 bg-white p-3 shadow-2xs space-y-2"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-extrabold text-xs text-[#580e36]">
+                                  {orient.patientName} ({orient.patientAge} ans)
+                                </span>
+                                <span className={`rounded-full px-2 py-0.5 text-[9px] font-black ${
+                                  orient.urgencyLevel === "immediate"
+                                    ? "bg-rose-600 text-white animate-pulse"
+                                    : "bg-amber-500 text-white"
+                                }`}>
+                                  {orient.urgencyLabel}
+                                </span>
+                              </div>
+                              <p className="text-[10.5px] text-gray-500 mt-0.5">
+                                Réf : <span className="font-mono font-bold text-[#580e36]">{orient.id}</span> · Prescrit par <strong>{orient.doctorName}</strong>
+                              </p>
+                            </div>
+                            <span className="text-[9.5px] font-semibold text-gray-400">
+                              {orient.createdAt}
+                            </span>
+                          </div>
+
+                          <div className="rounded-lg bg-pink-50/60 p-2 text-[11px] text-[#580e36]">
+                            <p className="font-bold text-[10px] uppercase text-[#ea2d6d]">Examens prescrits :</p>
+                            <p className="font-semibold">{orient.recommendedExam}</p>
+                            <p className="mt-1 text-[10.5px] italic text-[#785566]">« {orient.clinicalObservations} »</p>
+                          </div>
+
+                          {/* Statut & Réponse du Centre */}
+                          {orient.status === "accepted_urgent" ? (
+                            <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-2 text-emerald-900 text-[11px] flex items-center justify-between">
+                              <span className="flex items-center gap-1.5 font-bold">
+                                <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                                <span>Validé : Patiente attendue d'urgence ({orient.centerEstimatedDelay})</span>
+                              </span>
+                              <span className="text-[9px] bg-emerald-200 px-1.5 py-0.5 rounded font-bold text-emerald-900">Confirmé</span>
+                            </div>
+                          ) : orient.status === "scheduled_wait" ? (
+                            <div className="rounded-lg bg-amber-50 border border-amber-200 p-2 text-amber-900 text-[11px] flex items-center justify-between">
+                              <span className="flex items-center gap-1.5 font-bold">
+                                <Clock size={14} className="text-amber-600 shrink-0" />
+                                <span>{orient.centerValidationMessage}</span>
+                              </span>
+                              <span className="text-[9px] bg-amber-200 px-1.5 py-0.5 rounded font-bold text-amber-900">Programmé</span>
+                            </div>
+                          ) : (
+                            /* En attente de validation par le Centre de Santé */
+                            currentUser.adminType === "center" ? (
+                              <div className="pt-1 border-t border-rose-100 flex flex-col sm:flex-row gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleValidateOrientationByCenter(orient.id, "immediate")}
+                                  className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-emerald-600 py-2 px-2.5 text-[11px] font-bold text-white shadow hover:bg-emerald-700 transition cursor-pointer"
+                                >
+                                  <Check size={13} />
+                                  <span>Envoyez-la vite ! (Attente &lt; 15 min)</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleValidateOrientationByCenter(orient.id, "scheduled", "~45 min")}
+                                  className="flex items-center justify-center gap-1 rounded-xl bg-amber-600 py-2 px-2.5 text-[11px] font-bold text-white shadow hover:bg-amber-700 transition cursor-pointer"
+                                >
+                                  <Clock size={13} />
+                                  <span>Affluence (créneau 45 min)</span>
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="rounded-lg bg-blue-50 border border-blue-200 p-2 text-blue-900 text-[10.5px] flex items-center justify-between">
+                                <span className="flex items-center gap-1 font-semibold">
+                                  <Clock size={13} className="text-blue-600" />
+                                  <span>En attente de confirmation par le {orient.targetCenterName}</span>
+                                </span>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Bouton pour créer une nouvelle orientation si docteur */}
+                    {currentUser.adminType === "doctor" && (
+                      <button
+                        type="button"
+                        onClick={() => setShowOrientationModal(true)}
+                        className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-[#ea2d6d] py-2 text-xs font-bold text-white shadow hover:opacity-95 transition cursor-pointer"
+                      >
+                        <FileText size={14} />
+                        <span>Orienter une nouvelle patiente en urgence</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Bouton de mise à jour des disponibilités du centre */}
                   <button
                     onClick={() => {
                       setCenterUpdateData(centers[0]);
                       setShowCenterUpdateModal(true);
                     }}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#a14364] py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#8e3856]"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#580e36] to-[#ea2d6d] py-2.5 text-xs font-bold text-white shadow-sm hover:opacity-95 cursor-pointer"
                   >
                     <Edit3 size={15} /> Mettre à jour les disponibilités de mon centre
                   </button>
@@ -4285,10 +4434,10 @@ export function PinkHubMobile() {
                           <span className={`h-2 w-2 rounded-full ${center.statusColor}`} />
                           <span className="text-[10px] font-bold text-[#8f4a64]">{center.statusLabel}</span>
                         </div>
-                        <h3 className="ph-display mt-0.5 text-sm font-bold text-[#482839]">{center.name}</h3>
+                        <h3 className="ph-display mt-0.5 text-sm font-bold text-[#580e36]">{center.name}</h3>
                         <p className="text-[11px] text-[#846b77]">{center.place}</p>
                       </div>
-                      <button onClick={() => setSelectedCenter(center)} className="rounded-xl bg-[#faedf1] p-1.5 text-[#a14364]">
+                      <button onClick={() => setSelectedCenter(center)} className="rounded-xl bg-[#faedf1] p-1.5 text-[#ea2d6d]">
                         <ChevronRight size={16} />
                       </button>
                     </div>
@@ -4313,7 +4462,7 @@ export function PinkHubMobile() {
                       >
                         <Navigation size={10} /> GPS
                       </button>
-                      <button onClick={() => setSelectedCenter(center)} className="rounded-full bg-[#a14364] px-2.5 py-1 font-bold text-white">
+                      <button onClick={() => setSelectedCenter(center)} className="rounded-full bg-[#ea2d6d] px-2.5 py-1 font-bold text-white">
                         Détails
                       </button>
                     </div>
@@ -4331,7 +4480,7 @@ export function PinkHubMobile() {
               <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
                 Santé intime & Prévention
               </span>
-              <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+              <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">
                 Cycle & Autopalpation
               </h1>
               <p className="mt-1 text-xs text-[#795f6d]">
@@ -4342,15 +4491,15 @@ export function PinkHubMobile() {
               <div className="mt-3.5 rounded-[24px] border border-[#f0d4df] bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between border-b border-[#f6e6ec] pb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] text-[#a14364]">
+                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] text-[#ea2d6d]">
                       <Calendar size={17} />
                     </span>
                     <div>
-                      <h3 className="ph-display text-sm font-bold text-[#452737]">Cycle & Prédictions</h3>
+                      <h3 className="ph-display text-sm font-bold text-[#580e36]">Cycle & Prédictions</h3>
                       <p className="text-[10px] text-[#8c566d]">Prévision locale adaptative</p>
                     </div>
                   </div>
-                  <span className="rounded-full bg-pink-100 px-2.5 py-0.5 text-[10px] font-bold text-[#a14364]">
+                  <span className="rounded-full bg-pink-100 px-2.5 py-0.5 text-[10px] font-bold text-[#ea2d6d]">
                     Cycle moyen : {cycleLengthDays} jours
                   </span>
                 </div>
@@ -4362,7 +4511,7 @@ export function PinkHubMobile() {
                       <span className="text-[10px] font-bold text-[#91586e] uppercase tracking-wider">
                         Prochaines règles estimées :
                       </span>
-                      <p className="text-base font-extrabold text-[#452737] mt-0.5">
+                      <p className="text-base font-extrabold text-[#580e36] mt-0.5">
                         {cycleInfo.nextPeriodStr}
                       </p>
                       <p className="text-[10px] text-[#785566]">
@@ -4372,7 +4521,7 @@ export function PinkHubMobile() {
 
                     <div className="text-right">
                       {cycleInfo.daysUntilNextPeriod > 0 ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#a14364] shadow-xs border border-pink-100">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#ea2d6d] shadow-xs border border-pink-100">
                           <Clock size={12} /> Dans {cycleInfo.daysUntilNextPeriod} j
                         </span>
                       ) : cycleInfo.daysUntilNextPeriod === 0 ? (
@@ -4397,7 +4546,7 @@ export function PinkHubMobile() {
                       ? "bg-amber-50 border-amber-200 text-amber-900"
                       : "bg-blue-50 border-blue-200 text-blue-900"
                   }`}>
-                    <Sparkles size={15} className="shrink-0 mt-0.5 text-[#a14364]" />
+                    <Sparkles size={15} className="shrink-0 mt-0.5 text-[#ea2d6d]" />
                     <div className="flex-1 text-[11px] leading-relaxed">
                       <p className="font-bold">Ajustement automatique du cycle :</p>
                       <p>{recalibrationFeedback.text}</p>
@@ -4425,7 +4574,7 @@ export function PinkHubMobile() {
                         const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
                         handleRecalibratePeriod(todayStr);
                       }}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-[#a14364] py-2 px-3 text-xs font-bold text-white shadow-xs hover:bg-[#8e3855] transition active:scale-[0.98]"
+                      className="flex items-center justify-center gap-2 rounded-xl bg-[#ea2d6d] py-2 px-3 text-xs font-bold text-white shadow-xs hover:bg-[#8e3855] transition active:scale-[0.98]"
                     >
                       <CheckCircle2 size={15} /> Mes règles ont débuté aujourd'hui
                     </button>
@@ -4459,7 +4608,7 @@ export function PinkHubMobile() {
                           }}
                           className={`rounded-lg px-2.5 py-1 font-semibold border ${
                             realPeriodDateInput === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`
-                              ? "bg-[#a14364] text-white border-[#a14364]"
+                              ? "bg-[#ea2d6d] text-white border-[#ea2d6d]"
                               : "bg-[#faeff2] text-[#6b3c50] border-[#ebd1dc]"
                           }`}
                         >
@@ -4500,7 +4649,7 @@ export function PinkHubMobile() {
                           type="date"
                           value={realPeriodDateInput}
                           onChange={(e) => setRealPeriodDateInput(e.target.value)}
-                          className="w-full rounded-xl border border-[#ebd2dd] p-2 text-xs font-bold text-[#452737] bg-[#fffcfd]"
+                          className="w-full rounded-xl border border-[#ebd2dd] p-2 text-xs font-bold text-[#580e36] bg-[#fffcfd]"
                         />
                       </div>
 
@@ -4514,7 +4663,7 @@ export function PinkHubMobile() {
                         return (
                           <div className="rounded-lg bg-[#faeff2] p-2 text-[11px] text-[#6a3c50] flex items-center justify-between">
                             <span>Écart constaté depuis le cycle précédent :</span>
-                            <span className="font-extrabold text-[#a14364]">
+                            <span className="font-extrabold text-[#ea2d6d]">
                               {diff > 0 ? `${diff} jours` : "Date invalide"}
                             </span>
                           </div>
@@ -4524,7 +4673,7 @@ export function PinkHubMobile() {
                       <button
                         type="button"
                         onClick={() => handleRecalibratePeriod(realPeriodDateInput)}
-                        className="w-full rounded-xl bg-gradient-to-r from-[#a14364] to-[#b34d70] py-2 text-xs font-bold text-white shadow hover:opacity-95 transition"
+                        className="w-full rounded-xl bg-gradient-to-r from-[#ea2d6d] to-[#b34d70] py-2 text-xs font-bold text-white shadow hover:opacity-95 transition"
                       >
                         Enregistrer & Recalibrer la prédiction
                       </button>
@@ -4553,10 +4702,10 @@ export function PinkHubMobile() {
                         className="rounded-xl border border-[#f0dae2] bg-[#fffafb] p-2 flex items-center justify-between"
                       >
                         <div>
-                          <p className="font-bold text-[#452737] text-[11px]">Cycle du {item.date}</p>
+                          <p className="font-bold text-[#580e36] text-[11px]">Cycle du {item.date}</p>
                           <p className="text-[10px] text-[#7a5868]">{item.note}</p>
                         </div>
-                        <span className="rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-bold text-[#a14364]">
+                        <span className="rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-bold text-[#ea2d6d]">
                           {item.duration} jours
                         </span>
                       </div>
@@ -4614,14 +4763,14 @@ export function PinkHubMobile() {
               <div className="mt-3.5 rounded-[24px] border border-[#f0d4df] bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between border-b border-[#f6e6ec] pb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] text-[#a14364]">
+                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] text-[#ea2d6d]">
                       <Bell size={17} />
                     </span>
-                    <h3 className="ph-display text-sm font-bold text-[#452737]">Mes rappels de santé</h3>
+                    <h3 className="ph-display text-sm font-bold text-[#580e36]">Mes rappels de santé</h3>
                   </div>
                   <button
                     onClick={() => setShowNewReminderForm(!showNewReminderForm)}
-                    className="text-xs font-bold text-[#a14364] hover:underline"
+                    className="text-xs font-bold text-[#ea2d6d] hover:underline"
                   >
                     + Ajouter
                   </button>
@@ -4666,7 +4815,7 @@ export function PinkHubMobile() {
                           setShowNewReminderForm(false);
                           notify("Rappel ajouté avec succès.");
                         }}
-                        className="flex-1 rounded-xl bg-[#a14364] py-1.5 font-bold text-white text-xs"
+                        className="flex-1 rounded-xl bg-[#ea2d6d] py-1.5 font-bold text-white text-xs"
                       >
                         Enregistrer
                       </button>
@@ -4682,7 +4831,7 @@ export function PinkHubMobile() {
                           <Clock size={14} />
                         </span>
                         <div>
-                          <p className="font-bold text-[#452737]">{r.title}</p>
+                          <p className="font-bold text-[#580e36]">{r.title}</p>
                           <p className="text-[10px] text-[#865d70]">{r.date}</p>
                         </div>
                       </div>
@@ -4704,7 +4853,7 @@ export function PinkHubMobile() {
               <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
                 Guide vocal & écrit en 4 langues
               </span>
-              <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+              <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">
                 Comprendre, pas à pas
               </h1>
               <p className="mt-1 text-xs text-[#795f6d]">
@@ -4813,7 +4962,7 @@ export function PinkHubMobile() {
 
               {/* Texte intégral */}
               <div className="mt-3 rounded-2xl border border-[#eedde2] bg-white p-3.5 text-xs text-[#5b3c4c] leading-relaxed">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#a14364] mb-1">
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#ea2d6d] mb-1">
                   Explication médicale détaillée ({speechLanguage === "en" ? "English" : "Français"}) :
                 </span>
                 {speechLanguage === "en" ? lessons[activeLesson].englishFullText : lessons[activeLesson].fullText}
@@ -4833,10 +4982,10 @@ export function PinkHubMobile() {
                     </div>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#a14364]">
+                    <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#ea2d6d]">
                       Démonstration Guidée (2:45 min)
                     </span>
-                    <h3 className="ph-display text-xs font-bold text-[#452737] leading-tight">
+                    <h3 className="ph-display text-xs font-bold text-[#580e36] leading-tight">
                       Vidéo des 4 gestes d'autopalpation
                     </h3>
                     <p className="text-[10px] text-[#745362] line-clamp-1">
@@ -4847,7 +4996,7 @@ export function PinkHubMobile() {
                 <button
                   type="button"
                   onClick={() => setShowAutopalpationVideoModal(true)}
-                  className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#a14364] to-rose-700 py-2 text-xs font-bold text-white shadow-xs hover:opacity-95 transition"
+                  className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#ea2d6d] to-rose-700 py-2 text-xs font-bold text-white shadow-xs hover:opacity-95 transition"
                 >
                   <Play size={14} className="fill-white" />
                   <span>Regarder la vidéo démonstrative 🎬</span>
@@ -4875,7 +5024,7 @@ export function PinkHubMobile() {
                     }}
                     className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${activeLesson === idx ? "border-[#cf869f] bg-[#fbf0f4]" : "border-[#f0dfe4] bg-white"}`}
                   >
-                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${activeLesson === idx ? "bg-[#a14364] text-white" : "bg-[#f9e9ed] text-[#a14364]"}`}>
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${activeLesson === idx ? "bg-[#ea2d6d] text-white" : "bg-[#f9e9ed] text-[#ea2d6d]"}`}>
                       <BookOpen size={16} />
                     </span>
                     <div className="flex-1 min-w-0">
@@ -4927,7 +5076,7 @@ export function PinkHubMobile() {
                 </div>
               ) : (
                 /* HAUT DE PAGE POUR LES UTILISATRICES : UNIQUEMENT VOIR LA VIDÉO */
-                <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-rose-600 via-[#a14364] to-[#734059] px-3.5 py-2.5 text-white shadow-xs">
+                <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-rose-600 via-[#ea2d6d] to-[#734059] px-3.5 py-2.5 text-white shadow-xs">
                   <div className="flex items-center gap-2.5">
                     <div className="relative grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/20 text-white backdrop-blur-xs">
                       <Play size={14} className="fill-white translate-x-0.5" />
@@ -4943,7 +5092,7 @@ export function PinkHubMobile() {
                   <button
                     type="button"
                     onClick={() => setShowAutopalpationVideoModal(true)}
-                    className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#a14364] shadow-xs hover:bg-pink-50 transition shrink-0 cursor-pointer"
+                    className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#ea2d6d] shadow-xs hover:bg-pink-50 transition shrink-0 cursor-pointer"
                   >
                     Voir la vidéo 🎬
                   </button>
@@ -4960,7 +5109,7 @@ export function PinkHubMobile() {
                     <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white ph-pulse" />
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-[#452737] text-xs">Rose IA</span>
+                    <span className="font-bold text-[#580e36] text-xs">Rose IA</span>
                     <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded-full border border-emerald-200">
                       En ligne
                     </span>
@@ -5034,8 +5183,8 @@ export function PinkHubMobile() {
                       <div
                         className={`max-w-[88%] rounded-[20px] p-3 text-xs leading-relaxed shadow-xs ${
                           isUser
-                            ? "bg-[#a14364] text-white rounded-tr-xs"
-                            : "bg-white text-[#452737] border border-[#f0dfe4] rounded-tl-xs"
+                            ? "bg-[#ea2d6d] text-white rounded-tr-xs"
+                            : "bg-white text-[#580e36] border border-[#f0dfe4] rounded-tl-xs"
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{displayedText}</p>
@@ -5045,7 +5194,7 @@ export function PinkHubMobile() {
                           <button
                             type="button"
                             onClick={() => setShowAutopalpationVideoModal(true)}
-                            className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#a14364] to-rose-700 py-1.5 px-2.5 text-[11px] font-bold text-white shadow-xs hover:opacity-95 transition cursor-pointer"
+                            className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#ea2d6d] to-rose-700 py-1.5 px-2.5 text-[11px] font-bold text-white shadow-xs hover:opacity-95 transition cursor-pointer"
                           >
                             <Play size={12} className="fill-white" />
                             <span>Voir la démonstration vidéo (Sage-femme) 🎬</span>
@@ -5059,7 +5208,7 @@ export function PinkHubMobile() {
                           <button
                             type="button"
                             onClick={() => handlePlayAudio(displayedText, appLanguage)}
-                            className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#a14364] hover:underline cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#ea2d6d] hover:underline cursor-pointer"
                             title={`Écouter à voix haute en ${appLanguage.toUpperCase()}`}
                           >
                             <Volume2 size={12} />
@@ -5094,7 +5243,7 @@ export function PinkHubMobile() {
                     className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition cursor-pointer ${
                       isRecordingVoice
                         ? "bg-rose-600 text-white ph-pulse ring-2 ring-rose-300"
-                        : "bg-[#f8e7ec] text-[#a14364] hover:bg-[#f2dbe2]"
+                        : "bg-[#f8e7ec] text-[#ea2d6d] hover:bg-[#f2dbe2]"
                     }`}
                     title={isRecordingVoice ? "Arrêter le micro" : "Parler à Rose IA au micro"}
                   >
@@ -5109,14 +5258,14 @@ export function PinkHubMobile() {
                         ? "Rose IA vous écoute avec tendresse... Parlez"
                         : "Posez votre question à Rose IA (écrit ou micro)..."
                     }
-                    className="flex-1 bg-transparent text-xs text-[#452737] outline-none placeholder:text-gray-400"
+                    className="flex-1 bg-transparent text-xs text-[#580e36] outline-none placeholder:text-gray-400"
                   />
                   <button
                     type="submit"
                     disabled={!roseInput.trim()}
                     className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition cursor-pointer ${
                       roseInput.trim()
-                        ? "bg-[#a14364] text-white hover:bg-[#8e3856] shadow-xs"
+                        ? "bg-[#ea2d6d] text-white hover:bg-[#8e3856] shadow-xs"
                         : "bg-gray-100 text-gray-400 cursor-not-allowed"
                     }`}
                     title="Envoyer le message"
@@ -5136,7 +5285,7 @@ export function PinkHubMobile() {
               <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
                 Solidarité · Burkina Faso
               </span>
-              <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+              <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">
                 Faire un don
               </h1>
               <p className="mt-1 text-xs text-[#795f6d]">
@@ -5144,7 +5293,7 @@ export function PinkHubMobile() {
               </p>
 
               <div className="mt-3.5 rounded-[26px] border-2 border-rose-300 bg-gradient-to-br from-[#fff7f9] to-[#ffedf3] p-5 shadow-sm">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#a14364] px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ea2d6d] px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
                   <Heart size={13} className="fill-white" /> 100% Solidaire & Sécurisé
                 </span>
 
@@ -5158,7 +5307,7 @@ export function PinkHubMobile() {
                 <div className="mt-4">
                   <button
                     onClick={() => setShowDonationModal(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#a14364] py-3 text-xs font-bold text-white shadow hover:bg-[#8f3956] transition"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ea2d6d] py-3 text-xs font-bold text-white shadow hover:bg-[#d81f5c] transition"
                   >
                     <Heart size={15} className="fill-white" /> Commencer mon don maintenant
                   </button>
@@ -5166,12 +5315,12 @@ export function PinkHubMobile() {
               </div>
 
               <div className="mt-4">
-                <h3 className="ph-display text-sm font-bold text-[#452737]">Associations partenaires éligibles</h3>
+                <h3 className="ph-display text-sm font-bold text-[#580e36]">Associations partenaires éligibles</h3>
                 <div className="mt-2 space-y-2">
                   {partnerAssociations.map((assoc) => (
                     <div key={assoc.id} className="rounded-2xl border border-[#eedde2] bg-white p-3 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-[#452737]">{assoc.name} ({assoc.acronym})</span>
+                        <span className="font-bold text-[#580e36]">{assoc.name} ({assoc.acronym})</span>
                         <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800">Vérifié</span>
                       </div>
                       <p className="mt-1 text-[11px] text-[#785b6a]">{assoc.mission}</p>
@@ -5180,7 +5329,7 @@ export function PinkHubMobile() {
                           setSelectedAssociation(assoc);
                           setShowDonationModal(true);
                         }}
-                        className="mt-2 font-bold text-[#a14364] hover:underline block text-[10.5px]"
+                        className="mt-2 font-bold text-[#ea2d6d] hover:underline block text-[10.5px]"
                       >
                         Faire un don à {assoc.acronym} →
                       </button>
@@ -5201,7 +5350,7 @@ export function PinkHubMobile() {
                   <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
                     Actualités & Partenaires
                   </span>
-                  <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+                  <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">
                     Annonces
                   </h1>
                 </div>
@@ -5209,7 +5358,7 @@ export function PinkHubMobile() {
                 {(currentUser?.role === "admin" || currentUser?.role === "superadmin") && (
                   <button
                     onClick={() => setShowNewAnnouncementModal(true)}
-                    className="rounded-full bg-[#a14364] px-3.5 py-1 text-xs font-bold text-white shadow hover:bg-[#8e3856]"
+                    className="rounded-full bg-[#ea2d6d] px-3.5 py-1 text-xs font-bold text-white shadow hover:bg-[#8e3856]"
                   >
                     + Publier
                   </button>
@@ -5220,7 +5369,7 @@ export function PinkHubMobile() {
               <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px]">
                 <button
                   onClick={() => setAnnouncementsFilter("month")}
-                  className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "month" ? "bg-[#a14364] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "month" ? "bg-[#ea2d6d] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   📅 Mois en cours (Octobre 2026)
                 </button>
@@ -5233,14 +5382,14 @@ export function PinkHubMobile() {
                 </button>
                 <button
                   onClick={() => setAnnouncementsFilter("all")}
-                  className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "all" ? "bg-[#a14364] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                  className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "all" ? "bg-[#ea2d6d] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                 >
                   Toutes ({announcements.filter((a) => a.status === "approved").length})
                 </button>
                 {(currentUser?.role === "admin" || currentUser?.role === "superadmin") && (
                   <button
                     onClick={() => setAnnouncementsFilter("my")}
-                    className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "my" ? "bg-[#a14364] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
+                    className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "my" ? "bg-[#ea2d6d] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
                   >
                     Mes soumissions ({announcements.filter((a) => a.submittedBy === currentUser?.structureName || a.submittedBy === `${currentUser?.prenom} ${currentUser?.nom}`).length})
                   </button>
@@ -5277,7 +5426,7 @@ export function PinkHubMobile() {
                         </div>
                       )}
 
-                      <h3 className="ph-display mt-1 text-sm font-bold text-[#452737]">{a.title}</h3>
+                      <h3 className="ph-display mt-1 text-sm font-bold text-[#580e36]">{a.title}</h3>
                       <p className="text-[11px] text-[#8c405c] mt-0.5 font-semibold">
                         {a.author} · {a.city}
                       </p>
@@ -5329,7 +5478,7 @@ export function PinkHubMobile() {
               <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
                 Aller à deux
               </span>
-              <h1 className="ph-display text-[26px] leading-tight text-[#452637]">
+              <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">
                 L'Accompagnant
               </h1>
               <p className="mt-1 text-xs text-[#795f6d]">
@@ -5342,13 +5491,13 @@ export function PinkHubMobile() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSmsLanguage("fr")}
-                    className={`flex-1 rounded-xl py-1.5 font-bold transition text-xs ${smsLanguage === "fr" ? "bg-[#a14364] text-white" : "border border-[#e5ccd5] text-[#714f5e]"}`}
+                    className={`flex-1 rounded-xl py-1.5 font-bold transition text-xs ${smsLanguage === "fr" ? "bg-[#ea2d6d] text-white" : "border border-[#e5ccd5] text-[#714f5e]"}`}
                   >
                     Français
                   </button>
                   <button
                     onClick={() => setSmsLanguage("moore")}
-                    className={`flex-1 rounded-xl py-1.5 font-bold transition text-xs ${smsLanguage === "moore" ? "bg-[#a14364] text-white" : "border border-[#e5ccd5] text-[#714f5e]"}`}
+                    className={`flex-1 rounded-xl py-1.5 font-bold transition text-xs ${smsLanguage === "moore" ? "bg-[#ea2d6d] text-white" : "border border-[#e5ccd5] text-[#714f5e]"}`}
                   >
                     Mooré
                   </button>
@@ -5407,7 +5556,7 @@ export function PinkHubMobile() {
                     if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
                   }, 150);
                 }}
-                className="mb-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#a14364] hover:underline cursor-pointer"
+                className="mb-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#ea2d6d] hover:underline cursor-pointer"
               >
                 <ArrowLeft size={16} /> Retour à la carte des centres
               </button>
@@ -5419,12 +5568,12 @@ export function PinkHubMobile() {
                       <span className={`h-2 w-2 rounded-full ${selectedCenter.statusColor}`} />
                       {selectedCenter.statusLabel}
                     </span>
-                    <h1 className="ph-display text-xl font-bold text-[#472738] mt-1.5">{selectedCenter.name}</h1>
+                    <h1 className="ph-display text-xl font-bold text-[#580e36] mt-1.5">{selectedCenter.name}</h1>
                     <p className="text-xs text-[#805e6f] mt-0.5 flex items-center gap-1">
-                      <MapPin size={13} className="text-[#a14364] shrink-0" /> {selectedCenter.address} ({selectedCenter.place})
+                      <MapPin size={13} className="text-[#ea2d6d] shrink-0" /> {selectedCenter.address} ({selectedCenter.place})
                     </p>
                     <p className="text-xs text-[#805e6f] mt-0.5 flex items-center gap-1">
-                      <Phone size={13} className="text-[#a14364] shrink-0" /> {selectedCenter.phone}
+                      <Phone size={13} className="text-[#ea2d6d] shrink-0" /> {selectedCenter.phone}
                     </p>
                   </div>
                 </div>
@@ -5440,7 +5589,7 @@ export function PinkHubMobile() {
                   </button>
                   <a
                     href={`tel:${selectedCenter.phone}`}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-[#a14364] px-3 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#8e3856] transition text-center"
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[#ea2d6d] px-3 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#8e3856] transition text-center"
                     title="Appeler le secrétariat du centre"
                   >
                     <Phone size={15} /> Appeler
@@ -5450,11 +5599,11 @@ export function PinkHubMobile() {
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                   <div className="rounded-xl bg-white/90 p-2.5 border border-[#eed6de]">
                     <p className="text-[9px] font-bold uppercase text-[#9f697d]">Équipement</p>
-                    <p className="font-bold text-[#452737] mt-0.5">{selectedCenter.apparatus}</p>
+                    <p className="font-bold text-[#580e36] mt-0.5">{selectedCenter.apparatus}</p>
                   </div>
                   <div className="rounded-xl bg-white/90 p-2.5 border border-[#eed6de]">
                     <p className="text-[9px] font-bold uppercase text-[#9f697d]">File d'attente</p>
-                    <p className="font-bold text-[#452737] mt-0.5">{selectedCenter.queueCount} personnes ({selectedCenter.estimatedWait})</p>
+                    <p className="font-bold text-[#580e36] mt-0.5">{selectedCenter.queueCount} personnes ({selectedCenter.estimatedWait})</p>
                   </div>
                 </div>
               </div>
@@ -5462,12 +5611,12 @@ export function PinkHubMobile() {
               {/* Messages audio en 4 langues du centre */}
               <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3 text-xs">
                 <span className="flex items-center gap-1.5 font-bold text-[#4a2b3b]">
-                  <Volume2 size={15} className="text-[#a14364]" /> Message audio du centre
+                  <Volume2 size={15} className="text-[#ea2d6d]" /> Message audio du centre
                 </span>
                 <p className="mt-1 italic text-[#725462]">« {selectedCenter.audioMessageFr} »</p>
                 <div className="mt-2.5 grid grid-cols-4 gap-1">
-                  <button onClick={() => handlePlayAudio(selectedCenter.audioMessageFr, "fr")} className="rounded-xl bg-[#a14364] py-1.5 text-[10px] font-bold text-white">FR</button>
-                  <button onClick={() => handlePlayAudio(selectedCenter.audioMessageEn, "en")} className="rounded-xl bg-[#a14364] py-1.5 text-[10px] font-bold text-white">EN</button>
+                  <button onClick={() => handlePlayAudio(selectedCenter.audioMessageFr, "fr")} className="rounded-xl bg-[#ea2d6d] py-1.5 text-[10px] font-bold text-white">FR</button>
+                  <button onClick={() => handlePlayAudio(selectedCenter.audioMessageEn, "en")} className="rounded-xl bg-[#ea2d6d] py-1.5 text-[10px] font-bold text-white">EN</button>
                   <button onClick={() => handlePlayAudio(selectedCenter.audioMessageMoore, "moore")} className="rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-[10px] font-bold text-[#8a3350]">Mooré</button>
                   <button onClick={() => handlePlayAudio(selectedCenter.audioMessageDioula, "dioula")} className="rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-[10px] font-bold text-[#8a3350]">Dioula</button>
                 </div>
@@ -5475,12 +5624,12 @@ export function PinkHubMobile() {
 
               {/* Tarifs */}
               <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3.5">
-                <h3 className="ph-display text-sm font-bold text-[#452737]">Examens & Tarifs officiels</h3>
+                <h3 className="ph-display text-sm font-bold text-[#580e36]">Examens & Tarifs officiels</h3>
                 <div className="mt-2 divide-y divide-[#f5e6eb] text-xs">
                   {selectedCenter.exams.map((exam, i) => (
                     <div key={i} className="flex items-center justify-between py-1.5">
                       <span>{exam.name}</span>
-                      <span className={exam.free ? "font-bold text-emerald-700" : "font-bold text-[#a14364]"}>
+                      <span className={exam.free ? "font-bold text-emerald-700" : "font-bold text-[#ea2d6d]"}>
                         {exam.free ? "0 FCFA (Gratuit)" : `${exam.price.toLocaleString("fr-FR")} FCFA`}
                       </span>
                     </div>
@@ -5524,12 +5673,12 @@ export function PinkHubMobile() {
                       className="group relative -mt-4 flex flex-col items-center justify-center focus:outline-none"
                     >
                       <span
-                        className={`flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-white shadow-[0_6px_18px_rgba(161,67,100,.35)] transition-all duration-300 group-hover:scale-105 ${active ? "bg-gradient-to-tr from-[#8a3350] via-[#a14364] to-[#cf5d83] text-white ring-2 ring-[#a14364]/30" : "bg-gradient-to-tr from-[#9c3e5d] to-[#be5377] text-white"}`}
+                        className={`flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-white shadow-[0_6px_18px_rgba(161,67,100,.35)] transition-all duration-300 group-hover:scale-105 ${active ? "bg-gradient-to-tr from-[#8a3350] via-[#ea2d6d] to-[#cf5d83] text-white ring-2 ring-[#ea2d6d]/30" : "bg-gradient-to-tr from-[#9c3e5d] to-[#be5377] text-white"}`}
                       >
                         <Sparkles size={21} className="text-amber-300 animate-pulse" />
                       </span>
                       <span
-                        className={`mt-0.5 text-[9.5px] tracking-tight font-extrabold transition ${active ? "text-[#a14364]" : "text-[#7b5465]"}`}
+                        className={`mt-0.5 text-[9.5px] tracking-tight font-extrabold transition ${active ? "text-[#ea2d6d]" : "text-[#7b5465]"}`}
                       >
                         Rose IA
                       </span>
@@ -5549,15 +5698,15 @@ export function PinkHubMobile() {
                       }
                     }}
                     aria-current={active ? "page" : undefined}
-                    className={`flex min-h-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl transition ${active ? "text-[#a14364]" : "text-[#9d838e] hover:text-[#785062]"}`}
+                    className={`flex min-h-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl transition ${active ? "text-[#ea2d6d]" : "text-[#9d838e] hover:text-[#785062]"}`}
                   >
                     <span
-                      className={`grid h-7 w-9 place-items-center rounded-full transition-all duration-200 ${active ? "bg-[#fbe7ed] text-[#a14364] shadow-xs" : ""}`}
+                      className={`grid h-7 w-9 place-items-center rounded-full transition-all duration-200 ${active ? "bg-[#fbe7ed] text-[#ea2d6d] shadow-xs" : ""}`}
                     >
-                      <Icon size={18} strokeWidth={active ? 2.5 : 1.8} className={label === "FaireUnDon" && active ? "fill-[#a14364]" : ""} />
+                      <Icon size={18} strokeWidth={active ? 2.5 : 1.8} className={label === "FaireUnDon" && active ? "fill-[#ea2d6d]" : ""} />
                     </span>
                     <span
-                      className={`text-[9.5px] tracking-tight transition ${active ? "font-bold text-[#a14364]" : "font-medium text-[#9d838e]"}`}
+                      className={`text-[9.5px] tracking-tight transition ${active ? "font-bold text-[#ea2d6d]" : "font-medium text-[#9d838e]"}`}
                     >
                       {name}
                     </span>
@@ -5573,14 +5722,14 @@ export function PinkHubMobile() {
         {/* ==================================================================== */}
         {showNewAnnouncementModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
-            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl max-h-[90vh] overflow-y-auto border-2 border-[#a14364]">
+            <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl max-h-[90vh] overflow-y-auto border-2 border-[#ea2d6d]">
               <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] text-[#a14364]">
+                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] text-[#ea2d6d]">
                     <Megaphone size={18} />
                   </span>
                   <div>
-                    <h3 className="ph-display text-sm font-bold text-[#452737]">Publier une annonce</h3>
+                    <h3 className="ph-display text-sm font-bold text-[#580e36]">Publier une annonce</h3>
                     <p className="text-[10px] text-amber-800 font-bold">Soumise à validation Superadmin</p>
                   </div>
                 </div>
@@ -5656,7 +5805,7 @@ export function PinkHubMobile() {
                       }
                       className={`rounded-lg p-1 text-center font-bold border transition ${
                         newAnnouncement.imageUrl === "/images/affiche-evenement-beneere.jpg"
-                          ? "bg-[#a14364] text-white border-[#a14364]"
+                          ? "bg-[#ea2d6d] text-white border-[#ea2d6d]"
                           : "bg-white text-[#7d4b60] border-pink-200 hover:bg-pink-100"
                       }`}
                     >
@@ -5673,7 +5822,7 @@ export function PinkHubMobile() {
                       }
                       className={`rounded-lg p-1 text-center font-bold border transition ${
                         newAnnouncement.imageUrl === "/images/affiche-wtm-odc.jpg"
-                          ? "bg-[#a14364] text-white border-[#a14364]"
+                          ? "bg-[#ea2d6d] text-white border-[#ea2d6d]"
                           : "bg-white text-[#7d4b60] border-pink-200 hover:bg-pink-100"
                       }`}
                     >
@@ -5690,7 +5839,7 @@ export function PinkHubMobile() {
                       }
                       className={`rounded-lg p-1 text-center font-bold border transition ${
                         newAnnouncement.imageUrl === "/images/affiche-genit-care.jpg"
-                          ? "bg-[#a14364] text-white border-[#a14364]"
+                          ? "bg-[#ea2d6d] text-white border-[#ea2d6d]"
                           : "bg-white text-[#7d4b60] border-pink-200 hover:bg-pink-100"
                       }`}
                     >
@@ -5751,7 +5900,7 @@ export function PinkHubMobile() {
 
                 <button
                   type="submit"
-                  className="w-full rounded-xl bg-[#a14364] py-2.5 font-bold text-white shadow hover:bg-[#8e3856]"
+                  className="w-full rounded-xl bg-[#ea2d6d] py-2.5 font-bold text-white shadow hover:bg-[#8e3856]"
                 >
                   Soumettre pour validation Superadmin
                 </button>
@@ -5832,7 +5981,7 @@ export function PinkHubMobile() {
                       <p className="text-[9px] text-emerald-700 font-bold">▲ +31% ce mois</p>
                     </div>
                     <div className="rounded-2xl bg-pink-50 border border-pink-200 p-3">
-                      <span className="text-[9.5px] font-bold text-[#a14364] uppercase">Femmes uniques</span>
+                      <span className="text-[9.5px] font-bold text-[#ea2d6d] uppercase">Femmes uniques</span>
                       <p className="text-lg font-extrabold text-[#742d45] mt-0.5">14 210</p>
                       <p className="text-[9px] text-[#742d45]">Utilisatrices actives</p>
                     </div>
@@ -5975,7 +6124,7 @@ export function PinkHubMobile() {
 
                   {/* Répartition géographique des visites au Burkina */}
                   <div className="rounded-2xl border border-[#ebd6dc] bg-[#fffafc] p-3 space-y-2">
-                    <span className="font-bold text-[#452737] block">Répartition des visites par région :</span>
+                    <span className="font-bold text-[#580e36] block">Répartition des visites par région :</span>
                     <div className="space-y-1.5 text-[11px]">
                       <div>
                         <div className="flex justify-between text-[#5f4150]">
@@ -5983,7 +6132,7 @@ export function PinkHubMobile() {
                           <span className="font-bold">57%</span>
                         </div>
                         <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
-                          <div className="h-full bg-[#a14364]" style={{ width: "57%" }} />
+                          <div className="h-full bg-[#ea2d6d]" style={{ width: "57%" }} />
                         </div>
                       </div>
                       <div>
@@ -6132,7 +6281,7 @@ export function PinkHubMobile() {
                             {ann.isRoseAIDetected ? (
                               <button
                                 onClick={() => handleApproveAndPushAnnouncement(ann.id)}
-                                className="flex-1 rounded-xl bg-gradient-to-r from-purple-900 to-[#a14364] py-2 font-bold text-white shadow-sm text-center hover:opacity-95 flex items-center justify-center gap-1.5"
+                                className="flex-1 rounded-xl bg-gradient-to-r from-purple-900 to-[#ea2d6d] py-2 font-bold text-white shadow-sm text-center hover:opacity-95 flex items-center justify-center gap-1.5"
                                 title="Valider officiellement l'annonce et envoyer un push bienveillant aux femmes"
                               >
                                 <Sparkles size={14} className="text-amber-300" />
@@ -6174,7 +6323,7 @@ export function PinkHubMobile() {
               {/* ONGLET 3 : DEMANDES D'ADHÉSION DES STRUCTURES */}
               {superadminActiveTab === "registrations" && (
                 <div className="mt-3.5 space-y-2 text-xs ph-enter">
-                  <p className="font-bold text-[#452737]">
+                  <p className="font-bold text-[#580e36]">
                     Demandes d'adhésion en attente ({pendingRegistrations.filter((r) => r.status === "pending").length}) :
                   </p>
 
@@ -6182,7 +6331,7 @@ export function PinkHubMobile() {
                     {pendingRegistrations.map((reg) => (
                       <div key={reg.id} className="rounded-xl border border-[#ebd6dc] bg-[#fffafc] p-3 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-[#472738]">{reg.structure}</span>
+                          <span className="font-bold text-[#580e36]">{reg.structure}</span>
                           <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${reg.status === "pending" ? "bg-amber-100 text-amber-900" : reg.status === "approved" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
                             {reg.status === "pending" ? "En attente" : reg.status === "approved" ? "Validé ✓" : "Refusé"}
                           </span>
@@ -6242,7 +6391,7 @@ export function PinkHubMobile() {
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3">
                   <p className="text-[9.5px] font-bold text-rose-800 uppercase">Dons collectés (OM)</p>
-                  <p className="text-base font-extrabold text-[#943657] mt-0.5">3 850 000 F</p>
+                  <p className="text-base font-extrabold text-[#6c1543] mt-0.5">3 850 000 F</p>
                   <p className="text-[9px] text-[#7d5164]">412 donateurs vérifiés</p>
                 </div>
                 <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3">
@@ -6254,7 +6403,7 @@ export function PinkHubMobile() {
 
               <div className="mt-3.5 border-t border-[#f2e1e6] pt-3 text-xs">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="font-bold text-[#452737]">Dernières collectes Orange Money :</p>
+                  <p className="font-bold text-[#580e36]">Dernières collectes Orange Money :</p>
                   <span className="text-[10px] text-[#f16e00] font-extrabold">#144#</span>
                 </div>
 
@@ -6268,7 +6417,7 @@ export function PinkHubMobile() {
                   ].map((tx) => (
                     <div key={tx.id} className="rounded-xl border border-[#ebdbe2] bg-[#fffbfd] p-2 flex items-center justify-between text-[10.5px]">
                       <div>
-                        <span className="font-bold text-[#452737]">{tx.donor}</span>
+                        <span className="font-bold text-[#580e36]">{tx.donor}</span>
                         <p className="text-[9px] text-[#7a5969]">{tx.assoc} · {tx.date}</p>
                       </div>
                       <span className="font-bold text-[#f16e00]">+{tx.amount.toLocaleString("fr-FR")} F</span>
@@ -6315,7 +6464,7 @@ export function PinkHubMobile() {
                         const found = partnerAssociations.find((a) => a.id === Number(e.target.value));
                         if (found) setSelectedAssociation(found);
                       }}
-                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 font-semibold text-[#452737]"
+                      className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 font-semibold text-[#580e36]"
                     >
                       {partnerAssociations.map((assoc) => (
                         <option key={assoc.id} value={assoc.id}>
@@ -6357,7 +6506,7 @@ export function PinkHubMobile() {
                         value={orangeMoneyPhone}
                         onChange={(e) => setOrangeMoneyPhone(e.target.value)}
                         placeholder="70 12 34 56"
-                        className="w-full rounded-xl border border-[#e4cfd6] py-2 pl-14 pr-3 font-bold text-[#452737] focus:border-[#f16e00] focus:outline-none"
+                        className="w-full rounded-xl border border-[#e4cfd6] py-2 pl-14 pr-3 font-bold text-[#580e36] focus:border-[#f16e00] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -6397,7 +6546,7 @@ export function PinkHubMobile() {
                   <div className="rounded-2xl bg-[#fff7f2] border border-orange-200 p-3.5 space-y-2">
                     <div className="flex justify-between">
                       <span className="text-[#7c5b6b]">Bénéficiaire :</span>
-                      <span className="font-bold text-[#452737]">{selectedAssociation.name}</span>
+                      <span className="font-bold text-[#580e36]">{selectedAssociation.name}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#7c5b6b]">Montant :</span>
@@ -6407,13 +6556,13 @@ export function PinkHubMobile() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#7c5b6b]">Donateur :</span>
-                      <span className="font-bold text-[#452737]">
+                      <span className="font-bold text-[#580e36]">
                         {isAnonymousDonation ? "Donatrice anonyme (Chiffré AES-256)" : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#7c5b6b]">Numéro débité :</span>
-                      <span className="font-bold text-[#452737]">
+                      <span className="font-bold text-[#580e36]">
                         {isAnonymousDonation ? `+226 70 ** ** ${orangeMoneyPhone.slice(-2)}` : `+226 ${orangeMoneyPhone}`}
                       </span>
                     </div>
@@ -6443,7 +6592,7 @@ export function PinkHubMobile() {
                     <Phone size={24} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-[#452737]">Autorisation Orange Money (#144*4*6#)</h4>
+                    <h4 className="font-bold text-[#580e36]">Autorisation Orange Money (#144*4*6#)</h4>
                     <p className="text-[11px] text-[#7c5b6b] mt-1">
                       Composez <strong>#144*4*6#</strong> sur votre mobile ou saisissez votre code OTP reçu par SMS :
                     </p>
@@ -6456,7 +6605,7 @@ export function PinkHubMobile() {
                       value={otpCode}
                       onChange={(e) => setOtpCode(e.target.value)}
                       placeholder="Code OTP"
-                      className="w-full rounded-xl border-2 border-orange-400 p-2 text-center text-sm font-extrabold tracking-widest text-[#452737]"
+                      className="w-full rounded-xl border-2 border-orange-400 p-2 text-center text-sm font-extrabold tracking-widest text-[#580e36]"
                     />
                   </div>
 
@@ -6477,7 +6626,7 @@ export function PinkHubMobile() {
                   </div>
 
                   <div>
-                    <h4 className="ph-display text-lg font-bold text-[#452737]">Merci pour votre générosité !</h4>
+                    <h4 className="ph-display text-lg font-bold text-[#580e36]">Merci pour votre générosité !</h4>
                     <p className="text-[11px] text-[#7c5b6b] mt-0.5">
                       Votre don est intégralement alloué à <strong>{selectedAssociation.acronym}</strong> pour soutenir le dépistage au Burkina Faso.
                     </p>
@@ -6508,7 +6657,7 @@ export function PinkHubMobile() {
 
                   <button
                     onClick={() => { setShowDonationModal(false); setDonationStep("form"); }}
-                    className="w-full rounded-2xl bg-[#a14364] py-2.5 font-bold text-white shadow"
+                    className="w-full rounded-2xl bg-[#ea2d6d] py-2.5 font-bold text-white shadow"
                   >
                     Fermer le reçu
                   </button>
@@ -6519,77 +6668,524 @@ export function PinkHubMobile() {
         )}
 
         {/* ==================================================================== */}
-        {/* MODAL : LIEN MOBILE LOCAL WI-FI (POUR LES COLLÈGUES SANS EXPO)       */}
+        {/* MODAL : MISE À JOUR DU CENTRE DE SANTÉ (DISPONIBILITÉS & AFFLUENCE) */}
         {/* ==================================================================== */}
-        {showWifiModal && (
+        {showCenterUpdateModal && centerUpdateData && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]"
-            onClick={() => setShowWifiModal(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:absolute sm:rounded-[36px]"
+            onClick={() => setShowCenterUpdateModal(false)}
           >
             <div
-              className="ph-enter w-full max-w-sm rounded-[28px] bg-slate-900 p-5 text-white shadow-2xl border border-slate-700"
+              className="ph-enter max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[28px] bg-white p-5 text-[#351c2a] shadow-2xl border-2 border-[#ea2d6d]"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between border-b border-slate-700 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-slate-800 text-emerald-400">
-                    <Globe size={18} />
+              {/* En-tête */}
+              <div className="flex items-center justify-between border-b border-[#fce4ec] pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-tr from-[#580e36] to-[#ea2d6d] text-white shadow-sm">
+                    <Edit3 size={18} />
                   </div>
                   <div>
-                    <h3 className="ph-display text-sm font-bold text-white">Lien Mobile Local</h3>
-                    <p className="text-[10px] text-emerald-400 font-bold">Sans passer par Expo</p>
+                    <h3 className="ph-display text-sm font-bold text-[#580e36]">
+                      Mise à jour du Centre
+                    </h3>
+                    <p className="text-[10px] text-[#ea2d6d] font-bold">
+                      {centerUpdateData.name}
+                    </p>
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowWifiModal(false)}
-                  className="rounded-full p-1 text-slate-400 hover:bg-slate-800"
+                  type="button"
+                  onClick={() => setShowCenterUpdateModal(false)}
+                  className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <div className="mt-3.5 space-y-3 text-xs">
-                <p className="text-slate-300 text-[11.5px] leading-relaxed">
-                  Vos collègues connectés au même réseau Wi-Fi peuvent ouvrir l'application directement dans le navigateur de leur smartphone (Safari, Chrome) :
-                </p>
-
-                <div className="rounded-2xl bg-slate-800/90 p-3 border border-slate-700 space-y-2">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span>Adresse URL sur le Wi-Fi local :</span>
-                    <span className="text-[10px] text-emerald-400 font-bold">En direct</span>
+              {/* Formulaire de mise à jour */}
+              <form onSubmit={handleSaveCenterUpdate} className="mt-3.5 space-y-3.5 text-xs">
+                {/* 1. Statut opérationnel & Affluence */}
+                <div>
+                  <label className="block text-[11px] font-bold text-[#580e36] mb-1">
+                    Statut d'accueil et affluence en direct :
+                  </label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      {
+                        value: "available",
+                        label: "Disponible",
+                        sub: "Attente fluide",
+                        color: "border-emerald-500 bg-emerald-50 text-emerald-800",
+                        dot: "bg-emerald-500",
+                      },
+                      {
+                        value: "busy",
+                        label: "Affluence",
+                        sub: "Attente moyenne",
+                        color: "border-amber-500 bg-amber-50 text-amber-900",
+                        dot: "bg-amber-500",
+                      },
+                      {
+                        value: "maintenance",
+                        label: "Maintenance",
+                        sub: "Appareil arrêté",
+                        color: "border-rose-500 bg-rose-50 text-rose-800",
+                        dot: "bg-rose-500",
+                      },
+                    ].map((st) => (
+                      <button
+                        key={st.value}
+                        type="button"
+                        onClick={() => {
+                          setCenterUpdateData({
+                            ...centerUpdateData,
+                            status: st.value as any,
+                            statusLabel:
+                              st.value === "available"
+                                ? "Disponible · Attente fluide"
+                                : st.value === "busy"
+                                ? "Forte affluence · Prévoir attente"
+                                : "Maintenance technique · Arrêt temporaire",
+                            statusColor: st.dot,
+                          });
+                        }}
+                        className={`flex flex-col items-center justify-center rounded-xl p-2 border-2 transition cursor-pointer ${
+                          centerUpdateData.status === st.value
+                            ? `${st.color} font-bold shadow-xs`
+                            : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        <span className={`h-2.5 w-2.5 rounded-full ${st.dot} mb-1`} />
+                        <span className="text-[11px] font-bold">{st.label}</span>
+                        <span className="text-[9px] opacity-80">{st.sub}</span>
+                      </button>
+                    ))}
                   </div>
-                  <div className="flex items-center justify-between gap-2 rounded-xl bg-slate-950 p-2.5 border border-slate-800">
-                    <span className="font-mono text-xs font-bold text-emerald-400 select-all">
-                      {localShareUrl}
-                    </span>
+                </div>
+
+                {/* 2. Temps d'attente estimé & File d'attente */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
+                      Temps d'attente estimé :
+                    </label>
+                    <input
+                      type="text"
+                      value={centerUpdateData.estimatedWait}
+                      onChange={(e) =>
+                        setCenterUpdateData({ ...centerUpdateData, estimatedWait: e.target.value })
+                      }
+                      placeholder="Ex: ~15 à 20 min"
+                      className="w-full rounded-xl border border-gray-300 px-3 py-2 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
+                      Patientes dans la file :
+                    </label>
+                    <input
+                      type="number"
+                      value={centerUpdateData.queueCount}
+                      onChange={(e) =>
+                        setCenterUpdateData({
+                          ...centerUpdateData,
+                          queueCount: Number(e.target.value) || 0,
+                        })
+                      }
+                      className="w-full rounded-xl border border-gray-300 px-3 py-2 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                {/* 3. État du mammographe numérique */}
+                <div className="rounded-2xl bg-[#fdf2f6] p-3 border border-[#fce4ec]">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-[#580e36] text-[11px]">
+                        Mammographe numérique en service :
+                      </p>
+                      <p className="text-[10px] text-[#785566]">
+                        {centerUpdateData.isApparatusWorking
+                          ? "✓ L'appareil fonctionne à 100%"
+                          : "⚠️ Appareil en panne ou calibration"}
+                      </p>
+                    </div>
                     <button
-                      onClick={() => {
-                        navigator.clipboard?.writeText(localShareUrl);
-                        notify(`Lien ${localShareUrl} copié !`);
-                      }}
-                      className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-500 shadow-sm"
+                      type="button"
+                      onClick={() =>
+                        setCenterUpdateData({
+                          ...centerUpdateData,
+                          isApparatusWorking: !centerUpdateData.isApparatusWorking,
+                        })
+                      }
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition cursor-pointer ${
+                        centerUpdateData.isApparatusWorking ? "bg-emerald-500" : "bg-gray-300"
+                      }`}
                     >
-                      Copier
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                          centerUpdateData.isApparatusWorking ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
                     </button>
                   </div>
+                  <input
+                    type="text"
+                    value={centerUpdateData.apparatus}
+                    onChange={(e) =>
+                      setCenterUpdateData({ ...centerUpdateData, apparatus: e.target.value })
+                    }
+                    className="mt-2 w-full rounded-xl border border-pink-200 bg-white px-2.5 py-1.5 text-xs text-[#580e36]"
+                  />
                 </div>
 
-                <div className="space-y-1.5 text-[11px] text-slate-300 rounded-xl bg-slate-800/40 p-3 border border-slate-800">
-                  <p className="font-bold text-amber-300">Procédure simple en 3 étapes :</p>
-                  <ol className="list-decimal list-inside space-y-1 text-slate-300 text-[10.5px]">
-                    <li>Connecter le téléphone au même réseau Wi-Fi.</li>
-                    <li>Ouvrir le navigateur (Safari sur iPhone, Chrome sur Android).</li>
-                    <li>Taper ou coller <strong className="text-emerald-400">{localShareUrl}</strong></li>
-                  </ol>
+                {/* 4. Personnel et agents présents */}
+                <div>
+                  <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
+                    Équipe présente aujourd'hui :
+                  </label>
+                  <input
+                    type="text"
+                    value={centerUpdateData.staffDescription}
+                    onChange={(e) =>
+                      setCenterUpdateData({ ...centerUpdateData, staffDescription: e.target.value })
+                    }
+                    placeholder="Ex: 2 sages-femmes, 1 radiologue en poste"
+                    className="w-full rounded-xl border border-gray-300 px-3 py-2 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
+                  />
                 </div>
 
+                {/* 5. Message audio / Consigne du jour */}
+                <div>
+                  <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
+                    Consigne vocale du jour aux patientes (Français) :
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={centerUpdateData.audioMessageFr}
+                    onChange={(e) =>
+                      setCenterUpdateData({ ...centerUpdateData, audioMessageFr: e.target.value })
+                    }
+                    className="w-full rounded-xl border border-gray-300 p-2.5 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
+                  />
+                </div>
+
+                {/* Bouton de soumission */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl bg-gradient-to-r from-[#580e36] to-[#ea2d6d] py-3 text-xs font-bold text-white shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Check size={16} />
+                    <span>Enregistrer et publier sur la carte en direct</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* MODAL : ORIENTATION & RECOMMANDATION D'URGENCE (DOCTEUR -> CENTRE)   */}
+        {/* ==================================================================== */}
+        {showOrientationModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:absolute sm:rounded-[36px]"
+            onClick={() => {
+              setShowOrientationModal(false);
+              setGeneratedOrientationCode(null);
+            }}
+          >
+            <div
+              className="ph-enter max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[28px] bg-white p-5 text-[#351c2a] shadow-2xl border-2 border-rose-500"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* En-tête */}
+              <div className="flex items-center justify-between border-b border-rose-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-tr from-rose-700 to-[#ea2d6d] text-white shadow-sm">
+                    <Stethoscope size={20} />
+                  </div>
+                  <div>
+                    <h3 className="ph-display text-sm font-bold text-[#580e36]">
+                      Orientation Médicale d'Urgence
+                    </h3>
+                    <p className="text-[10px] text-rose-600 font-bold">
+                      Docteur ➔ Centre de Santé Partenaire
+                    </p>
+                  </div>
+                </div>
                 <button
-                  onClick={() => setShowWifiModal(false)}
-                  className="w-full rounded-2xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-500 transition"
+                  type="button"
+                  onClick={() => {
+                    setShowOrientationModal(false);
+                    setGeneratedOrientationCode(null);
+                  }}
+                  className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100"
                 >
-                  Fermer
+                  <X size={18} />
                 </button>
               </div>
+
+              {generatedOrientationCode ? (
+                /* ÉCRAN DE CONFIRMATION / REÇU D'ORIENTATION OFFICIEL */
+                <div className="mt-4 space-y-3.5 text-xs">
+                  <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-center">
+                    <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-500 text-white shadow-md">
+                      <Check size={26} />
+                    </div>
+                    <h4 className="ph-display mt-2 text-base font-bold text-emerald-950">
+                      Orientation émise avec succès !
+                    </h4>
+                    <p className="mt-1 text-xs text-emerald-800">
+                      Le centre cible a été alerté en priorité.
+                    </p>
+                    <div className="mt-3 rounded-xl bg-white p-2.5 border border-emerald-300">
+                      <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                        Code d'Orientation Sécurisé :
+                      </span>
+                      <span className="font-mono text-base font-extrabold text-[#580e36] tracking-wider select-all">
+                        {generatedOrientationCode}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl bg-[#fdf2f6] p-3 border border-[#fce4ec] space-y-1.5 text-[11px] text-[#580e36]">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Patiente :</span>
+                      <span className="font-bold">{orientationForm.patientName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Centre désigné :</span>
+                      <span className="font-bold">
+                        {centers.find((c) => c.id === Number(orientationForm.targetCenterId))?.shortName || "CMA Schiphra"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Niveau d'urgence :</span>
+                      <span className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
+                        orientationForm.urgencyLevel === "immediate"
+                          ? "bg-rose-600 text-white"
+                          : orientationForm.urgencyLevel === "priority"
+                          ? "bg-amber-500 text-white"
+                          : "bg-blue-600 text-white"
+                      }`}>
+                        {orientationForm.urgencyLevel === "immediate"
+                          ? "🚨 Immédiat (< 24h)"
+                          : orientationForm.urgencyLevel === "priority"
+                          ? "⚠️ Prioritaire (48h-72h)"
+                          : "ℹ️ Routine"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Examens prescrits :</span>
+                      <span className="font-bold">{orientationForm.recommendedExam}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetCenter = centers.find((c) => c.id === Number(orientationForm.targetCenterId))?.shortName || "CMA Schiphra";
+                        const msg = `Bonjour Mme ${orientationForm.patientName}, voici votre fiche d'orientation urgente PagLaafi vers le ${targetCenter}. Code d'urgence : ${generatedOrientationCode}. Présentez-vous directement au centre sans attente.`;
+                        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+                      }}
+                      className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition cursor-pointer"
+                    >
+                      <Share2 size={14} /> WhatsApp Patiente
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(generatedOrientationCode);
+                        notify(`Code ${generatedOrientationCode} copié !`);
+                      }}
+                      className="flex items-center justify-center gap-1.5 rounded-xl bg-slate-800 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-slate-700 transition cursor-pointer"
+                    >
+                      <Copy size={14} /> Copier le code
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowOrientationModal(false);
+                      setGeneratedOrientationCode(null);
+                    }}
+                    className="w-full rounded-2xl bg-[#ea2d6d] py-2.5 text-xs font-bold text-white shadow hover:bg-[#d81f5c] transition cursor-pointer"
+                  >
+                    Fermer la fiche
+                  </button>
+                </div>
+              ) : (
+                /* FORMULAIRE D'ORIENTATION D'URGENCE */
+                <form onSubmit={handleCreatePatientOrientation} className="mt-3.5 space-y-3.5 text-xs">
+                  {/* ALERTE CRÉDIBILITÉ MÉDICALE */}
+                  <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3 text-rose-950">
+                    <p className="font-bold text-xs flex items-center gap-1.5 text-rose-900">
+                      <AlertTriangle size={15} className="text-rose-600 shrink-0" />
+                      Priorité médicale absolue
+                    </p>
+                    <p className="text-[11px] text-rose-900/90 mt-1 leading-relaxed">
+                      L'orientation médicale permet de court-circuiter les files d'attente habituelles pour faire passer une mammographie ou une échographie en urgence dans un centre équipé.
+                    </p>
+                  </div>
+
+                  {/* 1. DEGRÉ D'URGENCE AU PREMIER PLAN */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#580e36] mb-1.5">
+                      1. Degré d'urgence clinique (Priorité) :
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        {
+                          level: "immediate" as const,
+                          title: "🚨 Immédiat",
+                          sub: "Moins de 24h",
+                          activeBg: "bg-rose-600 text-white border-rose-700 ring-2 ring-rose-400",
+                        },
+                        {
+                          level: "priority" as const,
+                          title: "⚠️ Prioritaire",
+                          sub: "48h à 72h",
+                          activeBg: "bg-amber-500 text-white border-amber-600 ring-2 ring-amber-300",
+                        },
+                        {
+                          level: "routine" as const,
+                          title: "ℹ️ Routine",
+                          sub: "< 15 jours",
+                          activeBg: "bg-blue-600 text-white border-blue-700 ring-2 ring-blue-300",
+                        },
+                      ].map((urg) => (
+                        <button
+                          key={urg.level}
+                          type="button"
+                          onClick={() => setOrientationForm({ ...orientationForm, urgencyLevel: urg.level as any })}
+                          className={`flex flex-col items-center justify-center rounded-xl p-2 border-2 text-center transition cursor-pointer ${
+                            orientationForm.urgencyLevel === urg.level
+                              ? urg.activeBg
+                              : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          <span className="text-[11px] font-extrabold">{urg.title}</span>
+                          <span className="text-[9.5px] font-bold opacity-90">{urg.sub}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 2. CENTRE DE SANTÉ CIBLE */}
+                  <div>
+                    <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
+                      2. Centre de santé de destination :
+                    </label>
+                    <select
+                      value={orientationForm.targetCenterId}
+                      onChange={(e) =>
+                        setOrientationForm({ ...orientationForm, targetCenterId: Number(e.target.value) })
+                      }
+                      className="w-full rounded-xl border border-gray-300 bg-white p-2.5 text-xs font-semibold text-[#580e36] focus:border-[#ea2d6d] focus:outline-hidden"
+                    >
+                      {centers.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          🏥 {c.shortName} — {c.place} ({c.statusLabel})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 3. COORDONNÉES PATIENTE */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
+                        Nom de la patiente :
+                      </label>
+                      <input
+                        type="text"
+                        value={orientationForm.patientName}
+                        onChange={(e) =>
+                          setOrientationForm({ ...orientationForm, patientName: e.target.value })
+                        }
+                        placeholder="Ex: K. Fatoumata"
+                        className="w-full rounded-xl border border-gray-300 px-3 py-2 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
+                        Téléphone :
+                      </label>
+                      <input
+                        type="tel"
+                        value={orientationForm.patientPhone}
+                        onChange={(e) =>
+                          setOrientationForm({ ...orientationForm, patientPhone: e.target.value })
+                        }
+                        placeholder="Ex: 70 88 99 00"
+                        className="w-full rounded-xl border border-gray-300 px-3 py-2 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* 4. EXAMENS DEMANDÉS */}
+                  <div>
+                    <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
+                      4. Examens prescrits en urgence :
+                    </label>
+                    <select
+                      value={orientationForm.recommendedExam}
+                      onChange={(e) =>
+                        setOrientationForm({ ...orientationForm, recommendedExam: e.target.value })
+                      }
+                      className="w-full rounded-xl border border-gray-300 bg-white p-2.5 text-xs font-semibold text-[#580e36] focus:border-[#ea2d6d] focus:outline-hidden"
+                    >
+                      <option value="Mammographie numérique bilatérale + Échographie mammaire">
+                        Mammographie numérique bilatérale + Échographie mammaire (Pack complet)
+                      </option>
+                      <option value="Échographie mammaire haute résolution">
+                        Échographie mammaire haute résolution isolée
+                      </option>
+                      <option value="Mammographie numérique de dépistage diagnostique">
+                        Mammographie numérique de dépistage diagnostique
+                      </option>
+                      <option value="Biopsie mammaire / Cytoponction d'urgence">
+                        Biopsie mammaire / Cytoponction d'urgence
+                      </option>
+                    </select>
+                  </div>
+
+                  {/* 5. MOTIF CLINIQUE / OBSERVATIONS */}
+                  <div>
+                    <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
+                      5. Motif clinique & Signes d'appel :
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={orientationForm.clinicalObservations}
+                      onChange={(e) =>
+                        setOrientationForm({ ...orientationForm, clinicalObservations: e.target.value })
+                      }
+                      placeholder="Ex: Masse rétro-aréolaire droite de 2.5 cm, indolore..."
+                      className="w-full rounded-xl border border-gray-300 p-2.5 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
+                      required
+                    />
+                  </div>
+
+                  {/* Bouton de confirmation */}
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      className="w-full rounded-2xl bg-gradient-to-r from-rose-600 to-[#ea2d6d] py-3 text-xs font-bold text-white shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <FileText size={16} />
+                      <span>Émettre l'orientation d'urgence vers le centre</span>
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         )}
@@ -6603,16 +7199,16 @@ export function PinkHubMobile() {
             onClick={() => setShowPwaInstallModal(false)}
           >
             <div
-              className="ph-enter w-full max-w-sm rounded-[28px] bg-white p-5 text-[#351c2a] shadow-2xl border-2 border-[#a14364]"
+              className="ph-enter w-full max-w-sm rounded-[28px] bg-white p-5 text-[#351c2a] shadow-2xl border-2 border-[#ea2d6d]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-tr from-[#943657] to-[#ba486e] text-white shadow-sm">
+                  <div className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-tr from-[#6c1543] to-[#ba486e] text-white shadow-sm">
                     <Smartphone size={20} />
                   </div>
                   <div>
-                    <h3 className="ph-display text-sm font-bold text-[#452737]">Installer PagLaafi</h3>
+                    <h3 className="ph-display text-sm font-bold text-[#580e36]">Installer PagLaafi</h3>
                     <p className="text-[10px] text-emerald-700 font-bold">Application Mobile Autonome</p>
                   </div>
                 </div>
@@ -6648,7 +7244,7 @@ export function PinkHubMobile() {
 
                 {/* Guide selon le système */}
                 <div className="rounded-2xl bg-slate-50 p-3 border border-slate-200 space-y-2">
-                  <p className="font-bold text-[#452737] text-[11.5px] flex items-center justify-between">
+                  <p className="font-bold text-[#580e36] text-[11.5px] flex items-center justify-between">
                     <span>📱 Guide d'installation rapide :</span>
                     <span className="text-[9.5px] font-bold text-slate-500">Android & iOS</span>
                   </p>
@@ -6669,7 +7265,7 @@ export function PinkHubMobile() {
                 {deferredPrompt ? (
                   <button
                     onClick={handleTriggerInstall}
-                    className="w-full rounded-2xl bg-gradient-to-r from-[#a14364] to-[#7f2f4c] py-3 text-xs font-bold text-white shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2"
+                    className="w-full rounded-2xl bg-gradient-to-r from-[#ea2d6d] to-[#580e36] py-3 text-xs font-bold text-white shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2"
                   >
                     <Download size={15} />
                     <span>Installer maintenant en 1-clic</span>
@@ -6677,7 +7273,7 @@ export function PinkHubMobile() {
                 ) : (
                   <button
                     onClick={() => setShowPwaInstallModal(false)}
-                    className="w-full rounded-2xl bg-[#a14364] py-2.5 text-xs font-bold text-white shadow hover:bg-[#8d3754] transition"
+                    className="w-full rounded-2xl bg-[#ea2d6d] py-2.5 text-xs font-bold text-white shadow hover:bg-[#8d3754] transition"
                   >
                     J'ai compris ✓
                   </button>
@@ -6706,7 +7302,7 @@ export function PinkHubMobile() {
                     <ShieldCheck size={20} />
                   </div>
                   <div>
-                    <h3 className="ph-display text-sm font-bold text-[#452737]">
+                    <h3 className="ph-display text-sm font-bold text-[#580e36]">
                       Confidentialité & Données
                     </h3>
                     <p className="text-[10px] text-emerald-700 font-bold">
@@ -6755,7 +7351,7 @@ export function PinkHubMobile() {
                   {/* Toggle 1 : Stockage 100% Local */}
                   <label className="flex items-center justify-between rounded-xl border border-[#edd7e1] bg-[#fffcfd] p-3 cursor-pointer hover:bg-pink-50/50 transition">
                     <div className="pr-2">
-                      <span className="font-bold text-[#452737] text-xs block">
+                      <span className="font-bold text-[#580e36] text-xs block">
                         Stockage 100% Local (Cycle & Calendrier)
                       </span>
                       <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
@@ -6768,14 +7364,14 @@ export function PinkHubMobile() {
                       onChange={(e) =>
                         setPrivacySettings({ ...privacySettings, localOnlyCycle: e.target.checked })
                       }
-                      className="h-4 w-4 rounded border-gray-300 text-[#a14364] focus:ring-[#a14364]"
+                      className="h-4 w-4 rounded border-gray-300 text-[#ea2d6d] focus:ring-[#ea2d6d]"
                     />
                   </label>
 
                   {/* Toggle 2 : Protocoles cliniques IA */}
                   <label className="flex items-center justify-between rounded-xl border border-[#edd7e1] bg-[#fffcfd] p-3 cursor-pointer hover:bg-pink-50/50 transition">
                     <div className="pr-2">
-                      <span className="font-bold text-[#452737] text-xs block">
+                      <span className="font-bold text-[#580e36] text-xs block">
                         Entraînement de Rose IA par les soignants
                       </span>
                       <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
@@ -6788,14 +7384,14 @@ export function PinkHubMobile() {
                       onChange={(e) =>
                         setPrivacySettings({ ...privacySettings, contributeAiClinical: e.target.checked })
                       }
-                      className="h-4 w-4 rounded border-gray-300 text-[#a14364] focus:ring-[#a14364]"
+                      className="h-4 w-4 rounded border-gray-300 text-[#ea2d6d] focus:ring-[#ea2d6d]"
                     />
                   </label>
 
                   {/* Toggle 3 : Soutien aux associations */}
                   <label className="flex items-center justify-between rounded-xl border border-[#edd7e1] bg-[#fffcfd] p-3 cursor-pointer hover:bg-pink-50/50 transition">
                     <div className="pr-2">
-                      <span className="font-bold text-[#452737] text-xs block">
+                      <span className="font-bold text-[#580e36] text-xs block">
                         Statistiques anonymisées pour les Associations
                       </span>
                       <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
@@ -6808,14 +7404,14 @@ export function PinkHubMobile() {
                       onChange={(e) =>
                         setPrivacySettings({ ...privacySettings, anonymizedAssociationData: e.target.checked })
                       }
-                      className="h-4 w-4 rounded border-gray-300 text-[#a14364] focus:ring-[#a14364]"
+                      className="h-4 w-4 rounded border-gray-300 text-[#ea2d6d] focus:ring-[#ea2d6d]"
                     />
                   </label>
 
                   {/* Toggle 4 : Partage clinique uniquement sur demande */}
                   <label className="flex items-center justify-between rounded-xl border border-[#edd7e1] bg-[#fffcfd] p-3 cursor-pointer hover:bg-pink-50/50 transition">
                     <div className="pr-2">
-                      <span className="font-bold text-[#452737] text-xs block">
+                      <span className="font-bold text-[#580e36] text-xs block">
                         Transmission médicale sur demande expresse
                       </span>
                       <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
@@ -6828,7 +7424,7 @@ export function PinkHubMobile() {
                       onChange={(e) =>
                         setPrivacySettings({ ...privacySettings, urgentClinicalConsent: e.target.checked })
                       }
-                      className="h-4 w-4 rounded border-gray-300 text-[#a14364] focus:ring-[#a14364]"
+                      className="h-4 w-4 rounded border-gray-300 text-[#ea2d6d] focus:ring-[#ea2d6d]"
                     />
                   </label>
                 </div>
@@ -6893,7 +7489,7 @@ export function PinkHubMobile() {
                     <GraduationCap size={20} />
                   </div>
                   <div>
-                    <h3 className="ph-display text-sm font-bold text-[#452737]">
+                    <h3 className="ph-display text-sm font-bold text-[#580e36]">
                       Entraînement Clinique Rose IA
                     </h3>
                     <p className="text-[10px] text-amber-800 font-bold">
@@ -7030,7 +7626,7 @@ export function PinkHubMobile() {
 
                   {/* Saisie personnalisée */}
                   <div className="pt-2 border-t border-gray-100">
-                    <label className="block text-[11px] font-bold text-[#452737] mb-1">
+                    <label className="block text-[11px] font-bold text-[#580e36] mb-1">
                       Ou définissez un autre thème médical :
                     </label>
                     <input
@@ -7038,7 +7634,7 @@ export function PinkHubMobile() {
                       value={doctorTeachTopic}
                       onChange={(e) => setDoctorTeachTopic(e.target.value)}
                       placeholder="Ex : Palpation axillaire, Allaitement et crevasses..."
-                      className="w-full rounded-xl border border-gray-300 p-2 text-xs font-semibold text-[#452737]"
+                      className="w-full rounded-xl border border-gray-300 p-2 text-xs font-semibold text-[#580e36]"
                     />
                   </div>
 
@@ -7056,7 +7652,7 @@ export function PinkHubMobile() {
               {doctorTrainStep === 2 && (
                 <div className="mt-4 space-y-3.5 text-xs">
                   <div>
-                    <label className="block text-[11px] font-bold text-[#452737] mb-1">
+                    <label className="block text-[11px] font-bold text-[#580e36] mb-1">
                       Thème clinique sélectionné :
                     </label>
                     <input
@@ -7068,7 +7664,7 @@ export function PinkHubMobile() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-[#452737] mb-1">
+                    <label className="block text-[11px] font-bold text-[#580e36] mb-1">
                       Recommandation clinique stricte du praticien :
                     </label>
                     <textarea
@@ -7076,7 +7672,7 @@ export function PinkHubMobile() {
                       value={doctorTeachContent}
                       onChange={(e) => setDoctorTeachContent(e.target.value)}
                       placeholder="Consignes médicales précises, bilans recommandés, centres d'orientation..."
-                      className="w-full rounded-xl border border-gray-300 p-2 text-xs text-[#452737]"
+                      className="w-full rounded-xl border border-gray-300 p-2 text-xs text-[#580e36]"
                     />
                   </div>
 
@@ -7097,17 +7693,17 @@ export function PinkHubMobile() {
 
                     {/* Français */}
                     <div className="rounded-xl bg-white p-2.5 border border-pink-100 text-[11px] space-y-1">
-                      <div className="flex items-center justify-between text-[10px] font-bold text-[#a14364]">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-[#ea2d6d]">
                         <span>🇫🇷 En Français facile :</span>
                         <button
                           type="button"
                           onClick={() => handlePlayAudio(doctorEmpathicReformulation.fr, "fr")}
-                          className="flex items-center gap-1 text-[9.5px] text-[#a14364] hover:underline"
+                          className="flex items-center gap-1 text-[9.5px] text-[#ea2d6d] hover:underline"
                         >
                           <Volume2 size={12} /> Écouter
                         </button>
                       </div>
-                      <p className="text-[#452737] leading-relaxed">{doctorEmpathicReformulation.fr}</p>
+                      <p className="text-[#580e36] leading-relaxed">{doctorEmpathicReformulation.fr}</p>
                     </div>
 
                     {/* Mooré */}
@@ -7203,7 +7799,7 @@ export function PinkHubMobile() {
                             "Ma sœur, rassure-toi. Suite aux recommandations de nos docteurs référents..."
                         )
                       }
-                      className="w-full rounded-2xl bg-gradient-to-r from-[#a14364] to-[#734059] py-2.5 font-bold text-white shadow hover:opacity-95 transition flex items-center justify-center gap-2"
+                      className="w-full rounded-2xl bg-gradient-to-r from-[#ea2d6d] to-[#734059] py-2.5 font-bold text-white shadow hover:opacity-95 transition flex items-center justify-center gap-2"
                     >
                       <Sparkles size={15} /> Voir la réponse générée par Rose IA
                     </button>
@@ -7219,13 +7815,13 @@ export function PinkHubMobile() {
                         <button
                           type="button"
                           onClick={() => handlePlayAudio(doctorTestAnswer, "fr")}
-                          className="flex items-center gap-1 text-[10px] font-bold text-[#a14364] bg-pink-100 px-2 py-0.5 rounded-full hover:bg-pink-200"
+                          className="flex items-center gap-1 text-[10px] font-bold text-[#ea2d6d] bg-pink-100 px-2 py-0.5 rounded-full hover:bg-pink-200"
                         >
                           <Volume2 size={13} /> Écouter
                         </button>
                       </div>
 
-                      <p className="text-xs text-[#452737] leading-relaxed">
+                      <p className="text-xs text-[#580e36] leading-relaxed">
                         {doctorTestAnswer}
                       </p>
 
@@ -7274,7 +7870,7 @@ export function PinkHubMobile() {
                     <div className="rounded-xl bg-white p-2.5 border border-emerald-200 text-[11px] space-y-1">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Sujet validé :</span>
-                        <span className="font-bold text-[#452737] truncate max-w-[200px]">{doctorTeachTopic}</span>
+                        <span className="font-bold text-[#580e36] truncate max-w-[200px]">{doctorTeachTopic}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Langues certifiées :</span>
@@ -7290,26 +7886,26 @@ export function PinkHubMobile() {
                   {/* Champs de signature du médecin */}
                   <div className="space-y-2">
                     <div>
-                      <label className="block text-[11px] font-bold text-[#452737] mb-1">
+                      <label className="block text-[11px] font-bold text-[#580e36] mb-1">
                         Nom et Prénom du praticien référent :
                       </label>
                       <input
                         type="text"
                         value={doctorSignName}
                         onChange={(e) => setDoctorSignName(e.target.value)}
-                        className="w-full rounded-xl border border-gray-300 p-2 text-xs font-bold text-[#452737]"
+                        className="w-full rounded-xl border border-gray-300 p-2 text-xs font-bold text-[#580e36]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-[#452737] mb-1">
+                      <label className="block text-[11px] font-bold text-[#580e36] mb-1">
                         Titre clinique & Hôpital d'exercice :
                       </label>
                       <input
                         type="text"
                         value={doctorSignRole}
                         onChange={(e) => setDoctorSignRole(e.target.value)}
-                        className="w-full rounded-xl border border-gray-300 p-2 text-xs font-semibold text-[#452737]"
+                        className="w-full rounded-xl border border-gray-300 p-2 text-xs font-semibold text-[#580e36]"
                       />
                     </div>
                   </div>
@@ -7360,11 +7956,11 @@ export function PinkHubMobile() {
               {/* En-tête du lecteur vidéo */}
               <div className="flex items-center justify-between border-b border-[#f2e1e7] pb-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-rose-100 text-[#a14364]">
-                    <Play size={16} className="fill-[#a14364] translate-x-0.5" />
+                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-rose-100 text-[#ea2d6d]">
+                    <Play size={16} className="fill-[#ea2d6d] translate-x-0.5" />
                   </div>
                   <div>
-                    <h3 className="ph-display text-sm font-bold text-[#452737]">
+                    <h3 className="ph-display text-sm font-bold text-[#580e36]">
                       Vidéo Guidée d'Autopalpation
                     </h3>
                     <p className="text-[10px] text-emerald-700 font-bold">
@@ -7410,7 +8006,7 @@ export function PinkHubMobile() {
                         handlePlayAudio(txt, lang);
                       }}
                       className={`rounded-full px-2 py-0.5 transition ${
-                        videoLang === lang ? "bg-[#a14364] text-white" : "text-white/75 hover:text-white"
+                        videoLang === lang ? "bg-[#ea2d6d] text-white" : "text-white/75 hover:text-white"
                       }`}
                     >
                       {lang.toUpperCase()}
@@ -7425,7 +8021,7 @@ export function PinkHubMobile() {
                   className="absolute inset-0 flex items-center justify-center bg-black/25 hover:bg-black/35 transition"
                   aria-label={videoIsPlaying ? "Mettre la vidéo en pause" : "Lancer la démonstration vidéo"}
                 >
-                  <div className="grid h-14 w-14 place-items-center rounded-full bg-[#a14364]/95 text-white shadow-xl hover:scale-105 active:scale-95 transition">
+                  <div className="grid h-14 w-14 place-items-center rounded-full bg-[#ea2d6d]/95 text-white shadow-xl hover:scale-105 active:scale-95 transition">
                     {videoIsPlaying ? (
                       <Pause size={24} className="fill-white" />
                     ) : (
@@ -7452,7 +8048,7 @@ export function PinkHubMobile() {
                       title="Cliquer pour naviguer dans la vidéo"
                     >
                       <div
-                        className="h-full bg-gradient-to-r from-rose-500 to-[#a14364] rounded-full transition-all duration-150"
+                        className="h-full bg-gradient-to-r from-rose-500 to-[#ea2d6d] rounded-full transition-all duration-150"
                         style={{ width: `${Math.min(100, (videoProgressSeconds / 165) * 100)}%` }}
                       />
                     </div>
@@ -7471,7 +8067,7 @@ export function PinkHubMobile() {
                           }}
                           className={`rounded px-1.5 py-0.5 transition ${
                             videoSpeed === spd
-                              ? "bg-[#a14364] text-white font-extrabold"
+                              ? "bg-[#ea2d6d] text-white font-extrabold"
                               : "text-white/75 hover:text-white"
                           }`}
                           title={`Vitesse de lecture x${spd}`}
@@ -7501,7 +8097,7 @@ export function PinkHubMobile() {
                             : "Voici l'explication audio détaillée des gestes d'autopalpation par notre soignante.";
                       handlePlayAudio(txt, videoLang);
                     }}
-                    className="flex items-center gap-1 text-[10px] font-bold text-[#a14364] hover:underline"
+                    className="flex items-center gap-1 text-[10px] font-bold text-[#ea2d6d] hover:underline"
                   >
                     <Volume2 size={12} /> Écouter la sage-femme ({videoLang.toUpperCase()})
                   </button>
@@ -7524,7 +8120,7 @@ export function PinkHubMobile() {
                       }}
                       className={`rounded-xl p-1.5 text-center transition border ${
                         selectedVideoStep === item.step
-                          ? "bg-[#a14364] text-white border-[#a14364] shadow-xs scale-[1.02]"
+                          ? "bg-[#ea2d6d] text-white border-[#ea2d6d] shadow-xs scale-[1.02]"
                           : "bg-slate-50 text-[#543343] border-slate-200 hover:bg-pink-50"
                       }`}
                     >
@@ -7535,10 +8131,10 @@ export function PinkHubMobile() {
                 </div>
 
                 {/* Explication du geste sélectionné */}
-                <div className="rounded-2xl border border-pink-200 bg-[#fffbfc] p-3 text-xs text-[#452737] space-y-1.5 shadow-2xs">
+                <div className="rounded-2xl border border-pink-200 bg-[#fffbfc] p-3 text-xs text-[#580e36] space-y-1.5 shadow-2xs">
                   {selectedVideoStep === 1 && (
                     <>
-                      <div className="flex items-center justify-between font-bold text-[#a14364]">
+                      <div className="flex items-center justify-between font-bold text-[#ea2d6d]">
                         <span>Étape 1 : Inspection visuelle devant le miroir</span>
                         <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">LOOK</span>
                       </div>
@@ -7549,7 +8145,7 @@ export function PinkHubMobile() {
                   )}
                   {selectedVideoStep === 2 && (
                     <>
-                      <div className="flex items-center justify-between font-bold text-[#a14364]">
+                      <div className="flex items-center justify-between font-bold text-[#ea2d6d]">
                         <span>Étape 2 : Palpation douce avec la pulpe de 3 doigts</span>
                         <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">FEEL</span>
                       </div>
@@ -7560,7 +8156,7 @@ export function PinkHubMobile() {
                   )}
                   {selectedVideoStep === 3 && (
                     <>
-                      <div className="flex items-center justify-between font-bold text-[#a14364]">
+                      <div className="flex items-center justify-between font-bold text-[#ea2d6d]">
                         <span>Étape 3 : Couvrir toute la zone jusqu'aux aisselles</span>
                         <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">COVER ALL</span>
                       </div>
@@ -7571,7 +8167,7 @@ export function PinkHubMobile() {
                   )}
                   {selectedVideoStep === 4 && (
                     <>
-                      <div className="flex items-center justify-between font-bold text-[#a14364]">
+                      <div className="flex items-center justify-between font-bold text-[#ea2d6d]">
                         <span>Étape 4 : Vérification du mamelon sans douleur</span>
                         <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">NIPPLE CHECK</span>
                       </div>
@@ -7588,7 +8184,7 @@ export function PinkHubMobile() {
                 <button
                   type="button"
                   onClick={() => setShowAutopalpationVideoModal(false)}
-                  className="flex-1 rounded-2xl bg-gradient-to-r from-[#a14364] to-[#734059] py-2.5 text-xs font-bold text-white shadow-md hover:opacity-95 transition"
+                  className="flex-1 rounded-2xl bg-gradient-to-r from-[#ea2d6d] to-[#734059] py-2.5 text-xs font-bold text-white shadow-md hover:opacity-95 transition"
                 >
                   J'ai compris les gestes ✓
                 </button>

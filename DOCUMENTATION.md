@@ -447,7 +447,28 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
     - Téléphone : Icône `<Phone />` et drapeau `🇧🇫 +226` harmonieusement intégrés dans le champ.
     - Mot de passe : Icône cadenas `<Lock />` à gauche et œillet interactif `<Eye /> / <EyeOff />` à droite.
     - Bouton principal : Icône de validation `<CheckCircle2 />` centrée avec le texte.
-  - **Grille Tactile 2x2 des Profils Démo (1-Clic)** :
-    - Organisation des 4 rôles opérationnels (Utilisatrice standard, Centre médical CMA Schiphra, Docteur CHU Bogodogo, Association ABAC) sous forme de tuiles ergonomiques 2 colonnes avec badges d'icônes contrastés.
-    - Carte d'honneur pleine largeur pour le Super-Administrateur National (`<ShieldCheck />` pourpre et or).
-    - Raccourci vers le mode découverte libre avec `<Sparkles />` et flèche d'accès rapide.
+#### 11. Épuration Mobile, Couleurs Officielles du Logo & Circuit d'Orientation d'Urgence (Octobre 2026)
+- **Suppression Définitive du Wi-Fi et Partage sans Expo** :
+  - Retrait du bouton Wi-Fi du Header, de la Sidebar et de la carte d'accueil sur tous les écrans et profils.
+  - L'application offre une ergonomie fluide, épurée et sans distraction technique pour une expérience utilisateur 100% santé.
+- **Relocalisation Ergonomique du Sélecteur de Langue** :
+  - Retrait du sélecteur `FR` de la barre supérieure (Header) pour éliminer tout débordement ou masquage de boutons sur écran smartphone tactile.
+  - Intégration dans le menu latéral (Sidebar) sous forme de tuiles tactiles élégantes avec drapeaux (🇫🇷 Français, 🇧🇫 Mooré, 🇧🇫 Dioula, 🇬🇧 English).
+- **Harmonisation Stricte avec la Charte Graphique du Logo PagLaafi** :
+  - **Rose Éclatant "Laafi"** : `#ea2d6d` (vibrant, moderne et chaleureux, remplaçant les teintes ternes antérieures).
+  - **Bordeaux / Prune Profond "Pag"** : `#580e36` (titres nobles et contrastes nets).
+  - **Dégradé Signature** : `linear-gradient(135deg, #580e36 0%, #ea2d6d 100%)`.
+  - **Fonds Tendre & Pastels** : `#fdf2f6`, `#fce4ec`, `#f8bbd0`.
+- **Modale Interactive de Mise à Jour du Centre de Santé (`showCenterUpdateModal`)** :
+  - Déclenchée en 1-clic depuis le profil Centre de Santé et Docteur ("Mettre à jour les disponibilités de mon centre").
+  - Formulaire complet en direct : statut d'accueil (Disponible / Affluence / Maintenance), temps d'attente estimé, file d'attente, fonctionnement du mammographe (toggle avec voyant), personnel présent, et consigne vocale du jour.
+  - Sauvegarde immédiate synchronisée sur la carte Leaflet et notifiée par toast.
+- **Système d'Orientation Médicale d'Urgence (Docteur ➔ Centre de Santé)** :
+  - **Priorité Clinique au Premier Plan** : 🚨 Immédiat (< 24h), ⚠️ Prioritaire (48h-72h), ℹ️ Routine / Surveillance.
+  - **Destinataire Précis** : Orientation exclusive vers un Centre de Santé de référence (ex: CMA Schiphra, CHU Bogodogo).
+  - **Code Unique d'Urgence** : Génération de l'identifiant sécurisé `PAG-URG-2026-XXXX` avec partage direct par WhatsApp ou SMS vers la patiente.
+  - **Interface de Réception & Validation Côté Centre de Santé** :
+    - Encart d'alerte en direct avec badges clignotants pour les cas d'urgence immédiate.
+    - Bouton d'action rapide : « Envoyez-la vite ! (Attente < 15 min) » validant immédiatement l'accueil prioritaire.
+    - Option de planification en cas d'affluence avec délai garanti.
+
