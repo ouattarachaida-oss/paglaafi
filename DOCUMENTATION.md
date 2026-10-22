@@ -64,11 +64,11 @@ Le projet est structuré sous forme de monorepo géré avec `pnpm workspaces` :
 
 - **URL locale sur cet ordinateur** : [http://localhost:5173/](http://localhost:5173/)
 - **Lien Mobile Wi-Fi (Pour les collègues sur leur smartphone, sans rien installer)** :
-  - **URL réseau local active** : **`http://192.168.1.22:5173/`** *(détectée automatiquement par `demarrer-en-local.bat` et `PinkHubMobile.tsx` selon votre réseau Wi-Fi)*
+  - **URL réseau local active** : **`http://192.168.1.34:5173/`** *(détectée automatiquement sur votre réseau Wi-Fi)*
   - **Procédure pour les collègues** :
     1. Connecter le téléphone au même Wi-Fi.
     2. Ouvrir le navigateur mobile (Safari sur iPhone, Chrome sur Android).
-    3. Taper `http://192.168.1.22:5173/` (ou copier le lien directement depuis l'application) pour accéder à toute l'application.
+    3. Taper `http://192.168.1.34:5173/` (ou copier le lien directement depuis l'application) pour accéder à toute l'application.
 
 ---
 
@@ -411,4 +411,29 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
   - **Intégration Directe des Protocoles Docteurs** : Rose IA intègre les fiches cliniques saisies par les médecins dans sa base active.
   - **Formulaire de Saisie Réactif `<form>`** : Saisie fluide, validation immédiate par la touche Entrée du clavier mobile ou bouton d'envoi tactile, écoute vocale au micro Web Speech API.
   - **Synthèse Vocale Instantanée** : Bouton d'écoute audio direct `<Volume2 />` sous chaque réponse de Rose IA dans la langue active choisie (Français, Mooré, Dioula, Anglais).
+
+#### 9. Transition vers la « Vraie Application Mobile » PWA Native (Octobre 2026)
+- **Architecture PWA Mobile Native Complète (Progressive Web App)** :
+  - **Plein Écran & Safe Areas (`viewport-fit=cover`)** : Prise en charge des encoches smartphones (iPhone Dynamic Island & Android) avec `env(safe-area-inset-top)` et `env(safe-area-inset-bottom)`.
+  - **Mode Autonome (Standalone)** : Configuration avancée du `manifest.json` (`display: standalone`, `scope: /`, `orientation: portrait-primary`, identifiant officiel `bf.paglaafi.app`, métadonnées médicales et de bien-être).
+  - **Méta-tags iOS & Android Dédiés** : `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style: black-translucent`, `apple-touch-icon`, et désactivation des comportements de rebond (`overscroll-behavior-y: contain`).
+- **Persistance Locale 100% Hors-Connexion (LocalStorage / Local-First)** :
+  - **Mémorisation de la Session Utilisateur** : L'utilisatrice ou le soignant reste connecté en permanence (`paglaafi_current_user`), comme dans une application installée native.
+  - **Persistance du Calendrier Menstruel & Autopalpations** : Date des dernières règles, longueur du cycle, statut d'examen mensuel et historique complet des cycles sauvegardés localement.
+  - **Persistance des Rappels de Santé** : Liste des rappels (dépistage, rendez-vous, traitement) mémorisée et synchronisée.
+  - **Persistance de l'Historique Rose IA** : Mémorisation continue des échanges écrits et vocaux avec Rose IA sans perte au rechargement.
+  - **Mémorisation de la Langue Préférée** : Conservation du choix linguistique (Français, Mooré, Dioula, Anglais).
+- **Retour Haptique Tactile (Vibrations Naturelles)** :
+  - Intégration de vibrations douces (`navigator.vibrate`) lors des changements d'onglets (Accueil, Comprendre, Rose IA, Centres, Dons), lors des envois de messages et lors des validations cliniques pour une ergonomie tactile 100% native.
+- **Module & Modale d'Installation Directe sur Smartphone** :
+  - **Bouton d'Installation dans le Header & la Sidebar** : Détection automatique de l'événement `beforeinstallprompt` pour installer l'application en 1 clic sur Android, ou afficher le badge *« Application installée ✓ »* en mode autonome.
+  - **Modale d'Assistance Complète** : Guide pas-à-pas illustré pour smartphones Android (Chrome) et iPhone/iPad (Safari : Partager ⎋ -> Sur l'écran d'accueil ➕).
+- **Accès Serveur Local & Liens Publics Actifs** :
+  - **Lien Public Distant Actif (Tous réseaux Wi-Fi / 4G / Partout dans le monde)** :
+    👉 **`https://planned-vocabulary-albany-tions.trycloudflare.com`** *(Accessible dès maintenant à vos collègues sans être sur le même Wi-Fi)*
+  - **Lien Ordinateur local** : `http://localhost:5173/`
+  - **Lien Réseau Wi-Fi local** : `http://192.168.1.14:5173/`
+- **Pérennité & Déploiement Permanent (24h/24 sans dépendre de l'ordinateur allumé)** :
+  - **Lien de Réclamation Directe Vercel (1-clic)** : `https://vercel.com/claim-deployment?code=a430829a-12dc-4d95-8cb4-7fb1ad923e63`
+  - Le bundle de production statique (`dist/`) est compilé avec succès et prêt à être hébergé de façon 100% permanente sur Vercel/Netlify (ex: `https://paglaafi.vercel.app`) ou sur l'infrastructure O2Switch du projet.
 

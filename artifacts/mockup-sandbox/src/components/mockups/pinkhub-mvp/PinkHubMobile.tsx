@@ -18,6 +18,7 @@ import {
   Clock,
   CreditCard,
   Database,
+  Download,
   Edit3,
   Eye,
   EyeOff,
@@ -49,6 +50,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   Stethoscope,
   Thermometer,
@@ -808,25 +810,97 @@ export function PinkHubMobile() {
     motDePasse: "123456",
   });
 
-  // Utilisateur actuellement connecté (null par défaut pour afficher la page de connexion après le splash)
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  // Retour haptique tactile pour ergonomie d'application mobile native
+  const hapticFeedback = (duration: number = 15) => {
+    if (typeof window !== "undefined" && "vibrate" in navigator) {
+      try {
+        navigator.vibrate(duration);
+      } catch {
+        // Silencieux si non supporté
+      }
+    }
+  };
+
+  // Utilisateur actuellement connecté (avec persistance automatique dans la mémoire du téléphone)
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const saved = localStorage.getItem("paglaafi_current_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Sauvegarde persistante de la session utilisateur
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (currentUser) {
+        localStorage.setItem("paglaafi_current_user", JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem("paglaafi_current_user");
+      }
+    } catch {
+      // Ignorer
+    }
+  }, [currentUser]);
 
   // Modal Partage Wi-Fi local sans Expo pour les collègues
   const [showWifiModal, setShowWifiModal] = useState(false);
 
+  // Gestion de l'installation PWA & Détection Mode Application Standalone
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isStandaloneApp, setIsStandaloneApp] = useState(false);
+  const [showPwaInstallModal, setShowPwaInstallModal] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true;
+    setIsStandaloneApp(isStandalone);
+
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+    };
+  }, []);
+
+  const handleTriggerInstall = async () => {
+    hapticFeedback(25);
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === "accepted") {
+        notify("Installation de PagLaafi en cours sur votre appareil !");
+        setDeferredPrompt(null);
+        setShowPwaInstallModal(false);
+      }
+    } else {
+      setShowPwaInstallModal(true);
+    }
+  };
+
   // Détection dynamique de l'URL d'accès réseau local (Wi-Fi) pour smartphones
   const localShareUrl = useMemo(() => {
-    if (typeof window === "undefined") return "http://192.168.1.22:5173/";
+    if (typeof window === "undefined") return "http://192.168.1.14:5173/";
     const host = window.location.hostname;
     const port = window.location.port ? `:${window.location.port}` : "";
     if (host !== "localhost" && host !== "127.0.0.1") {
       return `${window.location.protocol}//${window.location.host}/`;
     }
-    return `http://192.168.1.22${port || ":5173"}/`;
+    return `http://192.168.1.14${port || ":5173"}/`;
   }, []);
 
   // Fonction universelle de déconnexion
   const handleLogout = () => {
+    hapticFeedback(20);
     setCurrentUser(null);
     setShowProfileMenu(false);
     setSidebarOpen(false);
@@ -946,36 +1020,66 @@ export function PinkHubMobile() {
   const [dailyTipLang, setDailyTipLang] = useState<"fr" | "moore" | "dioula" | "en">("fr");
   const [notificationEnabled, setNotificationEnabled] = useState(false);
 
-  const [roseMessages, setRoseMessages] = useState<
-    Array<{ sender: "user" | "rose"; text: string; time: string; englishText?: string; mooreText?: string; dioulaText?: string }>
-  >([
+  const initialDefaultRoseMessages = [
     {
-      sender: "rose",
+      sender: "rose" as const,
       text: "Bonjour ma sœur, je suis Rose IA, ta compagne de santé et de bien-être. Je suis à ton écoute avec bienveillance, sans jugement et dans le respect total de ta pudeur : hygiène intime, nutrition sahélienne (moringa, baobab), apaisement des règles, sérénité mentale ou dépistage. Écris-moi en toute confiance ou touche le micro.",
       englishText: "Hello my sister, I am Rose AI, your caring health and well-being companion. I am here for your holistic health: intimate care, nutrition, menstrual comfort, mental peace, and screenings.",
       mooreText: "Ne y beogo m maaso ! Mam yaa Rose IA, fo laafi zoa. Mam be ka n na n sõng yãmba ne yĩn-sõngr, rɩɩb sõma, pʋg-tõor bɩ bãas gɩdgre. Sok-y maam bũmb fãa y sẽn ratã.",
       dioulaText: "I ni sɔgɔma n ma muso ! Ne ye Rose IA ye. Ne bɛ yan k'i dɛmɛ kɛnɛya, i yɛrɛ saniya, kalo-sira ani hakili-sigi la. Mun b'i kɔnɔ bi ?",
       time: "Maintenant",
     },
-  ]);
+  ];
+
+  const [roseMessages, setRoseMessages] = useState<
+    Array<{ sender: "user" | "rose"; text: string; time: string; englishText?: string; mooreText?: string; dioulaText?: string }>
+  >(() => {
+    if (typeof window === "undefined") return initialDefaultRoseMessages;
+    try {
+      const s = localStorage.getItem("paglaafi_rose_messages");
+      return s ? JSON.parse(s) : initialDefaultRoseMessages;
+    } catch {
+      return initialDefaultRoseMessages;
+    }
+  });
+
+  // Sauvegarde continue de la discussion Rose IA
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem("paglaafi_rose_messages", JSON.stringify(roseMessages));
+    } catch {
+      // Ignorer
+    }
+  }, [roseMessages]);
+
   const [roseInput, setRoseInput] = useState("");
   const [isRecordingVoice, setIsRecordingVoice] = useState(false);
   const [roseSpeaking, setRoseSpeaking] = useState(false);
   // Mode de discussion avec Rose IA : "text" (discussion écrite) ou "voice" (discussion orale/audio directe)
   const [roseChatMode, setRoseChatMode] = useState<"text" | "voice">("text");
   const [oralVoiceLang, setOralVoiceLang] = useState<"fr" | "moore" | "dioula" | "en">("fr");
-  // Sélecteur de langue globale discret pour tous les écrans et tous les profils
-  const [appLanguage, setAppLanguage] = useState<"fr" | "moore" | "dioula" | "en">("fr");
+  // Sélecteur de langue globale discret pour tous les écrans et tous les profils (avec persistance)
+  const [appLanguage, setAppLanguage] = useState<"fr" | "moore" | "dioula" | "en">(() => {
+    if (typeof window === "undefined") return "fr";
+    return (localStorage.getItem("paglaafi_app_lang") as any) || "fr";
+  });
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const lastVoiceTranscriptRef = useRef<string>("");
   const handleSendRoseMessageRef = useRef<(text?: string, speak?: boolean) => void>(() => {});
 
   const handleSelectAppLanguage = (lang: "fr" | "moore" | "dioula" | "en") => {
+    hapticFeedback(15);
     setAppLanguage(lang);
     setSpeechLanguage(lang);
     setDailyTipLang(lang);
     setOralVoiceLang(lang);
     setShowLanguageMenu(false);
+    try {
+      localStorage.setItem("paglaafi_app_lang", lang);
+    } catch {
+      // Ignorer
+    }
     const langNames = {
       fr: "Français 🇫🇷",
       moore: "Mooré 🇧🇫",
@@ -1050,11 +1154,25 @@ export function PinkHubMobile() {
   // 11. Tableau de bord Administrateurs
   const [showAdminDashboardModal, setShowAdminDashboardModal] = useState(false);
 
-  // 12. Calendrier Féminin : Règles, Autopalpation, Prédiction & Recalibration
-  const [lastPeriodDate, setLastPeriodDate] = useState("2026-10-06");
-  const [cycleLengthDays, setCycleLengthDays] = useState(28);
-  const [autopalpationDoneThisMonth, setAutopalpationDoneThisMonth] = useState(true);
-  const [lastAutopalpationDate, setLastAutopalpationDate] = useState("12/10/2026");
+  // 12. Calendrier Féminin : Règles, Autopalpation, Prédiction & Recalibration (avec persistance locale)
+  const [lastPeriodDate, setLastPeriodDate] = useState(() => {
+    if (typeof window === "undefined") return "2026-10-06";
+    return localStorage.getItem("paglaafi_last_period") || "2026-10-06";
+  });
+  const [cycleLengthDays, setCycleLengthDays] = useState(() => {
+    if (typeof window === "undefined") return 28;
+    const s = localStorage.getItem("paglaafi_cycle_len");
+    return s ? Number(s) : 28;
+  });
+  const [autopalpationDoneThisMonth, setAutopalpationDoneThisMonth] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const s = localStorage.getItem("paglaafi_autopalpation_done");
+    return s !== null ? JSON.parse(s) : true;
+  });
+  const [lastAutopalpationDate, setLastAutopalpationDate] = useState(() => {
+    if (typeof window === "undefined") return "12/10/2026";
+    return localStorage.getItem("paglaafi_last_autopalpation") || "12/10/2026";
+  });
 
   // États pour la saisie réelle, apprentissage et recalibration de la prédiction
   const [showRecalibrateBox, setShowRecalibrateBox] = useState(false);
@@ -1073,21 +1191,54 @@ export function PinkHubMobile() {
     duration: number;
     diff: number;
     note: string;
-  }>>([
-    {
-      id: 1,
-      date: "06/10/2026",
-      duration: 28,
-      diff: 0,
-      note: "Cycle initial de référence (28 jours)",
-    },
-  ]);
+  }>>(() => {
+    const initialHist = [
+      {
+        id: 1,
+        date: "06/10/2026",
+        duration: 28,
+        diff: 0,
+        note: "Cycle initial de référence (28 jours)",
+      },
+    ];
+    if (typeof window === "undefined") return initialHist;
+    try {
+      const s = localStorage.getItem("paglaafi_cycle_history");
+      return s ? JSON.parse(s) : initialHist;
+    } catch {
+      return initialHist;
+    }
+  });
 
-  const [reminders, setReminders] = useState([
-    { id: 1, title: "Dépistage annuel recommandé", date: "24 Octobre 2026", type: "screening", active: true },
-    { id: 2, title: "Rendez-vous mammographie (CMA Schiphra)", date: "26 Octobre à 09h00", type: "appointment", active: true },
-    { id: 3, title: "Prise de traitement hormonal / vitamines", date: "Tous les matins à 08h00", type: "treatment", active: false },
-  ]);
+  const [reminders, setReminders] = useState(() => {
+    const defaultReminders = [
+      { id: 1, title: "Dépistage annuel recommandé", date: "24 Octobre 2026", type: "screening" as const, active: true },
+      { id: 2, title: "Rendez-vous mammographie (CMA Schiphra)", date: "26 Octobre à 09h00", type: "appointment" as const, active: true },
+      { id: 3, title: "Prise de traitement hormonal / vitamines", date: "Tous les matins à 08h00", type: "treatment" as const, active: false },
+    ];
+    if (typeof window === "undefined") return defaultReminders;
+    try {
+      const s = localStorage.getItem("paglaafi_reminders");
+      return s ? JSON.parse(s) : defaultReminders;
+    } catch {
+      return defaultReminders;
+    }
+  });
+
+  // Synchronisation continue des données du cycle dans la mémoire locale
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem("paglaafi_last_period", lastPeriodDate);
+      localStorage.setItem("paglaafi_cycle_len", String(cycleLengthDays));
+      localStorage.setItem("paglaafi_autopalpation_done", JSON.stringify(autopalpationDoneThisMonth));
+      localStorage.setItem("paglaafi_last_autopalpation", lastAutopalpationDate);
+      localStorage.setItem("paglaafi_cycle_history", JSON.stringify(cycleHistory));
+      localStorage.setItem("paglaafi_reminders", JSON.stringify(reminders));
+    } catch {
+      // Silencieux si navigation privée
+    }
+  }, [lastPeriodDate, cycleLengthDays, autopalpationDoneThisMonth, lastAutopalpationDate, cycleHistory, reminders]);
   const [showNewReminderForm, setShowNewReminderForm] = useState(false);
   const [newReminderTitle, setNewReminderTitle] = useState("");
   const [newReminderDate, setNewReminderDate] = useState("");
@@ -2952,8 +3103,27 @@ export function PinkHubMobile() {
                 )}
               </nav>
 
-              {/* Bouton Partage Wi-Fi pour les collègues */}
+              {/* Bouton Installation Application Mobile PWA */}
               <div className="mt-2">
+                <button
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    handleTriggerInstall();
+                  }}
+                  className="flex w-full items-center justify-between rounded-xl bg-gradient-to-r from-[#a14364] to-[#7f2f4c] px-3 py-2 text-xs font-bold text-white shadow-md hover:opacity-95 transition"
+                >
+                  <span className="flex items-center gap-2">
+                    <Smartphone size={15} className="text-amber-300" />
+                    <span>{isStandaloneApp ? "Application installée ✓" : "Installer l'App Mobile"}</span>
+                  </span>
+                  <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-black text-white">
+                    PWA
+                  </span>
+                </button>
+              </div>
+
+              {/* Bouton Partage Wi-Fi pour les collègues */}
+              <div className="mt-1.5">
                 <button
                   onClick={() => {
                     setSidebarOpen(false);
@@ -3003,6 +3173,20 @@ export function PinkHubMobile() {
           </div>
 
           <div className="flex items-center gap-1.5">
+            {/* Bouton d'installation PWA Mobile rapide */}
+            <button
+              onClick={handleTriggerInstall}
+              className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-bold transition shadow-2xs ${
+                isStandaloneApp
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                  : "border-[#e5b6c7] bg-gradient-to-r from-pink-50 to-rose-50 text-[#8e3553] hover:bg-pink-100"
+              }`}
+              title={isStandaloneApp ? "Application PagLaafi active en mode autonome" : "Installer l'application sur smartphone"}
+            >
+              <Smartphone size={11} className={isStandaloneApp ? "text-emerald-600" : "text-[#a14364]"} />
+              <span>{isStandaloneApp ? "Installé" : "Installer"}</span>
+            </button>
+
             {/* Bouton direct Partage Wi-Fi local sans Expo */}
             <button
               onClick={() => setShowWifiModal(true)}
@@ -4377,7 +4561,7 @@ export function PinkHubMobile() {
                       <button
                         onClick={() => {
                           if (!newReminderTitle) return;
-                          setReminders((prev) => [
+                          setReminders((prev: any[]) => [
                             ...prev,
                             { id: Date.now(), title: newReminderTitle, date: newReminderDate || "Bientôt", type: newReminderType, active: true },
                           ]);
@@ -4395,7 +4579,7 @@ export function PinkHubMobile() {
                 )}
 
                 <div className="mt-3 space-y-2 text-xs">
-                  {reminders.map((r) => (
+                  {reminders.map((r: any) => (
                     <div key={r.id} className="flex items-center justify-between rounded-xl border border-[#f2e2e7] p-2.5 bg-[#fffafc]">
                       <div className="flex items-center gap-2.5">
                         <span className={`grid h-7 w-7 place-items-center rounded-lg ${r.type === "screening" ? "bg-purple-100 text-purple-800" : r.type === "appointment" ? "bg-blue-100 text-blue-800" : "bg-emerald-100 text-emerald-800"}`}>
@@ -4627,7 +4811,10 @@ export function PinkHubMobile() {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setShowDoctorModal(true)}
+                    onClick={() => {
+                      hapticFeedback(15);
+                      setShowDoctorTrainModal(true);
+                    }}
                     className="flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-800 p-2.5 text-white font-bold text-xs shadow-xs hover:opacity-95 transition cursor-pointer"
                   >
                     <Stethoscope size={15} className="text-cyan-300" />
@@ -5233,6 +5420,7 @@ export function PinkHubMobile() {
                     <button
                       key={label}
                       onClick={() => {
+                        hapticFeedback(18);
                         setSection(label);
                         setSelectedCenter(null);
                       }}
@@ -5257,6 +5445,7 @@ export function PinkHubMobile() {
                   <button
                     key={label}
                     onClick={() => {
+                      hapticFeedback(12);
                       setSection(label);
                       setSelectedCenter(null);
                       if (label === "FaireUnDon") {
@@ -6304,6 +6493,99 @@ export function PinkHubMobile() {
                 >
                   Fermer
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* MODAL : INSTALLER L'APPLICATION MOBILE (PWA SMARTPHONE ANDROID & IOS) */}
+        {/* ==================================================================== */}
+        {showPwaInstallModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]"
+            onClick={() => setShowPwaInstallModal(false)}
+          >
+            <div
+              className="ph-enter w-full max-w-sm rounded-[28px] bg-white p-5 text-[#351c2a] shadow-2xl border-2 border-[#a14364]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-tr from-[#943657] to-[#ba486e] text-white shadow-sm">
+                    <Smartphone size={20} />
+                  </div>
+                  <div>
+                    <h3 className="ph-display text-sm font-bold text-[#452737]">Installer PagLaafi</h3>
+                    <p className="text-[10px] text-emerald-700 font-bold">Application Mobile Autonome</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPwaInstallModal(false)}
+                  className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="mt-3.5 space-y-3 text-xs">
+                <div className="rounded-2xl bg-gradient-to-br from-pink-50 to-[#fff8fa] p-3.5 border border-pink-200 space-y-1.5">
+                  <div className="flex items-center gap-1.5 font-bold text-[#863550]">
+                    <Sparkles size={14} className="text-amber-500" />
+                    <span>Pourquoi installer l'application ?</span>
+                  </div>
+                  <ul className="space-y-1 text-[11px] text-[#6b4757]">
+                    <li className="flex items-center gap-1.5">
+                      <Check size={12} className="text-emerald-600 shrink-0" />
+                      <span><strong>Accès 100% Hors-Ligne</strong> sans consommer vos données internet</span>
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <Check size={12} className="text-emerald-600 shrink-0" />
+                      <span><strong>Plein écran tactile</strong> sans barre d'adresse de navigateur</span>
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <Check size={12} className="text-emerald-600 shrink-0" />
+                      <span><strong>Sauvegarde continue</strong> de votre cycle et autopalpation</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Guide selon le système */}
+                <div className="rounded-2xl bg-slate-50 p-3 border border-slate-200 space-y-2">
+                  <p className="font-bold text-[#452737] text-[11.5px] flex items-center justify-between">
+                    <span>📱 Guide d'installation rapide :</span>
+                    <span className="text-[9.5px] font-bold text-slate-500">Android & iOS</span>
+                  </p>
+
+                  <div className="space-y-2 text-[10.5px] text-slate-700">
+                    <div className="rounded-xl bg-white p-2 border border-slate-200">
+                      <span className="font-bold text-[#8a3350] block">🤖 Sur Android (Chrome / Samsung) :</span>
+                      <span>Si le bouton ci-dessous ne s'affiche pas, ouvrez le menu <strong>(⋮)</strong> en haut à droite du navigateur puis choisissez <strong>« Installer l'application »</strong> ou « Ajouter à l'écran d'accueil ».</span>
+                    </div>
+
+                    <div className="rounded-xl bg-white p-2 border border-slate-200">
+                      <span className="font-bold text-[#8a3350] block">🍎 Sur iPhone / iPad (Safari) :</span>
+                      <span>1. Touchez le bouton <strong>Partager ⎋</strong> (carré avec flèche en bas d'écran).<br />2. Faites défiler et touchez <strong>« Sur l'écran d'accueil » ➕</strong>.<br />3. Validez avec <strong>« Ajouter »</strong>.</span>
+                    </div>
+                  </div>
+                </div>
+
+                {deferredPrompt ? (
+                  <button
+                    onClick={handleTriggerInstall}
+                    className="w-full rounded-2xl bg-gradient-to-r from-[#a14364] to-[#7f2f4c] py-3 text-xs font-bold text-white shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2"
+                  >
+                    <Download size={15} />
+                    <span>Installer maintenant en 1-clic</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowPwaInstallModal(false)}
+                    className="w-full rounded-2xl bg-[#a14364] py-2.5 text-xs font-bold text-white shadow hover:bg-[#8d3754] transition"
+                  >
+                    J'ai compris ✓
+                  </button>
+                )}
               </div>
             </div>
           </div>
