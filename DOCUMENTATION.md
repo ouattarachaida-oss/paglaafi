@@ -472,3 +472,14 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
     - Bouton d'action rapide : « Envoyez-la vite ! (Attente < 15 min) » validant immédiatement l'accueil prioritaire.
     - Option de planification en cas d'affluence avec délai garanti.
 
+#### 12. Correctifs de Stabilité, Accessibilité Mobile & Lien d'Accès Public (Octobre 2026)
+- **Résolution des Erreurs Runtime & Icônes** :
+  - Restauration des icônes `AlertTriangle` et `Copy` dans les imports Lucide React, éliminant tout écran blanc lors du passage sur les profils Docteur et Centre de Santé.
+  - Définition d'un `appShareUrl` universel et résilient (`window.location.origin + window.location.pathname`) en remplacement sécurisé des anciennes références Wi-Fi orphelines dans le module de partage Accompagnant (SMS et WhatsApp).
+- **Accessibilité & Ergonomie Tactile Mobile-First** :
+  - Breakpoints et cibles tactiles (boutons > 44px, contrastes de couleurs WCAG) vérifiés sur smartphones.
+  - Formulaires d'orientation et de mise à jour des centres de santé 100% accessibles et scrollables sans masquage.
+- **Accès Public Mobile Sécurisé (Cloudflare Tunnel)** :
+  - Serveur de développement : `http://localhost:5173/`
+  - URL Publique Sécurisée (HTTPS pour smartphones et tablettes) : `https://teenage-magazine-circuit-safely.trycloudflare.com`
+

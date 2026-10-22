@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertCircle,
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   AudioLines,
@@ -16,6 +17,7 @@ import {
   ChevronRight,
   CircleHelp,
   Clock,
+  Copy,
   CreditCard,
   Database,
   Download,
@@ -876,6 +878,12 @@ export function PinkHubMobile() {
       setShowPwaInstallModal(true);
     }
   };
+
+  // Lien dynamique de l'application pour inviter une proche ou un accompagnant
+  const appShareUrl = useMemo(() => {
+    if (typeof window === "undefined") return "https://paglaafi.bf/";
+    return window.location.origin + window.location.pathname;
+  }, []);
 
   // Fonction universelle de déconnexion
   const handleLogout = () => {
@@ -5505,8 +5513,8 @@ export function PinkHubMobile() {
 
                 <div className="mt-3 rounded-xl bg-[#fdf5f8] border border-[#f5dfeb] p-2.5 text-[11px] italic text-[#6f4b5d]">
                   « {smsLanguage === "fr"
-                    ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${localShareUrl}`
-                    : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${localShareUrl}`} »
+                    ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${appShareUrl}`
+                    : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${appShareUrl}`} »
                 </div>
 
                 {/* 1. BOUTON ENVOI PAR WHATSAPP */}
@@ -5514,8 +5522,8 @@ export function PinkHubMobile() {
                   onClick={() => {
                     const text = encodeURIComponent(
                       smsLanguage === "fr"
-                        ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${localShareUrl}`
-                        : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${localShareUrl}`,
+                        ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${appShareUrl}`
+                        : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${appShareUrl}`,
                     );
                     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
                     notify("Invitation WhatsApp prête à l'envoi.");
@@ -5530,8 +5538,8 @@ export function PinkHubMobile() {
                   onClick={() => {
                     const text = encodeURIComponent(
                       smsLanguage === "fr"
-                        ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${localShareUrl}`
-                        : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${localShareUrl}`,
+                        ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${appShareUrl}`
+                        : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${appShareUrl}`,
                     );
                     window.open(`sms:?body=${text}`, "_blank");
                     notify("Application SMS ouverte pour envoi direct.");
