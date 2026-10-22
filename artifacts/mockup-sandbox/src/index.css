@@ -183,3 +183,61 @@
     pointer-events: none;
   }
 }
+
+/* ========================================================================== */
+/* CHARTE GRAPHIQUE OFFICIELLE PAGLAAFI V2                                    */
+/* ========================================================================== */
+:root {
+  --ph-rose-deep: #A14364;
+  --ph-rose-deep-hover: #8E3655;
+  --ph-rose-soft: #F5E8ED;
+  --ph-rose-light: #FAF2F5;
+  --ph-ivory: #FFFCF8;
+  --ph-white: #FFFFFF;
+  --ph-green: #557A63;
+  --ph-green-soft: #EAF2ED;
+  --ph-text-main: #29252A;
+  --ph-text-sub: #716971;
+  --ph-border: #E9E0E4;
+}
+
+.bg-ph-ivory { background-color: var(--ph-ivory); }
+.bg-ph-rose-soft { background-color: var(--ph-rose-soft); }
+.bg-ph-rose-light { background-color: var(--ph-rose-light); }
+.bg-ph-rose-deep { background-color: var(--ph-rose-deep); }
+.bg-ph-green { background-color: var(--ph-green); }
+.bg-ph-green-soft { background-color: var(--ph-green-soft); }
+
+.text-ph-main { color: var(--ph-text-main); }
+.text-ph-sub { color: var(--ph-text-sub); }
+.text-ph-rose { color: var(--ph-rose-deep); }
+.text-ph-green { color: var(--ph-green); }
+
+.border-ph { border-color: var(--ph-border); }
+.border-ph-rose { border-color: var(--ph-rose-deep); }
+
+/* Typographie soignée */
+.font-display {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.015em;
+}
+
+/* Animations légères et respect de prefers-reduced-motion */
+@keyframes ph-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: ph-fade-in 0.22s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-pulse,
+  .animate-spin {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+

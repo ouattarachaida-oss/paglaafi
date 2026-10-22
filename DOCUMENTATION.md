@@ -437,3 +437,58 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
   - **Lien de Réclamation Directe Vercel (1-clic)** : `https://vercel.com/claim-deployment?code=a430829a-12dc-4d95-8cb4-7fb1ad923e63`
   - Le bundle de production statique (`dist/`) est compilé avec succès et prêt à être hébergé de façon 100% permanente sur Vercel/Netlify (ex: `https://paglaafi.vercel.app`) ou sur l'infrastructure O2Switch du projet.
 
+#### 10. Refonte Web V2 de PagLaafi (Branche `refonte-v2` - Octobre 2026)
+
+##### 1. Contexte & Objectifs
+La refonte V2 transforme la maquette monolithique originelle en une application web moderne, humaine et modulaire, adaptée à la fois aux smartphones tactiles (Mobile-First) et aux écrans larges (tablettes et ordinateurs).
+
+##### 2. Architecture Modulaire des Composants
+Au lieu d'un fichier monolithique de plus de 7 500 lignes, l'architecture V2 est découpée en modules indépendants et maintenables situés dans `artifacts/mockup-sandbox/src/components/v2/` :
+- **Design Tokens & Charte Visuelle (`src/lib/tokens.ts` & `src/index.css`)** :
+  - Rose profond identitaire : `#A14364` (survol : `#8E3655`)
+  - Rose doux : `#F5E8ED`
+  - Ivoire de fond respirant : `#FFFCF8`
+  - Blanc pur de surface : `#FFFFFF`
+  - Vert naturel de santé/gratuité : `#557A63` (badge : `#EAF2ED`)
+  - Texte principal à fort contraste : `#29252A`
+  - Texte secondaire : `#716971`
+  - Bordures : `#E9E0E4`
+- **Composants d'Interface Réutilisables (`src/components/v2/ui/`)** :
+  - `ButtonV2.tsx` : Boutons tactiles avec retours haptiques (`primary`, `secondary`, `outline`, `ghost`, `green`).
+  - `CardV2.tsx` : Cartes épurées avec ombres douces et rayons de courbure cohérents.
+  - `BadgeV2.tsx` : Badges sémantiques accessibles pour les statuts et sources médicales.
+  - `ModalV2.tsx` : Boîtes de dialogue accessibles (gestion de la touche Échap, backdrop tactile, focus).
+  - `SearchBarV2.tsx` : Barre de recherche intuitive avec réinitialisation en 1 clic.
+  - `EmptyStateV2.tsx` : États vides élégants avec bouton d'action contextuel.
+- **Navigation Responsive & Layout (`src/components/v2/navigation/` & `layout/`)** :
+  - `AppShell.tsx` : Shell responsive fluide s'adaptant à toutes les résolutions.
+  - `NavigationMobile.tsx` : Barre fixe en bas d'écran avec les 5 destinations prioritaires :
+    1. **Accueil** (Vue d'ensemble et accès rapides)
+    2. **Prévention** (Comprendre, autopalpation 4 étapes, dépistage)
+    3. **Rose IA** (Bouton central distinct et tactile)
+    4. **Centres** (Carte OpenStreetMap & disponibilités réelles)
+    5. **Profil** (Espace personnel, rôles, cycle menstruel, rappels)
+  - `NavigationDesktop.tsx` : Sidebar latérale pour grands écrans avec raccourcis de dons et d'urgences.
+  - `HeaderV2.tsx` : En-tête avec titre de section, sélecteur de langue 4 langues (Français, Mooré, Dioula, Anglais) et statut hors-ligne.
+- **Écrans Découplés (`src/components/v2/screens/`)** :
+  - `AccueilV2.tsx` : Accueil chaleureux, pensée bienveillante du jour de Rose IA avec audio, campagnes actives et accès d'urgence.
+  - `PreventionV2.tsx` : Organisation en 4 onglets clairs (Comprendre sans jargon, Signes qui alertent, Autopalpation 4 étapes, Dépistage et examens).
+  - `RoseIAV2.tsx` : Conversation textuelle et vocale avec micro Web Speech API, lecture audio 4 langues, et disclaimer de prudence médicale.
+  - `CentresV2.tsx` : Recherche, filtrage par ville et statut, carte Leaflet OpenStreetMap avec calcul d'itinéraire GPS (Google/Apple Maps) et appel direct.
+  - `ProfilV2.tsx` : Gestion du profil, bascule de rôle (Utilisatrice, Docteur, Centre, Association, Superadmin), suivi du cycle menstruel 100% local, et gestion des rappels.
+  - `AccompagnantV2.tsx` : Envoi d'invitations au dépistage par WhatsApp ou SMS direct (fonctionne sans internet).
+  - `AnnoncesV2.tsx` : Affiches officielles et veille associative.
+  - `DonationModalV2.tsx` : Modale solidaire avec Orange Money, Moov Money et option de don anonyme chiffré.
+- **Point d'Entrée V2 (`src/components/mockups/pinkhub-v2/PagLaafiV2.tsx`)** :
+  - Intègre l'orchestration globale, la persistance `localStorage` et le chargement par défaut dans `App.tsx`.
+  - La version originale `PinkHubMobile.tsx` reste accessible intacte à l'URL `/preview/pinkhub-mvp/PinkHubMobile`.
+
+##### 3. Maintenance & Évolution
+- **Ajout d'un centre de santé** : Ajouter l'établissement dans `src/components/v2/data/centers.ts` avec ses coordonnées GPS réelles et ses examens.
+- **Ajout d'une annonce partenaire** : Ajouter l'événement dans `src/components/v2/data/announcements.ts`.
+- **Ajout de conseils Rose IA** : Enrichir le dictionnaire `roseKnowledgeBase` dans `src/components/v2/data/education.ts` avec les traductions en 4 langues.
+- **Vérifications de conformité** :
+  - Typecheck : `npm run typecheck` (dans `artifacts/mockup-sandbox`)
+  - Compilation : `npm run build` (dans `artifacts/mockup-sandbox`)
+
+
