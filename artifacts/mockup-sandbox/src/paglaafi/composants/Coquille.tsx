@@ -20,17 +20,12 @@ import {
   Eye,
   EyeOff,
   FileText,
-  Gift,
   GraduationCap,
   Headphones,
   Heart,
-  HeartHandshake,
-  Languages,
   Lock,
-  LogOut,
   MapPin,
   Megaphone,
-  Menu,
   MessageCircle,
   Mic,
   Navigation,
@@ -47,28 +42,32 @@ import {
   Smartphone,
   Sparkles,
   Stethoscope,
-  User,
   UserPlus,
   UsersRound,
   Volume2,
   X,
 } from "lucide-react";
-import type { AdminType, Section } from "../types";
-import { hapticFeedback } from "../lib/haptique";
+import type { AdminType } from "../types";
 import { getProfileIdentity } from "../lib/identiteProfil";
 import { roseDailyTips } from "../donnees/conseilsRose";
 import { lessons } from "../donnees/lecons";
+import { hapticFeedback } from "../lib/haptique";
 import { partnerAssociations } from "../donnees/associations";
-import { useUi, useAuth, useDemarrage, useAudio, useCentres, useOrientations, useSante, useRose, useDocteur, useEducation, useAnnonces, useDons, useAdministration, useLangue } from "../etat/contextes";
+import { EcranDemarrage } from "./EcranDemarrage";
+import { MenuLateral } from "./MenuLateral";
+import { EnTete } from "./EnTete";
+import { BandeauHorsLigne } from "./BandeauHorsLigne";
+import { BarreNavigation } from "./BarreNavigation";
+import { Toast } from "./Toast";
+import { useUi, useAuth, useAudio, useCentres, useOrientations, useSante, useRose, useDocteur, useEducation, useAnnonces, useDons, useAdministration } from "../etat/contextes";
 
 /**
  * Coquille de l'application : cadre smartphone, en-tête, contenu des onglets,
  * barre de navigation, modales et notifications.
  */
 export function Coquille() {
-  const { appLanguage, appShareUrl, deferredPrompt, handleTriggerInstall, isOffline, isStandaloneApp, mainScrollRef, notify, section, setSection, setShowLanguageMenu, setShowProfileMenu, setShowPwaInstallModal, setSidebarOpen, setSmsLanguage, showProfileMenu, showPwaInstallModal, sidebarOpen, smsLanguage, toast } = useUi();
-  const { authMode, currentUser, handleLoginSubmit, handleLogout, handleRegisterSubmit, loginForm, pendingRegistrations, quickLoginAs, registerForm, setAuthMode, setCurrentUser, setLoginForm, setRegisterForm, setShowConfirmPassword, setShowPassword, showConfirmPassword, showPassword } = useAuth();
-  const { setShowSplash, showSplash, splashProgress } = useDemarrage();
+  const { appLanguage, appShareUrl, deferredPrompt, handleTriggerInstall, mainScrollRef, notify, section, setSection, setShowPwaInstallModal, setSmsLanguage, showPwaInstallModal, smsLanguage } = useUi();
+  const { authMode, currentUser, handleLoginSubmit, handleRegisterSubmit, loginForm, pendingRegistrations, quickLoginAs, registerForm, setAuthMode, setCurrentUser, setLoginForm, setRegisterForm, setShowConfirmPassword, setShowPassword, showConfirmPassword, showPassword } = useAuth();
   const { audioProgress, handlePlayAudio, isPlaying, setAudioProgress, setIsPlaying, setSpeechLanguage, speechLanguage } = useAudio();
   const { centerUpdateData, centers, cityFilter, filteredCenters, handleSaveCenterUpdate, mapContainerRef, mapInstanceRef, openNavigation, searchQuery, selectedCenter, setCenterUpdateData, setCityFilter, setSearchQuery, setSelectedCenter, setShowCenterUpdateModal, setStatusFilter, setViewMode, showCenterUpdateModal, statusFilter, viewMode } = useCentres();
   const { generatedOrientationCode, handleCreatePatientOrientation, handleValidateOrientationByCenter, orientationForm, setGeneratedOrientationCode, setOrientationForm, setShowOrientationModal, showOrientationModal, urgentOrientations } = useOrientations();
@@ -79,7 +78,6 @@ export function Coquille() {
   const { announcements, announcementsFilter, displayedAnnouncements, handleApproveAndPushAnnouncement, handleApproveAnnouncement, handlePublishAnnouncementSubmit, handleRejectAnnouncement, newAnnouncement, selectedPosterModal, setAnnouncementsFilter, setNewAnnouncement, setSelectedPosterModal, setShowNewAnnouncementModal, showNewAnnouncementModal } = useAnnonces();
   const { customDonationAmount, donationAmount, donationStep, handleConfirmOrangeMoney, handleStartDonationProcess, handleValidateOrangeMoneyOTP, isAnonymousDonation, lastDonationId, orangeMoneyPhone, otpCode, selectedAssociation, setCustomDonationAmount, setDonationAmount, setDonationStep, setIsAnonymousDonation, setOrangeMoneyPhone, setOtpCode, setSelectedAssociation, setShowDonationModal, showDonationModal } = useDons();
   const { handleApproveRegistration, handleRejectRegistration, setShowAdminDashboardModal, setShowSuperadminModal, setSuperadminActiveTab, setSuperadminAnnouncementTab, setSuperadminRegionFilter, showAdminDashboardModal, showSuperadminModal, superadminActiveTab, superadminAnnouncementTab, superadminRegionFilter, superadminSortedCenters } = useAdministration();
-  const { handleSelectAppLanguage } = useLangue();
 
   return (
     <main
@@ -109,634 +107,22 @@ export function Coquille() {
         {/* ==================================================================== */}
         {/* ÉCRAN DE DÉMARRAGE (SPLASH SCREEN) : 5 SECONDES                     */}
         {/* ==================================================================== */}
-        {showSplash && (
-          <div className="absolute inset-0 z-50 flex flex-col justify-between overflow-hidden bg-[#fff0f5] text-[#580e36] ph-enter sm:rounded-[36px]">
-            {/* Image de fond plein écran : Femmes & Médecin en blouse avec rubans roses */}
-            <div className="absolute inset-0">
-              <img
-                src="/images/splash-paglaafi-heroines.jpg"
-                alt="Solidarité PagLaafi - Lutte contre le cancer du sein au Burkina Faso"
-                className="h-full w-full object-cover object-top transform scale-100 transition-transform duration-5000 ease-out"
-              />
-              {/* Voile supérieur subtil pour contraster l'en-tête sans masquer les visages */}
-              <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/70 via-white/20 to-transparent pointer-events-none" />
-              {/* Voile inférieur dégradé doux pour assurer la lisibilité sur la partie texte */}
-              <div className="absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-[#fff5f8] via-[#fff5f8]/95 via-45% to-transparent pointer-events-none" />
-            </div>
-
-            {/* En-tête du Splash : Drapeau et bouton passer */}
-            <div className="relative z-10 flex items-center justify-between p-4 pt-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-pink-300/60 bg-white/85 px-3 py-1.5 text-[11px] font-bold text-[#580e36] backdrop-blur-md shadow-xs">
-                <span>🇧🇫</span>
-                <span>Burkina Faso</span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  hapticFeedback(15);
-                  setShowSplash(false);
-                  setCurrentUser(null);
-                }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-pink-300/60 bg-white/85 px-3.5 py-1.5 text-[11px] font-bold text-[#580e36] backdrop-blur-md hover:bg-white transition shadow-xs active:scale-95"
-              >
-                <span>Passer</span>
-                <ChevronRight size={13} className="text-[#ea2d6d]" />
-              </button>
-            </div>
-
-            {/* Pied de page du Splash : Logo agrandi, Titre, Slogan, Icônes réorganisées et barre de chargement de 5 secondes */}
-            <div className="relative z-10 p-5 pb-7 text-center">
-              {/* Logo PagLaafi agrandi avec mise en valeur */}
-              <div className="mx-auto mb-2.5 flex h-20 w-20 items-center justify-center rounded-2xl bg-white p-2.5 shadow-[0_10px_25px_rgba(234,45,109,0.22)] ring-4 ring-[#ea2d6d]/20 transition-transform duration-300 hover:scale-105">
-                <img
-                  src="/images/pinkhub-mvp-paglaafi.png"
-                  alt="Logo PagLaafi"
-                  className="h-full w-full object-contain"
-                />
-              </div>
-
-              <h1 className="ph-display text-3xl font-extrabold tracking-tight text-[#580e36] drop-shadow-xs">
-                PagLaafi
-              </h1>
-              <p className="mt-1 text-[13px] font-bold text-[#ea2d6d] tracking-wide">
-                Mieux s'informer · Mieux s'orienter · Jamais seule
-              </p>
-              <p className="mx-auto mt-1 max-w-[320px] text-[11px] font-medium leading-tight text-[#783e58]">
-                Sensibilisation, dépistage précoce du cancer du sein & accompagnement solidaire au Burkina Faso
-              </p>
-
-              {/* Icônes de réassurance et services clés réorganisées */}
-              <div className="mx-auto mt-3 flex items-center justify-center gap-2 max-w-[360px]">
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-pink-200/90 bg-white/90 px-2.5 py-1 text-[10.5px] font-semibold text-[#580e36] shadow-xs backdrop-blur-sm">
-                  <Stethoscope size={12} className="text-[#ea2d6d]" />
-                  <span>Dépistage</span>
-                </div>
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-pink-200/90 bg-white/90 px-2.5 py-1 text-[10.5px] font-semibold text-[#580e36] shadow-xs backdrop-blur-sm">
-                  <MapPin size={12} className="text-[#ea2d6d]" />
-                  <span>Centres de santé</span>
-                </div>
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-pink-200/90 bg-white/90 px-2.5 py-1 text-[10.5px] font-semibold text-[#580e36] shadow-xs backdrop-blur-sm">
-                  <HeartHandshake size={12} className="text-[#ea2d6d]" />
-                  <span>Écoute solidaire</span>
-                </div>
-              </div>
-
-              {/* Barre de progression animée de 5 secondes */}
-              <div className="mx-auto mt-4 max-w-[270px]">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-pink-200/60 shadow-inner">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#580e36] via-[#ea2d6d] to-pink-400 transition-all duration-75 ease-linear shadow-[0_0_10px_rgba(234,45,109,0.7)]"
-                    style={{ width: `${splashProgress}%` }}
-                  />
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[10.5px] font-semibold text-[#6a2948]">
-                  <span className="flex items-center gap-1.5">
-                    <Sparkles size={12} className="text-[#ea2d6d] animate-spin" />
-                    <span>Chargement de votre espace santé...</span>
-                  </span>
-                  <span className="font-mono text-[11px] font-bold text-[#580e36]">
-                    {Math.max(0, Math.ceil((5000 - splashProgress * 50) / 1000))}s
-                  </span>
-                </div>
-              </div>
-
-              {/* Badge d'autorité et précision en bas */}
-              <div className="mt-3.5 inline-flex items-center gap-2 rounded-full border border-pink-300/80 bg-white/90 px-3.5 py-1.5 text-[10.5px] font-bold text-[#580e36] shadow-xs backdrop-blur-md">
-                <ShieldCheck size={13} className="text-[#ea2d6d]" />
-                <span>Plateforme Nationale de Santé · Propulsé par Rose IA</span>
-              </div>
-            </div>
-          </div>
-        )}
+        <EcranDemarrage />
 
         {/* ==================================================================== */}
         {/* BARRE LATÉRALE (SIDEBAR)                                             */}
         {/* ==================================================================== */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm sm:absolute sm:rounded-[36px]"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <div
-              className="relative flex h-full w-[84%] max-w-[325px] flex-col bg-[#fffaf9] p-5 shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
-                <div className="flex items-center gap-2.5">
-                  <img
-                    src="/images/pinkhub-mvp-paglaafi.png"
-                    alt="Logo PagLaafi"
-                    className="h-10 w-10 object-contain mix-blend-multiply"
-                  />
-                  <div>
-                    <h2 className="ph-display text-lg font-bold text-[#580e36]">PagLaafi</h2>
-                    <p className="text-[10px] font-medium text-[#92546e]">Burkina Faso</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSidebarOpen(false)}
-                  className="grid h-8 w-8 place-items-center rounded-full text-[#815568] hover:bg-[#f8e7ec]"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Statut de profil dans le menu avec icône adaptée */}
-              {(() => {
-                const drawerIdentity = getProfileIdentity(currentUser);
-                return (
-                  <div className="mt-3 rounded-2xl bg-[#f9edf1] p-3 text-xs border border-[#f0d8e1]">
-                    {currentUser ? (
-                      <div className="flex items-center gap-3">
-                        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${drawerIdentity.bg} ${drawerIdentity.text} border ${drawerIdentity.border} shadow-xs`}>
-                          {drawerIdentity.icon}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <span className={`inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${drawerIdentity.badgeBg}`}>
-                            {currentUser.roleLabel}
-                          </span>
-                          <p className="mt-0.5 font-bold text-[#580e36] truncate">{currentUser.prenom} {currentUser.nom}</p>
-                          <p className="text-[10px] text-[#7d5d6c] truncate">{currentUser.telephone}</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => { setSidebarOpen(false); setAuthMode("login"); }}
-                        className="flex w-full items-center justify-between font-bold text-[#913b5b]"
-                      >
-                        <span className="flex items-center gap-2">
-                          <User size={16} /> Se connecter / Créer un compte
-                        </span>
-                        <ChevronRight size={16} />
-                      </button>
-                    )}
-                  </div>
-                );
-              })()}
-
-              {/* Raccourci Superadmin National */}
-              {currentUser?.role === "superadmin" && (
-                <div className="mt-2.5">
-                  <button
-                    onClick={() => {
-                      setSidebarOpen(false);
-                      setShowSuperadminModal(true);
-                    }}
-                    className="flex w-full items-center justify-between rounded-xl bg-purple-900 px-3 py-2 text-xs font-bold text-white shadow"
-                  >
-                    <span className="flex items-center gap-2">
-                      <ShieldAlert size={15} className="text-amber-300" /> Panneau Superadmin
-                    </span>
-                    <span className="rounded-full bg-amber-400 px-1.5 py-0.2 text-[9px] font-extrabold text-purple-950">
-                      {announcements.filter((a) => a.status === "pending_validation").length + pendingRegistrations.filter((r) => r.status === "pending").length}
-                    </span>
-                  </button>
-                </div>
-              )}
-
-              {/* Tableau de bord statistique pour TOUS les administrateurs */}
-              {(currentUser?.role === "admin" || currentUser?.role === "superadmin") && (
-                <div className="mt-2">
-                  <button
-                    onClick={() => {
-                      setSidebarOpen(false);
-                      setShowAdminDashboardModal(true);
-                    }}
-                    className="flex w-full items-center justify-between rounded-xl bg-[#522538] px-3 py-2 text-xs font-bold text-white shadow"
-                  >
-                    <span className="flex items-center gap-2">
-                      <BarChart3 size={15} className="text-rose-300" /> Tableau de Bord Admin
-                    </span>
-                    <span className="text-[9px] font-semibold text-rose-200">Stats</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Entraînement de Rose IA pour docteurs */}
-              {currentUser?.role === "admin" && currentUser?.adminType === "doctor" && (
-                <div className="mt-2">
-                  <button
-                    onClick={() => {
-                      setSidebarOpen(false);
-                      setShowDoctorTrainModal(true);
-                    }}
-                    className="flex w-full items-center justify-between rounded-xl bg-blue-900 px-3 py-2 text-xs font-bold text-white shadow"
-                  >
-                    <span className="flex items-center gap-2">
-                      <GraduationCap size={15} className="text-amber-300" /> Entraîner Rose IA (Docteur)
-                    </span>
-                    <span className="rounded-full bg-blue-700 px-1.5 py-0.5 text-[9px]">IA</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Orientation patiente */}
-              {currentUser?.role === "admin" && (currentUser?.adminType === "doctor" || currentUser?.adminType === "center") && (
-                <div className="mt-2">
-                  <button
-                    onClick={() => {
-                      setSidebarOpen(false);
-                      setShowOrientationModal(true);
-                    }}
-                    className="flex w-full items-center justify-between rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white shadow"
-                  >
-                    <span className="flex items-center gap-2">
-                      <FileText size={15} className="text-amber-300" /> Orienter une Patiente
-                    </span>
-                    <span className="text-[9px] font-semibold text-emerald-200">Urgence</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Navigation de la barre latérale */}
-              <nav className="mt-3 space-y-1 flex-1 overflow-y-auto text-xs">
-                <button
-                  onClick={() => { setSection("Accueil"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Accueil" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
-                >
-                  <Heart size={17} /> <span>Accueil</span>
-                </button>
-
-                <button
-                  onClick={() => { setSection("Centres"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Centres" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
-                >
-                  <span className="flex items-center gap-3"><MapPin size={17} /> Carte des Soins (OpenStreetMap)</span>
-                  <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-800">En direct</span>
-                </button>
-
-                <button
-                  onClick={() => { setSection("Calendrier"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Calendrier" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
-                >
-                  <span className="flex items-center gap-3"><CalendarDays size={17} /> Règles & Autopalpation</span>
-                  <span className="rounded-full bg-pink-100 px-1.5 py-0.5 text-[9px] font-bold text-[#ea2d6d]">Cycle</span>
-                </button>
-
-                <button
-                  onClick={() => { setSection("Comprendre"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Comprendre" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
-                >
-                  <span className="flex items-center gap-3"><BookOpen size={17} /> Comprendre (Français · Anglais · Mooré · Dioula)</span>
-                  <span className="rounded-full bg-pink-100 px-1.5 py-0.5 text-[9px] font-bold text-[#ea2d6d]">Audio</span>
-                </button>
-
-                <button
-                  onClick={() => { setSection("RoseIA"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "RoseIA" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
-                >
-                  <span className="flex items-center gap-3"><Sparkles size={17} /> Rose IA (Assistance Vocale)</span>
-                  <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900">IA</span>
-                </button>
-
-                <button
-                  onClick={() => { setSection("Annonces"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Annonces" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
-                >
-                  <Megaphone size={17} /> <span>Annonces & Événements</span>
-                </button>
-
-                <button
-                  onClick={() => { setSection("Accompagnant"); setSelectedCenter(null); setSidebarOpen(false); }}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Accompagnant" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
-                >
-                  <UserPlus size={17} /> <span>L'Accompagnant (À deux)</span>
-                </button>
-
-                {/* Mise à jour centre : réservé aux Admins Centre & Médecins */}
-                {currentUser?.role === "admin" && (currentUser?.adminType === "center" || currentUser?.adminType === "doctor") && (
-                  <div className="pt-2 border-t border-[#f2e1e6]">
-                    <button
-                      onClick={() => {
-                        setSidebarOpen(false);
-                        setCenterUpdateData(centers[0]);
-                        setShowCenterUpdateModal(true);
-                      }}
-                      className="flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#dfb3c1] bg-[#fcf5f7] px-3 py-2 text-left text-xs font-bold text-[#863853]"
-                    >
-                      <Edit3 size={15} /> Mettre à jour mon centre sur la carte
-                    </button>
-                  </div>
-                )}
-
-                {/* Faire un don solidaire : en bas avec Cœur */}
-                <div className="pt-2 border-t border-[#f2e1e6]">
-                  <button
-                    onClick={() => {
-                      setSidebarOpen(false);
-                      setShowDonationModal(true);
-                    }}
-                    className="flex w-full items-center justify-between rounded-2xl bg-rose-50 px-3.5 py-2.5 font-bold text-[#ea2d6d] hover:bg-rose-100"
-                  >
-                    <span className="flex items-center gap-3">
-                      <Heart size={17} className="text-[#ea2d6d] fill-[#ea2d6d]" /> Faire un don
-                    </span>
-                    <span className="text-[10px] text-rose-800">Solidarité</span>
-                  </button>
-                </div>
-
-                {/* Paramètres de Confidentialité & Entraînement Docteur */}
-                <div className="pt-2 border-t border-[#f2e1e6] space-y-1.5">
-                  <button
-                    onClick={() => {
-                      setSidebarOpen(false);
-                      setShowPrivacyModal(true);
-                    }}
-                    className="flex w-full items-center justify-between rounded-2xl bg-emerald-50/70 border border-emerald-200 px-3.5 py-2 font-semibold text-emerald-900 hover:bg-emerald-100"
-                  >
-                    <span className="flex items-center gap-2.5 text-xs">
-                      <ShieldCheck size={16} className="text-emerald-700" /> Confidentialité & Données
-                    </span>
-                    <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Local</span>
-                  </button>
-
-                  {/* Simulation d'entraînement réservée exclusivement aux soignants et superadmin */}
-                  {currentUser && (currentUser.role === "superadmin" || (currentUser.role === "admin" && currentUser.adminType === "doctor")) && (
-                    <button
-                      onClick={() => {
-                        setSidebarOpen(false);
-                        setShowDoctorTrainModal(true);
-                      }}
-                      className="flex w-full items-center justify-between rounded-2xl bg-amber-50 border border-amber-200 px-3.5 py-2 font-semibold text-amber-950 hover:bg-amber-100"
-                    >
-                      <span className="flex items-center gap-2.5 text-xs">
-                        <GraduationCap size={16} className="text-amber-700" /> Simuler Entraînement Docteur
-                      </span>
-                      <span className="text-[9.5px] font-bold text-amber-800 bg-amber-200 px-1.5 py-0.5 rounded">4 étapes</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* BOUTON SE DÉCONNECTER DU MENU DÉROULANT GAUCHE EXIGÉ */}
-                {currentUser && (
-                  <div className="pt-2 border-t border-[#f2e1e6]">
-                    <button
-                      onClick={handleLogout}
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-50 border border-rose-200 px-3.5 py-2.5 font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
-                    >
-                      <LogOut size={16} className="text-rose-600" />
-                      <span>Se déconnecter</span>
-                    </button>
-                  </div>
-                )}
-              </nav>
-
-              {/* Bouton Installation Application Mobile PWA */}
-              <div className="mt-2">
-                <button
-                  onClick={() => {
-                    setSidebarOpen(false);
-                    handleTriggerInstall();
-                  }}
-                  className="flex w-full items-center justify-between rounded-xl bg-gradient-to-r from-[#ea2d6d] to-[#580e36] px-3 py-2 text-xs font-bold text-white shadow-md hover:opacity-95 transition"
-                >
-                  <span className="flex items-center gap-2">
-                    <Smartphone size={15} className="text-amber-300" />
-                    <span>{isStandaloneApp ? "Application installée ✓" : "Installer l'App Mobile"}</span>
-                  </span>
-                  <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-black text-white">
-                    PWA
-                  </span>
-                </button>
-              </div>
-
-              {/* SÉLECTEUR DE LANGUE DISCRET & TACTILE DANS LA SIDEBAR DÉROULANTE */}
-              <div className="mt-2 rounded-2xl bg-[#fff2f6] p-2.5 border border-[#fce4ec]">
-                <div className="flex items-center justify-between mb-1.5 px-1">
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#ea2d6d]">
-                    <Languages size={13} /> Langue de l'App
-                  </span>
-                  <span className="text-[9.5px] font-extrabold text-[#580e36]">
-                    {appLanguage === "moore" ? "Mooré" : appLanguage === "dioula" ? "Dioula" : appLanguage.toUpperCase()}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { code: "fr" as const, label: "Français", flag: "🇫🇷" },
-                    { code: "moore" as const, label: "Mooré", flag: "🇧🇫" },
-                    { code: "dioula" as const, label: "Dioula", flag: "🇧🇫" },
-                    { code: "en" as const, label: "English", flag: "🇬🇧" },
-                  ].map((l) => (
-                    <button
-                      key={l.code}
-                      type="button"
-                      onClick={() => handleSelectAppLanguage(l.code)}
-                      className={`flex items-center justify-center gap-1 rounded-xl py-1.5 px-2 text-[11px] font-bold transition cursor-pointer ${
-                        appLanguage === l.code
-                          ? "bg-[#ea2d6d] text-white shadow-xs"
-                          : "bg-white text-[#580e36] border border-[#fce4ec] hover:bg-pink-100/60"
-                      }`}
-                    >
-                      <span>{l.flag}</span>
-                      <span>{l.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Ligne d'urgence */}
-              <div className="mt-2 rounded-2xl bg-[#734059] p-3 text-white">
-                <p className="text-[11px] font-bold">Numéro vert national gratuit</p>
-                <p className="text-base font-extrabold tracking-wide">80 00 11 22</p>
-              </div>
-            </div>
-          </div>
-        )}
+        <MenuLateral />
 
         {/* ==================================================================== */}
         {/* EN-TÊTE FIXE DU SMARTPHONE AVEC DÉCONNEXION DIRECTE SUR L'ICÔNE      */}
         {/* ==================================================================== */}
-        <header className="z-30 flex items-center justify-between border-b border-[#f4e2e7] bg-white/95 px-4 py-2.5 backdrop-blur-md">
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="grid h-9 w-9 place-items-center rounded-full text-[#75475a] hover:bg-[#fbf0f4]"
-              aria-label="Ouvrir le menu"
-            >
-              <Menu size={20} />
-            </button>
-            <div
-              onClick={() => setSection("Accueil")}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <img
-                src="/images/pinkhub-mvp-paglaafi.png"
-                alt="Logo PagLaafi"
-                className="h-8 w-8 object-contain mix-blend-multiply"
-              />
-              <span className="ph-display text-lg font-bold text-[#580e36]">PagLaafi</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Bouton d'installation PWA Mobile rapide */}
-            <button
-              onClick={handleTriggerInstall}
-              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-bold transition shadow-2xs ${
-                isStandaloneApp
-                  ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                  : "border-[#fce4ec] bg-gradient-to-r from-pink-50 to-rose-50 text-[#ea2d6d] hover:bg-pink-100"
-              }`}
-              title={isStandaloneApp ? "Application PagLaafi active en mode autonome" : "Installer l'application sur smartphone"}
-            >
-              <Smartphone size={11} className={isStandaloneApp ? "text-emerald-600" : "text-[#ea2d6d]"} />
-              <span>{isStandaloneApp ? "Installé" : "Installer"}</span>
-            </button>
-
-            {/* Bouton direct Rose IA (affiché uniquement quand l'utilisateur est connecté) */}
-            {currentUser && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSection("RoseIA");
-                  setShowLanguageMenu(false);
-                }}
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10.5px] font-bold transition shadow-sm ${section === "RoseIA" ? "bg-[#ea2d6d] text-white" : "border border-[#e7bcc9] bg-[#fbf0f4] text-[#d81f5c]"}`}
-              >
-                <Sparkles size={12} className="text-amber-500" />
-                <span>Rose IA</span>
-              </button>
-            )}
-
-            {/* ICÔNE DE PROFIL PERSONNALISÉE AVEC DÉCONNEXION (affiché quand connecté) */}
-            {currentUser && (() => {
-              const headerProfileIdentity = getProfileIdentity(currentUser);
-              return (
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className={`relative grid h-10 w-10 place-items-center rounded-full border-2 ${headerProfileIdentity.border} ${headerProfileIdentity.bg} ${headerProfileIdentity.text} shadow-md transition hover:scale-105`}
-                    title={`${currentUser.prenom} (${currentUser.roleLabel}) - Cliquez pour gérer`}
-                  >
-                    {headerProfileIdentity.icon}
-                    <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white ${headerProfileIdentity.dotColor}`} />
-                  </button>
-
-                  {/* Menu Popover Déconnexion Directe */}
-                  {showProfileMenu && (
-                    <div
-                      className="ph-enter absolute right-0 top-12 z-50 w-64 rounded-2xl border border-[#ebd4dd] bg-white p-3.5 shadow-2xl"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex items-center gap-3 border-b border-[#f5e4ea] pb-3">
-                        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${headerProfileIdentity.bg} ${headerProfileIdentity.text} border ${headerProfileIdentity.border} shadow-xs`}>
-                          {headerProfileIdentity.icon}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-[#580e36] text-xs truncate">
-                            {currentUser.prenom} {currentUser.nom}
-                          </p>
-                          <span className={`inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${headerProfileIdentity.badgeBg}`}>
-                            {currentUser.roleLabel}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="mt-2 text-[10.5px] text-[#7a5969] space-y-0.5">
-                        <p className="flex items-center gap-1.5"><Phone size={12} className="text-[#ea2d6d]" /> {currentUser.telephone}</p>
-                        {currentUser.structureName && (
-                          <p className="flex items-center gap-1.5"><MapPin size={12} className="text-[#ea2d6d]" /> {currentUser.structureName}</p>
-                        )}
-                      </div>
-
-                      <div className="mt-3 pt-2 border-t border-[#f7e6ec] space-y-2">
-                        <div>
-                          <p className="text-[10px] font-bold text-[#8c4d66] mb-1.5">Changer de profil (1-clic) :</p>
-                          <div className="grid grid-cols-2 gap-1 text-[10px]">
-                            <button
-                              onClick={() => { quickLoginAs("user"); setShowProfileMenu(false); }}
-                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.role === 'user' ? 'bg-[#ea2d6d] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
-                            >
-                              👩 Utilisatrice
-                            </button>
-                            <button
-                              onClick={() => { quickLoginAs("center"); setShowProfileMenu(false); }}
-                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'center' ? 'bg-[#ea2d6d] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
-                            >
-                              🏥 Centre Santé
-                            </button>
-                            <button
-                              onClick={() => { quickLoginAs("doctor"); setShowProfileMenu(false); }}
-                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'doctor' ? 'bg-[#ea2d6d] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
-                            >
-                              🩺 Docteur
-                            </button>
-                            <button
-                              onClick={() => { quickLoginAs("association"); setShowProfileMenu(false); }}
-                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === 'association' ? 'bg-[#ea2d6d] text-white' : 'bg-pink-50 text-[#6f334a] hover:bg-pink-100'}`}
-                            >
-                              🎗️ Association
-                            </button>
-                          </div>
-                          <button
-                            onClick={() => { quickLoginAs("superadmin"); setShowProfileMenu(false); }}
-                            className={`w-full mt-1 rounded-lg px-2 py-1 font-semibold text-left text-[10px] transition ${currentUser.role === 'superadmin' ? 'bg-purple-900 text-white' : 'bg-purple-50 text-purple-900 hover:bg-purple-100'}`}
-                          >
-                            🛡️ Superadmin National
-                          </button>
-                        </div>
-
-                        {/* Raccourcis Confidentialité & Simulation Docteur */}
-                        <div className="pt-2 border-t border-[#f7e6ec] space-y-1.5">
-                          <button
-                            onClick={() => {
-                              setShowPrivacyModal(true);
-                              setShowProfileMenu(false);
-                            }}
-                            className="flex w-full items-center justify-between rounded-xl bg-slate-50 border border-slate-200 px-2.5 py-1.5 text-[10.5px] font-bold text-slate-700 hover:bg-slate-100 transition shadow-xs"
-                          >
-                            <span className="flex items-center gap-1.5">
-                              <ShieldCheck size={13} className="text-emerald-600" />
-                              <span>Confidentialité & Données</span>
-                            </span>
-                            <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">100% Local</span>
-                          </button>
-
-                          {/* Simulation réservée aux soignants et superadmin */}
-                          {currentUser && (currentUser.role === "superadmin" || (currentUser.role === "admin" && currentUser.adminType === "doctor")) && (
-                            <button
-                              onClick={() => {
-                                setShowDoctorTrainModal(true);
-                                setShowProfileMenu(false);
-                              }}
-                              className="flex w-full items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[10.5px] font-bold text-amber-900 hover:bg-amber-100 transition shadow-xs"
-                            >
-                              <span className="flex items-center gap-1.5">
-                                <GraduationCap size={13} className="text-amber-600" />
-                                <span>Simuler Entraînement Docteur</span>
-                              </span>
-                              <span className="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">4 étapes</span>
-                            </button>
-                          )}
-                        </div>
-
-                        {/* BOUTON DÉCONNEXION DIRECTE */}
-                        <button
-                          onClick={handleLogout}
-                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
-                        >
-                          <LogOut size={13} className="text-rose-600" />
-                          <span>Se déconnecter</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-          </div>
-        </header>
+        <EnTete />
 
         {/* ==================================================================== */}
         {/* BANDEAU MODE HORS-LIGNE (PWA & OFFLINE)                              */}
         {/* ==================================================================== */}
-        {isOffline && (
-          <div className="z-20 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 to-amber-700 px-3 py-1.5 text-center text-[10.5px] font-bold text-white shadow-xs">
-            <AlertCircle size={13} className="shrink-0 animate-pulse text-amber-200" />
-            <span>Mode Hors-Ligne actif · Vos données médicales et centres restent accessibles</span>
-          </div>
-        )}
+        <BandeauHorsLigne />
 
         {/* ==================================================================== */}
         {/* CONTENU PRINCIPAL DES ONGLETS                                        */}
@@ -2870,77 +2256,7 @@ export function Coquille() {
         {/* ==================================================================== */}
         {/* BARRE DE NAVIGATION INFÉRIEURE : AFFICHÉE UNIQUEMENT QUAND CONNECTÉ */}
         {/* ==================================================================== */}
-        {currentUser && (
-          <nav
-            aria-label="Navigation principale"
-            className="z-30 shrink-0 border-t border-[#f0dee3] bg-white/95 backdrop-blur-md px-1 pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-8px_25px_rgba(75,30,50,.07)]"
-          >
-            <div className="grid grid-cols-5 items-end">
-              {[
-                { label: "Accueil" as Section, icon: Heart, name: "Accueil" },
-                { label: "Comprendre" as Section, icon: BookOpen, name: "Comprendre" },
-                { label: "RoseIA" as Section, icon: Sparkles, name: "Rose IA", isCentral: true },
-                { label: "Centres" as Section, icon: MapPin, name: "Centres" },
-                { label: "FaireUnDon" as Section, icon: Gift, name: "Faire un don" },
-              ].map(({ label, icon: Icon, name, isCentral }) => {
-                const active = section === label;
-
-                if (isCentral) {
-                  return (
-                    <button
-                      key={label}
-                      onClick={() => {
-                        hapticFeedback(18);
-                        setSection(label);
-                        setSelectedCenter(null);
-                      }}
-                      aria-current={active ? "page" : undefined}
-                      className="group relative -mt-4 flex flex-col items-center justify-center focus:outline-none"
-                    >
-                      <span
-                        className={`flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-white shadow-[0_6px_18px_rgba(161,67,100,.35)] transition-all duration-300 group-hover:scale-105 ${active ? "bg-gradient-to-tr from-[#8a3350] via-[#ea2d6d] to-[#cf5d83] text-white ring-2 ring-[#ea2d6d]/30" : "bg-gradient-to-tr from-[#9c3e5d] to-[#be5377] text-white"}`}
-                      >
-                        <Sparkles size={21} className="text-amber-300 animate-pulse" />
-                      </span>
-                      <span
-                        className={`mt-0.5 text-[9.5px] tracking-tight font-extrabold transition ${active ? "text-[#ea2d6d]" : "text-[#7b5465]"}`}
-                      >
-                        Rose IA
-                      </span>
-                    </button>
-                  );
-                }
-
-                return (
-                  <button
-                    key={label}
-                    onClick={() => {
-                      hapticFeedback(12);
-                      setSection(label);
-                      setSelectedCenter(null);
-                      if (label === "FaireUnDon") {
-                        setShowDonationModal(true);
-                      }
-                    }}
-                    aria-current={active ? "page" : undefined}
-                    className={`flex min-h-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl transition ${active ? "text-[#ea2d6d]" : "text-[#9d838e] hover:text-[#785062]"}`}
-                  >
-                    <span
-                      className={`grid h-7 w-9 place-items-center rounded-full transition-all duration-200 ${active ? "bg-[#fbe7ed] text-[#ea2d6d] shadow-xs" : ""}`}
-                    >
-                      <Icon size={18} strokeWidth={active ? 2.5 : 1.8} className={label === "FaireUnDon" && active ? "fill-[#ea2d6d]" : ""} />
-                    </span>
-                    <span
-                      className={`text-[9.5px] tracking-tight transition ${active ? "font-bold text-[#ea2d6d]" : "font-medium text-[#9d838e]"}`}
-                    >
-                      {name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </nav>
-        )}
+        <BarreNavigation />
 
         {/* ==================================================================== */}
         {/* MODAL : NOUVELLE ANNONCE (AVEC PROCESSUS EN ATTENTE DE VALIDATION)   */}
@@ -5475,15 +4791,7 @@ export function Coquille() {
         {/* ==================================================================== */}
         {/* TOAST DE NOTIFICATION                                                */}
         {/* ==================================================================== */}
-        {toast && (
-          <div
-            role="status"
-            className="ph-enter absolute bottom-[80px] left-4 right-4 z-40 flex items-start gap-2.5 rounded-2xl bg-[#4d2d3e] px-4 py-3 text-xs leading-5 text-white shadow-[0_10px_30px_rgba(40,18,30,.25)]"
-          >
-            <Check size={16} className="mt-0.5 shrink-0 text-[#f5bed0]" />
-            <span className="flex-1">{toast}</span>
-          </div>
-        )}
+        <Toast />
       </div>
     </main>
   );
