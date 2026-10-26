@@ -54,20 +54,6 @@
   <body style="height: 100%; margin: 0; background-color: #2b1420;">
     <div id="root" style="height: 100%"></div>
     <script type="module" src="/src/main.tsx"></script>
-
-    <!-- Enregistrement du Service Worker PagLaafi pour le fonctionnement hors ligne -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js')
-            .then(function(reg) {
-              console.log('[PagLaafi] Service Worker actif (hors-ligne prêt):', reg.scope);
-            })
-            .catch(function(err) {
-              console.warn('[PagLaafi] Enregistrement Service Worker reporté:', err);
-            });
-        });
-      }
-    </script>
+    <!-- L'enregistrement du Service Worker se fait dans src/main.tsx (production uniquement) -->
   </body>
 </html>
