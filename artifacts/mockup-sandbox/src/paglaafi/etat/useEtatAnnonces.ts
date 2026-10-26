@@ -35,7 +35,7 @@ const formulaireVide = () => ({
   imageCaption: "",
 });
 export function useEtatAnnonces({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
-  const { notify } = ui;
+  const { notify, section } = ui;
   const { currentUser, sessionReelle } = auth;
 
   // 13. Annonces & Événements (avec modération Superadmin, filtre mois en cours et veille Rose IA)
@@ -51,10 +51,17 @@ export function useEtatAnnonces({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     }
   };
 
+  // Rechargement à chaque changement de compte (la liste visible dépend du rôle)…
   useEffect(() => {
     void rechargerAnnonces();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionReelle?.userId, sessionReelle?.role]);
+
+  // … et à chaque ouverture de l'onglet Annonces
+  useEffect(() => {
+    if (section === "Annonces") void rechargerAnnonces();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [section]);
 
   // Mode réel : décision du superadmin enregistrée en base
   const modererReel = async (id: number, decision: "publiee" | "refusee") => {

@@ -71,7 +71,7 @@ export function FournisseurEtat({ children }: { children: ReactNode }) {
   const education = useEtatEducation();
   const annonces = useEtatAnnonces({ ui, auth });
   const dons = useEtatDons({ ui });
-  const admin = useEtatAdministration({ auth, ui, centres });
+  const admin = useEtatAdministration({ auth, ui, centres, annonces });
   const langue = useEtatLangue({ ui, audio, rose });
   useEtatDefilement({ ui, centres });
 

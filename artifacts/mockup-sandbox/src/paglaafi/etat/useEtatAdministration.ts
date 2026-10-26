@@ -5,6 +5,7 @@ import { approuverDemande, chargerDemandes, refuserDemande } from "../depot/adhe
 import type { EtatAuth } from "./useEtatAuth";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatCentres } from "./useEtatCentres";
+import type { EtatAnnonces } from "./useEtatAnnonces";
 
 /**
  * Espaces d'administration : panneau Superadmin (statistiques, modération, adhésions) et tableau de bord admin.
@@ -13,7 +14,18 @@ import type { EtatCentres } from "./useEtatCentres";
  * attribue le rôle côté serveur (fonction approuver_demande, réservée au superadmin).
  * Les statistiques et le tableau de bord admin restent des données de démonstration.
  */
-export function useEtatAdministration({ auth, ui, centres }: { auth: EtatAuth; ui: EtatUi; centres: EtatCentres }) {
+export function useEtatAdministration({
+  auth,
+  ui,
+  centres,
+  annonces,
+}: {
+  auth: EtatAuth;
+  ui: EtatUi;
+  centres: EtatCentres;
+  annonces: EtatAnnonces;
+}) {
+  const { rechargerAnnonces } = annonces;
   const { sessionReelle, setPendingRegistrations } = auth;
   const { notify } = ui;
   const { centers } = centres;
@@ -42,6 +54,8 @@ export function useEtatAdministration({ auth, ui, centres }: { auth: EtatAuth; u
   useEffect(() => {
     if (MODE_REEL && sessionReelle?.role !== "superadmin") setPendingRegistrations([]);
     void rechargerDemandes();
+    // Panneau ouvert : annonces à modérer à jour
+    if (showSuperadminModal) void rechargerAnnonces();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionReelle?.userId, sessionReelle?.role, showSuperadminModal]);
 
