@@ -112,6 +112,7 @@ export interface PartnerAnnouncement {
   status: "pending_validation" | "approved" | "rejected";
   submittedBy?: string;
   submittedAt?: string;
+  auteurId?: string; // Identifiant Supabase de l'auteur (mode réel)
   isRoseAIDetected?: boolean; // Détecté par Rose IA sur internet / réseaux sociaux
   sourceWebUrl?: string; // Source repérée (ex: Page Facebook Ministère de la Santé)
   aiConfidence?: string; // Taux de fiabilité pré-validé par Rose IA
