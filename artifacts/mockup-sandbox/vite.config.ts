@@ -11,6 +11,12 @@ const port = process.env.PORT ? Number(process.env.PORT) : 5173;
 // Chemin de base pour les assets (par défaut racine '/' en local)
 const basePath = process.env.BASE_PATH || "/";
 
+// Écoute réseau : uniquement sur cet ordinateur (localhost) par défaut.
+// Pour la démo sur le Wi-Fi local, utiliser `pnpm run dev:lan` (option --host).
+// Sur Replit (REPL_ID défini), l'écoute sur toutes les interfaces reste nécessaire.
+const isReplit = process.env.REPL_ID !== undefined;
+const host = isReplit ? "0.0.0.0" : "localhost";
+
 export default defineConfig({
   base: basePath,
   plugins: [
@@ -41,15 +47,15 @@ export default defineConfig({
   },
   server: {
     port,
-    host: "0.0.0.0",
-    allowedHosts: true,
+    host,
+    ...(isReplit ? { allowedHosts: true as const } : {}),
     fs: {
       strict: true,
     },
   },
   preview: {
     port,
-    host: "0.0.0.0",
-    allowedHosts: true,
+    host,
+    ...(isReplit ? { allowedHosts: true as const } : {}),
   },
 });

@@ -30,13 +30,13 @@ echo Lancement du serveur Vite PagLaafi...
 echo (Laissez cette fenêtre ouverte pendant que vous utilisez l'application)
 echo.
 
-call pnpm --filter @workspace/mockup-sandbox run dev
+call pnpm --filter @workspace/mockup-sandbox run dev:lan
 if %ERRORLEVEL% NEQ 0 (
-    call npx pnpm --filter @workspace/mockup-sandbox run dev
+    call npx pnpm --filter @workspace/mockup-sandbox run dev:lan
 )
 if %ERRORLEVEL% NEQ 0 (
     cd artifacts\mockup-sandbox
-    call npx vite dev
+    call npx vite dev --host
 )
 
 pause

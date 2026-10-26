@@ -61,6 +61,7 @@ Le projet est structuré sous forme de monorepo géré avec `pnpm workspaces` :
   pnpm run dev
   ```
   *(Fonctionne aussi avec `pnpm start` ou `pnpm run dev:mockup`)*
+  *Par défaut, le serveur n'écoute que sur cet ordinateur (`localhost`). Pour la démo sur le réseau Wi-Fi local, lancer `pnpm run dev:lan` (c'est ce que font les fichiers `.bat`).*
 
 - **URL locale sur cet ordinateur** : [http://localhost:5173/](http://localhost:5173/)
 - **Lien Mobile Wi-Fi (Pour les collègues sur leur smartphone, sans rien installer)** :

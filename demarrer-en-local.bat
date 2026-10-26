@@ -33,17 +33,17 @@ echo   Appuyez sur Ctrl+C pour arrêter le serveur lorsque vous avez terminé.
 echo ======================================================================
 echo.
 
-call pnpm --filter @workspace/mockup-sandbox run dev
+call pnpm --filter @workspace/mockup-sandbox run dev:lan
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo Tentative alternative avec npx pnpm...
-    call npx pnpm --filter @workspace/mockup-sandbox run dev
+    call npx pnpm --filter @workspace/mockup-sandbox run dev:lan
 )
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo Tentative alternative avec npm...
     cd artifacts\mockup-sandbox
-    call npx vite dev
+    call npx vite dev --host
 )
 
 echo.

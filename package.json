@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm --filter @workspace/mockup-sandbox run dev",
     "dev:mockup": "pnpm --filter @workspace/mockup-sandbox run dev",
+    "dev:lan": "pnpm --filter @workspace/mockup-sandbox run dev:lan",
     "dev:mobile": "pnpm --filter @workspace/paglaafi run dev:local",
     "start": "pnpm --filter @workspace/mockup-sandbox run dev",
     "build:mockup": "pnpm --filter @workspace/mockup-sandbox run build",

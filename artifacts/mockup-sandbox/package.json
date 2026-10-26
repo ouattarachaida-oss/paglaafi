@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "vite dev",
+    "dev:lan": "vite dev --host",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json --noEmit"
