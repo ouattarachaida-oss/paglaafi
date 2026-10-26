@@ -48,13 +48,14 @@ for (const f of fichiers) {
       const pa = lire(ia);
       const pb = lire(ib);
       const out = new ImageData(w, h);
-      let n = 0, x0 = w, y0 = h, x1 = 0, y1 = 0;
+      let n = 0, max = 0, x0 = w, y0 = h, x1 = 0, y1 = 0;
       for (let i = 0; i < pa.data.length; i += 4) {
         const diff =
           Math.abs(pa.data[i] - pb.data[i]) + Math.abs(pa.data[i + 1] - pb.data[i + 1]) + Math.abs(pa.data[i + 2] - pb.data[i + 2]);
         const p = i / 4;
         if (diff > 0) {
           n++;
+          max = Math.max(max, diff);
           const x = p % w, y = Math.floor(p / w);
           x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y);
           out.data.set([255, 0, 0, 255], i);
@@ -69,14 +70,20 @@ for (const f of fichiers) {
       const buf = new Uint8Array(await blob.arrayBuffer());
       let bin = "";
       for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
-      return { n, tailles: `${ia.width}x${ia.height} / ${ib.width}x${ib.height}`, zone: n ? [x0, y0, x1, y1] : null, png: btoa(bin) };
+      return { n, max, tailles: `${ia.width}x${ia.height} / ${ib.width}x${ib.height}`, zone: n ? [x0, y0, x1, y1] : null, png: btoa(bin) };
     },
     [`data:image/png;base64,${a.toString("base64")}`, `data:image/png;base64,${b.toString("base64")}`],
   );
   if (res.n === 0) continue;
+  // Bruit de rendu : quelques pixels légèrement différents (redimensionnement d'images)
+  const bruit = res.n < 1500 && res.max <= 120 && res.tailles.split(" / ")[0] === res.tailles.split(" / ")[1];
+  if (bruit) {
+    console.log(`bruit ${f} : ${res.n} px, écart max ${res.max}`);
+    continue;
+  }
   nbDiff++;
   writeFileSync(path.join(diffDir, f), Buffer.from(res.png, "base64"));
-  console.log(`DIFF ${f} : ${res.n} px, tailles ${res.tailles}, zone ${JSON.stringify(res.zone)}`);
+  console.log(`DIFF ${f} : ${res.n} px, écart max ${res.max}, tailles ${res.tailles}, zone ${JSON.stringify(res.zone)}`);
 }
 await browser.close();
 console.log(`\n${nbDiff} image(s) différente(s) sur ${fichiers.length}`);
