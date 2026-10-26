@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MODE_DEMO } from "../config";
 import type { EtatAuth } from "./useEtatAuth";
 
 /**
@@ -29,7 +30,8 @@ export function useEtatDemarrage({ auth }: { auth: EtatAuth }) {
 
     const timer = window.setTimeout(() => {
       setShowSplash(false);
-      setCurrentUser(null);
+      // Démo : on atterrit toujours sur l'écran de connexion. Réel : la session Supabase est conservée.
+      if (MODE_DEMO) setCurrentUser(null);
     }, duration);
 
     return () => {

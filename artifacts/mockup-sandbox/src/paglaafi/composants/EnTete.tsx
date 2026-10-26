@@ -1,5 +1,6 @@
 import { GraduationCap, LogOut, MapPin, Menu, Phone, ShieldCheck, Smartphone, Sparkles } from "lucide-react";
 import { getProfileIdentity } from "../lib/identiteProfil";
+import { MODE_DEMO } from "../config";
 import { useUi, useAuth, useSante, useDocteur } from "../etat/contextes";
 
 /**
@@ -125,6 +126,8 @@ export function EnTete() {
                     </div>
 
                     <div className="mt-3 pt-2 border-t border-[#f7e6ec] space-y-2">
+                      {/* Changement de profil en 1 clic : mode démo uniquement */}
+                      {MODE_DEMO && (
                       <div>
                         <p className="text-[10px] font-bold text-[#8c4d66] mb-1.5">Changer de profil (1-clic) :</p>
                         <div className="grid grid-cols-2 gap-1 text-[10px]">
@@ -175,6 +178,7 @@ export function EnTete() {
                           🛡️ Superadmin National
                         </button>
                       </div>
+                      )}
 
                       {/* Raccourcis Confidentialité & Simulation Docteur */}
                       <div className="pt-2 border-t border-[#f7e6ec] space-y-1.5">

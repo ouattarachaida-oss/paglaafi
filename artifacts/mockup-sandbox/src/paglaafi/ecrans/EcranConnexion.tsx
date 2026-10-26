@@ -1,10 +1,13 @@
-import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Phone, Sparkles, UserPlus, UsersRound } from "lucide-react";
+import { ArrowRight, AtSign, CheckCircle2, Eye, EyeOff, Lock, Phone, Sparkles, UserPlus, UsersRound } from "lucide-react";
+import { MODE_DEMO } from "../config";
 import type { AdminType } from "../types";
 import { getProfileIdentity } from "../lib/identiteProfil";
 import { useUi, useAuth } from "../etat/contextes";
 
 /**
- * Écran de connexion / inscription avec accès démo rapide.
+ * Écran de connexion / inscription.
+ * Démo : connexion par téléphone (non vérifiée) et 5 accès rapides.
+ * Réel : connexion et inscription par email + mot de passe (Supabase).
  */
 export function EcranConnexion() {
   const { notify, section } = useUi();
@@ -73,33 +76,60 @@ export function EcranConnexion() {
             onSubmit={handleLoginSubmit}
             className="space-y-3.5 rounded-3xl bg-white p-4.5 border border-[#edd6df] shadow-xs"
           >
-            <div>
-              <label className="text-[11px] font-bold text-[#580e36] block mb-1.5">Numéro de téléphone (+226)</label>
-              <div className="relative flex items-center">
-                <span className="absolute left-3.5 flex items-center gap-1.5 text-xs font-bold text-[#713f53] pointer-events-none">
-                  <Phone size={13} className="text-[#ea2d6d]" />
-                  <span>🇧🇫 +226</span>
-                </span>
-                <input
-                  type="tel"
-                  required
-                  value={loginForm.telephone}
-                  onChange={(e) => setLoginForm({ ...loginForm, telephone: e.target.value })}
-                  placeholder="70 12 34 56"
-                  className="w-full rounded-2xl border border-[#d6a9b9] py-3 pl-24 pr-3.5 text-xs font-semibold text-[#580e36] focus:border-[#ea2d6d] focus:ring-2 focus:ring-[#ea2d6d]/15 focus:outline-none"
-                />
+            {MODE_DEMO ? (
+              <div>
+                <label className="text-[11px] font-bold text-[#580e36] block mb-1.5">Numéro de téléphone (+226)</label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 flex items-center gap-1.5 text-xs font-bold text-[#713f53] pointer-events-none">
+                    <Phone size={13} className="text-[#ea2d6d]" />
+                    <span>🇧🇫 +226</span>
+                  </span>
+                  <input
+                    type="tel"
+                    required
+                    value={loginForm.telephone}
+                    onChange={(e) => setLoginForm({ ...loginForm, telephone: e.target.value })}
+                    placeholder="70 12 34 56"
+                    className="w-full rounded-2xl border border-[#d6a9b9] py-3 pl-24 pr-3.5 text-xs font-semibold text-[#580e36] focus:border-[#ea2d6d] focus:ring-2 focus:ring-[#ea2d6d]/15 focus:outline-none"
+                  />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div>
+                <label htmlFor="connexion-email" className="text-[11px] font-bold text-[#580e36] block mb-1.5">
+                  Adresse email
+                </label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 text-[#ea2d6d] pointer-events-none">
+                    <AtSign size={14} />
+                  </span>
+                  <input
+                    id="connexion-email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    value={loginForm.email}
+                    onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                    placeholder="vous@exemple.bf"
+                    className="w-full rounded-2xl border border-[#d6a9b9] py-3 pl-10 pr-3.5 text-xs font-semibold text-[#580e36] focus:border-[#ea2d6d] focus:ring-2 focus:ring-[#ea2d6d]/15 focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
-              <label className="text-[11px] font-bold text-[#580e36] block mb-1.5">Mot de passe</label>
+              <label htmlFor="connexion-mot-de-passe" className="text-[11px] font-bold text-[#580e36] block mb-1.5">
+                Mot de passe
+              </label>
               <div className="relative flex items-center">
                 <span className="absolute left-3.5 text-[#ea2d6d] pointer-events-none">
                   <Lock size={14} />
                 </span>
                 <input
+                  id="connexion-mot-de-passe"
                   type={showPassword ? "text" : "password"}
                   required
+                  autoComplete="current-password"
                   value={loginForm.motDePasse}
                   onChange={(e) => setLoginForm({ ...loginForm, motDePasse: e.target.value })}
                   placeholder="Votre mot de passe"
@@ -125,7 +155,8 @@ export function EcranConnexion() {
             </button>
           </form>
 
-          {/* Accès Démo Rapide (1-Clic) : Disposition optimisée et équilibrée des icônes de profils */}
+          {/* Accès Démo Rapide (1-Clic) : uniquement en mode démo */}
+          {MODE_DEMO && (
           <div className="rounded-3xl bg-[#fdf5f7] border border-[#f0d4de] p-4">
             <p className="text-[11px] font-bold uppercase tracking-wider text-[#9a4564] mb-3 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
@@ -227,6 +258,7 @@ export function EcranConnexion() {
               );
             })()}
           </div>
+          )}
 
           {/* Bouton pour tester sans compte */}
           <div className="text-center pt-1 pb-2">
@@ -293,6 +325,24 @@ export function EcranConnexion() {
             />
           </div>
 
+          {!MODE_DEMO && (
+            <div>
+              <label htmlFor="inscription-email" className="text-[11px] font-bold text-[#580e36] block mb-1">
+                Adresse email
+              </label>
+              <input
+                id="inscription-email"
+                type="email"
+                required
+                autoComplete="email"
+                value={registerForm.email}
+                onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                placeholder="vous@exemple.bf"
+                className="w-full rounded-xl border border-[#d6a9b9] p-2 text-xs text-[#580e36] focus:outline-none"
+              />
+            </div>
+          )}
+
           <div>
             <label className="text-[11px] font-bold text-[#580e36] block mb-1">Type de profil</label>
             <select
@@ -338,11 +388,16 @@ export function EcranConnexion() {
           )}
 
           <div>
-            <label className="text-[11px] font-bold text-[#580e36] block mb-1">Mot de passe</label>
+            <label htmlFor="inscription-mot-de-passe" className="text-[11px] font-bold text-[#580e36] block mb-1">
+              Mot de passe{!MODE_DEMO && " (6 caractères minimum)"}
+            </label>
             <div className="relative">
               <input
+                id="inscription-mot-de-passe"
                 type={showPassword ? "text" : "password"}
                 required
+                minLength={MODE_DEMO ? undefined : 6}
+                autoComplete="new-password"
                 value={registerForm.motDePasse}
                 onChange={(e) => setRegisterForm({ ...registerForm, motDePasse: e.target.value })}
                 className="w-full rounded-xl border border-[#d6a9b9] p-2 pr-10 text-xs text-[#580e36] focus:outline-none"
@@ -358,9 +413,12 @@ export function EcranConnexion() {
           </div>
 
           <div>
-            <label className="text-[11px] font-bold text-[#580e36] block mb-1">Confirmer le mot de passe</label>
+            <label htmlFor="inscription-confirmation" className="text-[11px] font-bold text-[#580e36] block mb-1">
+              Confirmer le mot de passe
+            </label>
             <div className="relative">
               <input
+                id="inscription-confirmation"
                 type={showConfirmPassword ? "text" : "password"}
                 required
                 value={registerForm.confirmerMotDePasse}

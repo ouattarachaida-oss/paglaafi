@@ -2,11 +2,25 @@ import { useEffect, useState } from "react";
 import type { AdminType, PendingRegistration, UserProfile, UserRole } from "../types";
 import { hapticFeedback } from "../lib/haptique";
 import { initialPendingRegistrations } from "../donnees/inscriptions";
+import { MODE_DEMO, MODE_REEL } from "../config";
+import { client, messageErreur, supabase } from "../lib/supabase";
+import { chargerProfilConnecte, type SessionReelle } from "../depot/profils";
 import type { EtatUi } from "./useEtatUi";
+
+// Type de structure demandé à l'inscription (adhésion validée par le superadmin)
+const TYPE_STRUCTURE: Record<AdminType, "centre" | "association" | "professionnel"> = {
+  center: "centre",
+  association: "association",
+  doctor: "professionnel",
+};
 
 /**
  * Authentification et profils (Utilisatrice, Admin Centre, Docteur, Admin Asso, Superadmin).
- * ⚠️ Mode démo : aucun mot de passe n'est vérifié, les rôles sont attribués côté client (voir phase 2).
+ *
+ * - Mode réel : comptes Supabase (email + mot de passe). Le rôle vient UNIQUEMENT
+ *   du profil en base ; une inscription « structure » crée une demande d'adhésion
+ *   que le superadmin valide.
+ * - Mode démo : aucun mot de passe n'est vérifié, profils fictifs et accès rapides.
  */
 export function useEtatAuth({ ui }: { ui: EtatUi }) {
   const { notify, setShowProfileMenu, setSidebarOpen } = ui;
@@ -20,24 +34,61 @@ export function useEtatAuth({ ui }: { ui: EtatUi }) {
 
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Formulaires pré-remplis en démo, vides en mode réel
   const [registerForm, setRegisterForm] = useState({
-    nom: "Ouedraogo",
-    prenom: "Aminata",
-    telephone: "70 12 34 56",
-    motDePasse: "123456",
-    confirmerMotDePasse: "123456",
+    nom: MODE_DEMO ? "Ouedraogo" : "",
+    prenom: MODE_DEMO ? "Aminata" : "",
+    telephone: MODE_DEMO ? "70 12 34 56" : "",
+    email: "",
+    motDePasse: MODE_DEMO ? "123456" : "",
+    confirmerMotDePasse: MODE_DEMO ? "123456" : "",
     role: "user" as UserRole,
     adminType: "center" as AdminType,
     structureName: "",
   });
 
   const [loginForm, setLoginForm] = useState({
-    telephone: "70 12 34 56",
-    motDePasse: "123456",
+    telephone: MODE_DEMO ? "70 12 34 56" : "",
+    email: "",
+    motDePasse: MODE_DEMO ? "123456" : "",
   });
 
   // Utilisateur actuellement connecté (initialisé à null au démarrage pour atterrir sur l'écran de connexion après le splash de 5 secondes)
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+
+  // Mode réel : identité Supabase et rattachement du compte connecté (null en démo)
+  const [sessionReelle, setSessionReelle] = useState<SessionReelle | null>(null);
+
+  // Mode réel : suit la session Supabase (conservée après rechargement) et charge le profil
+  useEffect(() => {
+    if (!MODE_REEL || !supabase) return;
+    let actif = true;
+    const { data } = supabase.auth.onAuthStateChange((evenement, session) => {
+      if (evenement === "TOKEN_REFRESHED") return;
+      // Hors du rappel : Supabase déconseille d'y attendre d'autres appels
+      setTimeout(async () => {
+        if (!actif) return;
+        if (!session) {
+          setSessionReelle(null);
+          setCurrentUser(null);
+          return;
+        }
+        const resultat = await chargerProfilConnecte(session.user);
+        if (!actif) return;
+        if ("erreur" in resultat) {
+          notify(`Profil indisponible : ${resultat.erreur}`);
+          return;
+        }
+        setSessionReelle(resultat.session);
+        setCurrentUser(resultat.utilisateur);
+      }, 0);
+    });
+    return () => {
+      actif = false;
+      data.subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sauvegarde persistante de la session utilisateur
   useEffect(() => {
@@ -56,6 +107,11 @@ export function useEtatAuth({ ui }: { ui: EtatUi }) {
   // Fonction universelle de déconnexion
   const handleLogout = () => {
     hapticFeedback(20);
+    // Mode réel : fermeture de la session Supabase (le profil local est ensuite vidé)
+    if (MODE_REEL) {
+      void client().auth.signOut();
+      setSessionReelle(null);
+    }
     setCurrentUser(null);
     setShowProfileMenu(false);
     setSidebarOpen(false);
@@ -63,7 +119,9 @@ export function useEtatAuth({ ui }: { ui: EtatUi }) {
   };
 
   // 5. Superadmin : Modération nationale, Statistiques de trafic & Inscriptions
-  const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>(initialPendingRegistrations);
+  const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>(
+    MODE_DEMO ? initialPendingRegistrations : [],
+  );
 
   /**
    * Gestion de la connexion et inscription
@@ -78,6 +136,11 @@ export function useEtatAuth({ ui }: { ui: EtatUi }) {
 
     if (!registerForm.telephone || !registerForm.motDePasse) {
       notify("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+
+    if (MODE_REEL) {
+      void inscrireReel();
       return;
     }
 
@@ -127,8 +190,78 @@ export function useEtatAuth({ ui }: { ui: EtatUi }) {
     notify(`Bienvenue ${newUser.prenom} ! Compte utilisatrice créé avec succès.`);
   };
 
+  /**
+   * Mode réel : création du compte Supabase. Le profil est créé côté serveur avec
+   * le rôle « utilisatrice » ; une demande d'adhésion accompagne l'inscription
+   * d'une structure. Aucun rôle n'est transmis par le client.
+   */
+  const inscrireReel = async () => {
+    const email = registerForm.email.trim();
+    if (!email) {
+      notify("Veuillez renseigner votre adresse email.");
+      return;
+    }
+    const structure = registerForm.role === "admin";
+    if (structure && registerForm.structureName.trim().length < 2) {
+      notify("Veuillez indiquer le nom de votre structure.");
+      return;
+    }
+    const { data, error } = await client().auth.signUp({
+      email,
+      password: registerForm.motDePasse,
+      options: {
+        data: {
+          nom: registerForm.nom.trim(),
+          prenom: registerForm.prenom.trim(),
+          telephone: registerForm.telephone.trim(),
+          ...(structure && {
+            demande_adhesion: {
+              type_structure: TYPE_STRUCTURE[registerForm.adminType],
+              nom_structure: registerForm.structureName.trim(),
+            },
+          }),
+        },
+      },
+    });
+    if (error) {
+      notify(messageErreur(error));
+      return;
+    }
+    setShowAuthModal(false);
+    if (!data.session) {
+      notify("Compte créé : confirmez votre adresse email puis connectez-vous.");
+      setAuthMode("login");
+    } else if (structure) {
+      notify("Compte créé ! Votre demande d'adhésion est transmise au Superadmin pour validation.");
+    } else {
+      notify(`Bienvenue ${registerForm.prenom} ! Compte utilisatrice créé avec succès.`);
+    }
+  };
+
+  /** Mode réel : connexion email + mot de passe (le profil est chargé par le suivi de session). */
+  const connecterReel = async () => {
+    if (!loginForm.email.trim() || !loginForm.motDePasse) {
+      notify("Veuillez renseigner votre email et votre mot de passe.");
+      return;
+    }
+    const { error } = await client().auth.signInWithPassword({
+      email: loginForm.email.trim(),
+      password: loginForm.motDePasse,
+    });
+    if (error) {
+      notify(messageErreur(error));
+      return;
+    }
+    setShowAuthModal(false);
+    notify("Connexion réussie ! Bienvenue sur PagLaafi.");
+  };
+
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (MODE_REEL) {
+      void connecterReel();
+      return;
+    }
     if (!loginForm.telephone || !loginForm.motDePasse) {
       notify("Veuillez renseigner votre numéro de téléphone et votre mot de passe.");
       return;
@@ -262,6 +395,7 @@ export function useEtatAuth({ ui }: { ui: EtatUi }) {
     setLoginForm,
     currentUser,
     setCurrentUser,
+    sessionReelle,
     handleLogout,
     pendingRegistrations,
     setPendingRegistrations,

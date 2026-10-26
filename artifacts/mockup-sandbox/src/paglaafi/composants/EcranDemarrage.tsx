@@ -1,5 +1,6 @@
 import { ChevronRight, HeartHandshake, MapPin, ShieldCheck, Sparkles, Stethoscope } from "lucide-react";
 import { hapticFeedback } from "../lib/haptique";
+import { MODE_DEMO } from "../config";
 import { useAuth, useDemarrage } from "../etat/contextes";
 
 /**
@@ -38,7 +39,7 @@ export function EcranDemarrage() {
           onClick={() => {
             hapticFeedback(15);
             setShowSplash(false);
-            setCurrentUser(null);
+            if (MODE_DEMO) setCurrentUser(null);
           }}
           className="inline-flex items-center gap-1.5 rounded-full border border-pink-300/60 bg-white/85 px-3.5 py-1.5 text-[11px] font-bold text-[#580e36] backdrop-blur-md hover:bg-white transition shadow-xs active:scale-95"
         >
