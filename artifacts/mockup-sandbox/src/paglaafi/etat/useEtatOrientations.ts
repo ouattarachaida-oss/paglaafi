@@ -77,6 +77,10 @@ export function useEtatOrientations({ centres, auth, ui }: { centres: EtatCentre
     hapticFeedback(25);
     const code = `PAG-URG-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const targetCenter = centers.find((c) => c.id === Number(orientationForm.targetCenterId)) || centers[0];
+    if (!targetCenter) {
+      notify("Aucun centre disponible pour l'orientation.");
+      return;
+    }
 
     const newRecord = {
       id: code,

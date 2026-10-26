@@ -1,12 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
+import { MODE_REEL } from "../config";
+import { messageErreur } from "../lib/supabase";
+import { chargerRappels, creerRappel, type Rappel } from "../depot/rappels";
 import type { EtatUi } from "./useEtatUi";
+import type { EtatAuth } from "./useEtatAuth";
 
 /**
  * Données de santé de l'utilisatrice : cycle, autopalpation, rappels, confidentialité.
- * ⚠️ Stockées en clair dans le localStorage (voir phase 4).
+ * ⚠️ Cycle et autopalpation stockés en clair dans le localStorage (voir phase 4).
+ * Mode réel : les rappels sont synchronisés avec Supabase (visibles par leur seule propriétaire).
  */
-export function useEtatSante({ ui }: { ui: EtatUi }) {
+export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   const { notify } = ui;
+  const { sessionReelle } = auth;
 
   // 9.bis Paramètres de Confidentialité & Éthique des Données (Local-First, Zéro Tracking)
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
@@ -108,6 +114,7 @@ export function useEtatSante({ ui }: { ui: EtatUi }) {
         active: false,
       },
     ];
+    if (MODE_REEL) return [] as Rappel[]; // chargés depuis Supabase après connexion
     if (typeof window === "undefined") return defaultReminders;
     try {
       const s = localStorage.getItem("paglaafi_reminders");
@@ -126,11 +133,43 @@ export function useEtatSante({ ui }: { ui: EtatUi }) {
       localStorage.setItem("paglaafi_autopalpation_done", JSON.stringify(autopalpationDoneThisMonth));
       localStorage.setItem("paglaafi_last_autopalpation", lastAutopalpationDate);
       localStorage.setItem("paglaafi_cycle_history", JSON.stringify(cycleHistory));
-      localStorage.setItem("paglaafi_reminders", JSON.stringify(reminders));
+      if (!MODE_REEL) localStorage.setItem("paglaafi_reminders", JSON.stringify(reminders));
     } catch {
       // Silencieux si navigation privée
     }
   }, [lastPeriodDate, cycleLengthDays, autopalpationDoneThisMonth, lastAutopalpationDate, cycleHistory, reminders]);
+
+  // Mode réel : rappels de la personne connectée (vidés à la déconnexion)
+  useEffect(() => {
+    if (!MODE_REEL) return;
+    if (!sessionReelle) {
+      setReminders([]);
+      return;
+    }
+    chargerRappels()
+      .then(setReminders)
+      .catch((erreur) => notify(messageErreur(erreur)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionReelle?.userId]);
+
+  /**
+   * Ajoute un rappel : enregistré dans Supabase en mode réel (compte connecté),
+   * sinon conservé sur l'appareil.
+   */
+  const ajouterRappel = async (rappel: Omit<Rappel, "id" | "active">) => {
+    if (MODE_REEL && sessionReelle) {
+      try {
+        const cree = await creerRappel({ ...rappel, active: true });
+        setReminders((prev: Rappel[]) => [...prev, cree]);
+        return true;
+      } catch (erreur) {
+        notify(messageErreur(erreur as Error));
+        return false;
+      }
+    }
+    setReminders((prev: Rappel[]) => [...prev, { id: Date.now(), ...rappel, active: true }]);
+    return true;
+  };
 
   const [showNewReminderForm, setShowNewReminderForm] = useState(false);
 
@@ -315,6 +354,7 @@ export function useEtatSante({ ui }: { ui: EtatUi }) {
     setCycleHistory,
     reminders,
     setReminders,
+    ajouterRappel,
     showNewReminderForm,
     setShowNewReminderForm,
     newReminderTitle,

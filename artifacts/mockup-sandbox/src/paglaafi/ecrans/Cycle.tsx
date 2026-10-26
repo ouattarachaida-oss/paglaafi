@@ -25,7 +25,7 @@ export function Cycle() {
     setNewReminderTitle,
     setNewReminderType,
     setRealPeriodDateInput,
-    setReminders,
+    ajouterRappel,
     setShowCycleHistory,
     setShowNewReminderForm,
     setShowRecalibrateBox,
@@ -371,20 +371,17 @@ export function Cycle() {
               <button
                 onClick={() => {
                   if (!newReminderTitle) return;
-                  setReminders((prev: any[]) => [
-                    ...prev,
-                    {
-                      id: Date.now(),
-                      title: newReminderTitle,
-                      date: newReminderDate || "Bientôt",
-                      type: newReminderType,
-                      active: true,
-                    },
-                  ]);
-                  setNewReminderTitle("");
-                  setNewReminderDate("");
-                  setShowNewReminderForm(false);
-                  notify("Rappel ajouté avec succès.");
+                  void ajouterRappel({
+                    title: newReminderTitle,
+                    date: newReminderDate || "Bientôt",
+                    type: newReminderType,
+                  }).then((ok) => {
+                    if (!ok) return;
+                    setNewReminderTitle("");
+                    setNewReminderDate("");
+                    setShowNewReminderForm(false);
+                    notify("Rappel ajouté avec succès.");
+                  });
                 }}
                 className="flex-1 rounded-xl bg-[#ea2d6d] py-1.5 font-bold text-white text-xs"
               >

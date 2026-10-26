@@ -10,6 +10,7 @@ import {
   Search,
   Volume2,
 } from "lucide-react";
+import { MODE_REEL } from "../config";
 import { useUi, useAuth, useAudio, useCentres, useOrientations } from "../etat/contextes";
 
 /**
@@ -26,6 +27,7 @@ export function Centres() {
     mapContainerRef,
     mapInstanceRef,
     openNavigation,
+    ouvrirMiseAJourCentre,
     searchQuery,
     setCenterUpdateData,
     setCityFilter,
@@ -128,6 +130,20 @@ export function Centres() {
           Koudougou
         </button>
       </div>
+
+      {/* Mode réel : état vide explicite tant qu'aucun centre n'a été vérifié (replit.md) */}
+      {MODE_REEL && centers.length === 0 && (
+        <div
+          role="status"
+          className="mt-2.5 rounded-2xl border border-dashed border-[#e3bccb] bg-[#fdf6f8] p-4 text-center text-xs text-[#6b4d5d]"
+        >
+          <p className="font-bold text-[#580e36]">Aucun centre vérifié pour le moment</p>
+          <p className="mt-1">
+            Les informations des centres (disponibilités, tarifs, contacts) sont en cours de vérification auprès des
+            structures de santé. En cas d'urgence, rendez-vous au centre de santé le plus proche.
+          </p>
+        </div>
+      )}
 
       {/* VRAIE CARTE OPENSTREETMAP LEAFLET GRATUITE ET OPEN-SOURCE */}
       {viewMode === "map" && (
@@ -281,8 +297,7 @@ export function Centres() {
             {/* Bouton de mise à jour des disponibilités du centre */}
             <button
               onClick={() => {
-                setCenterUpdateData(centers[0]);
-                setShowCenterUpdateModal(true);
+                ouvrirMiseAJourCentre();
               }}
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#580e36] to-[#ea2d6d] py-2.5 text-xs font-bold text-white shadow-sm hover:opacity-95 cursor-pointer"
             >

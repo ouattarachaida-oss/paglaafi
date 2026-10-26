@@ -65,7 +65,7 @@ export function FournisseurEtat({ children }: { children: ReactNode }) {
   const audio = useEtatAudio({ ui });
   const centres = useEtatCentres({ ui, auth });
   const orientations = useEtatOrientations({ centres, auth, ui });
-  const sante = useEtatSante({ ui });
+  const sante = useEtatSante({ ui, auth });
   const rose = useEtatRose({ ui, audio });
   const docteur = useEtatDocteur({ ui, auth, rose });
   const education = useEtatEducation();

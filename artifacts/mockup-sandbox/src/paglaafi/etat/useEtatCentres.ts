@@ -1,18 +1,45 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { HealthCenter } from "../types";
 import { initialCenters } from "../donnees/centres";
+import { MODE_DEMO, MODE_REEL } from "../config";
+import { messageErreur } from "../lib/supabase";
+import { echapperHtml } from "../lib/securite";
+import { chargerCentreGere, chargerCentresVerifies, enregistrerDisponibilites } from "../depot/centres";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatAuth } from "./useEtatAuth";
 
 /**
  * Centres de santé : liste, filtres, carte OpenStreetMap (Leaflet), fiche et mise à jour par un admin.
+ *
+ * Mode réel : seuls les centres vérifiés par le superadmin sont affichés ; l'admin
+ * du centre et ses docteurs mettent à jour les disponibilités de LEUR centre
+ * (contrôlé côté serveur par les règles RLS).
  */
 export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   const { notify, section } = ui;
-  const { currentUser } = auth;
+  const { currentUser, sessionReelle } = auth;
 
-  // 6. Centres de santé & Carte OpenStreetMap Leaflet
-  const [centers, setCenters] = useState<HealthCenter[]>(initialCenters);
+  // 6. Centres de santé & Carte OpenStreetMap Leaflet (démo : données locales ; réel : base Supabase)
+  const [centers, setCenters] = useState<HealthCenter[]>(MODE_DEMO ? initialCenters : []);
+
+  // Mode réel : centre rattaché au compte connecté (admin centre ou docteur), même non vérifié
+  const [centreGere, setCentreGere] = useState<HealthCenter | null>(null);
+
+  // Mode réel : chargement des centres vérifiés et du centre géré
+  const rechargerCentres = async () => {
+    if (!MODE_REEL) return;
+    try {
+      setCenters(await chargerCentresVerifies());
+      setCentreGere(sessionReelle?.centreId ? await chargerCentreGere(sessionReelle.centreId) : null);
+    } catch (erreur) {
+      notify(messageErreur(erreur as Error));
+    }
+  };
+
+  useEffect(() => {
+    void rechargerCentres();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionReelle?.userId, sessionReelle?.centreId]);
 
   const [selectedCenter, setSelectedCenter] = useState<HealthCenter | null>(null);
 
@@ -116,11 +143,11 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
 
         marker.bindPopup(`
           <div style="font-family:'DM Sans', sans-serif; min-width:200px; padding:3px;">
-            <b style="color:#580e36; font-size:12px; display:block;">${center.shortName}</b>
-            <span style="display:inline-block; font-size:10px; font-weight:bold; color:${markerColor}; margin-top:2px;">● ${center.statusLabel}</span>
-            <div style="font-size:10px; color:#6b4d5d; margin-top:3px;">Attente : <b>${center.estimatedWait}</b></div>
-            <div style="font-size:10px; color:#6b4d5d;">Agents : <b>${center.agentsPresent}</b></div>
-            <div style="font-size:9.5px; color:#846b77; margin-top:2px;">📍 ${center.place}</div>
+            <b style="color:#580e36; font-size:12px; display:block;">${echapperHtml(center.shortName)}</b>
+            <span style="display:inline-block; font-size:10px; font-weight:bold; color:${markerColor}; margin-top:2px;">● ${echapperHtml(center.statusLabel)}</span>
+            <div style="font-size:10px; color:#6b4d5d; margin-top:3px;">Attente : <b>${echapperHtml(center.estimatedWait)}</b></div>
+            <div style="font-size:10px; color:#6b4d5d;">Agents : <b>${echapperHtml(center.agentsPresent)}</b></div>
+            <div style="font-size:9.5px; color:#846b77; margin-top:2px;">📍 ${echapperHtml(center.place)}</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:8px;">
               <button id="osm-nav-${center.id}" style="border:none; background:#10b981; color:#ffffff; font-size:10px; font-weight:bold; padding:5px 6px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:3px;">
                 📍 Itinéraire
@@ -197,6 +224,11 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     e.preventDefault();
     if (!centerUpdateData) return;
 
+    if (MODE_REEL) {
+      void enregistrerCentreReel(centerUpdateData);
+      return;
+    }
+
     setCenters((prev) =>
       prev.map((c) =>
         c.id === centerUpdateData.id ? { ...centerUpdateData, lastUpdate: "À l'instant par l'administrateur" } : c,
@@ -204,6 +236,36 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     );
     notify(`Les données de ${centerUpdateData.shortName} sont actualisées en direct sur la carte.`);
     setShowCenterUpdateModal(false);
+  };
+
+  // Mode réel : enregistrement en base (refusé par le serveur si le centre n'est pas le sien)
+  const enregistrerCentreReel = async (centre: HealthCenter) => {
+    try {
+      const accepte = await enregistrerDisponibilites(centre);
+      if (!accepte) {
+        notify("Modification refusée : vous ne pouvez mettre à jour que votre propre centre.");
+        return;
+      }
+      await rechargerCentres();
+      notify(`Les données de ${centre.shortName} sont enregistrées.`);
+      setShowCenterUpdateModal(false);
+    } catch (erreur) {
+      notify(messageErreur(erreur as Error));
+    }
+  };
+
+  /**
+   * Ouvre la mise à jour du centre : en démo le premier centre, en mode réel le
+   * centre rattaché au compte connecté.
+   */
+  const ouvrirMiseAJourCentre = () => {
+    const centre = MODE_DEMO ? centers[0] : centreGere;
+    if (!centre) {
+      notify("Aucun centre n'est rattaché à votre compte pour le moment.");
+      return;
+    }
+    setCenterUpdateData(centre);
+    setShowCenterUpdateModal(true);
   };
 
   /**
@@ -244,6 +306,9 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     mapInstanceRef,
     openNavigation,
     handleSaveCenterUpdate,
+    centreGere,
+    ouvrirMiseAJourCentre,
+    rechargerCentres,
     filteredCenters,
   };
 }
