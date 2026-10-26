@@ -54,3 +54,8 @@ Thumbs.db
 # Binaires locaux
 cloudflared.exe
 *.exe
+
+# Variables d'environnement (secrets) : jamais versionnées, seuls les .env.example le sont
+.env
+.env.*
+!.env.example
