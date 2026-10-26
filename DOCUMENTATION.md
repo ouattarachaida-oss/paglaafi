@@ -370,9 +370,6 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
     👉 **http://localhost:5173/** *(Fonctionne 100% sans internet)*
     👉 Fichier raccourci direct : `Acceder-PagLaafi-Hors-Connexion.url`
     👉 Page passerelle : `Lien-Hors-Connexion.html`
-  - **Lien Public Direct (accessible partout en 4G/5G sans mot de passe - Cloudflare Tunnel)** :
-    👉 **https://spanking-nsw-consolidated-jpeg.trycloudflare.com**
-    *(Pour installer l'application PWA sur smartphone une première fois, puis l'utiliser en Mode Avion sans internet)*
   - **Accès Réseau Local (même réseau Wi-Fi)** : `http://192.168.1.22:5173/`
 
 #### 7. Séparation Stricte des Rôles, Rose IA Dédiée Patiente & Modes de Discussion Écrite et Orale (Octobre 2026)
@@ -428,13 +425,9 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
 - **Module & Modale d'Installation Directe sur Smartphone** :
   - **Bouton d'Installation dans le Header & la Sidebar** : Détection automatique de l'événement `beforeinstallprompt` pour installer l'application en 1 clic sur Android, ou afficher le badge *« Application installée ✓ »* en mode autonome.
   - **Modale d'Assistance Complète** : Guide pas-à-pas illustré pour smartphones Android (Chrome) et iPhone/iPad (Safari : Partager ⎋ -> Sur l'écran d'accueil ➕).
-- **Accès Serveur Local & Liens Publics Actifs** :
-  - **Lien Public Distant Actif (Tous réseaux Wi-Fi / 4G / Partout dans le monde)** :
-    👉 **`https://planned-vocabulary-albany-tions.trycloudflare.com`** *(Accessible dès maintenant à vos collègues sans être sur le même Wi-Fi)*
+- **Accès Serveur Local** :
   - **Lien Ordinateur local** : `http://localhost:5173/`
   - **Lien Réseau Wi-Fi local** : `http://192.168.1.14:5173/`
-- **Pérennité & Déploiement Permanent (24h/24 sans dépendre de l'ordinateur allumé)** :
-  - **Lien de Réclamation Directe Vercel (1-clic)** : `https://vercel.com/claim-deployment?code=a430829a-12dc-4d95-8cb4-7fb1ad923e63`
 #### 10. Écran de Chargement Immersif (5 secondes) & Réorganisation des Icônes de Connexion (Octobre 2026)
 - **Splash Screen Immersif Haute Définition (5 secondes)** :
   - **Photographie Officielle de Solidarité** : Intégration plein écran de l'image de solidarité des femmes burkinabè vêtues de tenues roses traditionnelles en face du Monument des Héros Nationaux de Ouagadougou (`/images/splash-paglaafi-burkina.jpg`).
@@ -479,9 +472,8 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
 - **Accessibilité & Ergonomie Tactile Mobile-First** :
   - Breakpoints et cibles tactiles (boutons > 44px, contrastes de couleurs WCAG) vérifiés sur smartphones.
   - Formulaires d'orientation et de mise à jour des centres de santé 100% accessibles et scrollables sans masquage.
-- **Accès Public Mobile Sécurisé (Cloudflare Tunnel)** :
+- **Accès Local** :
   - Serveur de développement : `http://localhost:5173/`
-  - URL Publique Sécurisée (HTTPS pour smartphones et tablettes) : `https://teenage-magazine-circuit-safely.trycloudflare.com`
 
 #### 13. Rénovation Visuelle & Ergonomique de l'Écran de Démarrage (Splash Screen 5s)
 - **Nouveau Fond d'Écran Plein Écran Héroïnes & Santé** :
