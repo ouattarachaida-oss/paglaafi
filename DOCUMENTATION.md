@@ -30,8 +30,18 @@ Elle permet aux femmes, aux soignants, aux associations et aux partenaires de sa
 
 Le projet est structuré sous forme de monorepo géré avec `pnpm workspaces` :
 
-- `artifacts/mockup-sandbox/` :
-  - `src/components/mockups/pinkhub-mvp/PinkHubMobile.tsx` : Composant React complet contenant l'ensemble de la maquette mobile interactive avec :
+- `artifacts/mockup-sandbox/src/paglaafi/` : **application découpée (depuis la refonte d'octobre 2026)**
+  - `PagLaafiApp.tsx` : point d'entrée (routeur wouter → état partagé → coquille).
+  - `routes.ts` : une adresse par onglet (`/`, `/centres`, `/cycle`, `/comprendre`, `/rose-ia`, `/dons`, `/annonces`, `/accompagnant`).
+  - `types.ts` : types partagés, dont `AudiosLanguesLocales` (champs `audioUrlMoore` / `audioUrlDioula` pour de futurs MP3 validés qui remplaceront la synthèse vocale).
+  - `donnees/` : données statiques typées (centres, annonces, associations, leçons, conseils, réponses de Rose IA par mots-clés). ⚠️ Données de démonstration non vérifiées.
+  - `etat/` : état partagé découpé par domaine (`useEtatAuth`, `useEtatCentres`, `useEtatSante`, `useEtatRose`…), exposé par un contexte React par domaine (`useAuth()`, `useCentres()`…) dans `contextes.tsx`.
+  - `composants/` : structure (coquille, en-tête, menu latéral, barre de navigation, splash, toast).
+  - `ecrans/` : un fichier par onglet (Accueil, Centres, Cycle, Comprendre, RoseIA, Dons, Annonces, Accompagnant, connexion, fiche centre).
+  - `modales/` : modales et espaces professionnels (Superadmin, tableau de bord admin, entraînement docteur, orientation, don, confidentialité…).
+  - `lib/` : utilitaires (retour haptique, identité des profils, moteur de réponses de Rose IA).
+- `artifacts/mockup-sandbox/` (historique) :
+  - `src/components/mockups/pinkhub-mvp/PinkHubMobile.tsx` : simple point d'entrée qui affiche `PagLaafiApp`. Le contenu décrit ci-dessous, autrefois réuni dans ce seul fichier, est désormais réparti dans `src/paglaafi/` :
     - Le **Splash Screen animé** ("Powered by Rose IA").
     - La **Carte OpenStreetMap Leaflet** interactive avec coordonnées réelles de Ouaga, Bobo et Koudougou.
     - Le **Module Calendrier & Autopalpation** (calcul des règles, fenêtre d'auto-examen, rappels médicaux).

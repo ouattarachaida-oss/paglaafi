@@ -25,8 +25,8 @@ Application mobile francophone d’information, d’orientation et de soutien au
 
 ## Where things live
 
-- `artifacts/paglaafi` — application mobile Expo
-- `artifacts/mockup-sandbox` — prototype visuel de référence
+- `artifacts/mockup-sandbox` — **application réellement utilisée** (React + Vite), code dans `src/paglaafi/` (voir DOCUMENTATION.md)
+- `artifacts/paglaafi` — squelette Expo non utilisé pour l’instant
 - `artifacts/paglaafi/data/content.ts` — articles sourcés et annuaire des structures
 
 ## Architecture decisions
