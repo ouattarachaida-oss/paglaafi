@@ -10,13 +10,18 @@
     "start": "pnpm --filter @workspace/mockup-sandbox run dev",
     "build:mockup": "pnpm --filter @workspace/mockup-sandbox run build",
     "build": "pnpm --filter @workspace/mockup-sandbox run build",
-    "typecheck": "tsc -b tsconfig.json && pnpm --filter @workspace/mockup-sandbox run typecheck"
+    "typecheck": "tsc -b tsconfig.json && pnpm --filter @workspace/mockup-sandbox run typecheck",
+    "db:migrer": "node supabase/scripts/migrer.mjs",
+    "db:superadmin": "node supabase/scripts/promouvoir-superadmin.mjs",
+    "db:test-rls": "node supabase/tests/rls.test.mjs"
   },
   "private": true,
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.3"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "pg": "^8.23.0",
     "prettier": "^3.9.6",
     "typescript": "~5.9.3"
   }
