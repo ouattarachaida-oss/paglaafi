@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MODE_REEL } from "../config";
 import { messageErreur } from "../lib/supabase";
 import { approuverDemande, chargerDemandes, refuserDemande } from "../depot/adhesions";
+import { useDerniereRequete } from "../lib/derniereRequete";
 import type { EtatAuth } from "./useEtatAuth";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatCentres } from "./useEtatCentres";
@@ -42,10 +43,13 @@ export function useEtatAdministration({
   const [showAdminDashboardModal, setShowAdminDashboardModal] = useState(false);
 
   // Mode réel : demandes d'adhésion du superadmin (rechargées à l'ouverture du panneau)
+  const nouvelleRequete = useDerniereRequete();
   const rechargerDemandes = async () => {
     if (!MODE_REEL || sessionReelle?.role !== "superadmin") return;
+    const estActuelle = nouvelleRequete();
     try {
-      setPendingRegistrations(await chargerDemandes());
+      const demandes = await chargerDemandes();
+      if (estActuelle()) setPendingRegistrations(demandes);
     } catch (erreur) {
       notify(messageErreur(erreur as Error));
     }

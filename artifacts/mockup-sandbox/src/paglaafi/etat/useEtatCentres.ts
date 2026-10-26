@@ -4,6 +4,7 @@ import { initialCenters } from "../donnees/centres";
 import { MODE_DEMO, MODE_REEL } from "../config";
 import { messageErreur } from "../lib/supabase";
 import { echapperHtml } from "../lib/securite";
+import { useDerniereRequete } from "../lib/derniereRequete";
 import { chargerCentreGere, chargerCentresVerifies, enregistrerDisponibilites } from "../depot/centres";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatAuth } from "./useEtatAuth";
@@ -26,11 +27,16 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   const [centreGere, setCentreGere] = useState<HealthCenter | null>(null);
 
   // Mode réel : chargement des centres vérifiés et du centre géré
+  const nouvelleRequete = useDerniereRequete();
   const rechargerCentres = async () => {
     if (!MODE_REEL) return;
+    const estActuelle = nouvelleRequete();
     try {
-      setCenters(await chargerCentresVerifies());
-      setCentreGere(sessionReelle?.centreId ? await chargerCentreGere(sessionReelle.centreId) : null);
+      const verifies = await chargerCentresVerifies();
+      const gere = sessionReelle?.centreId ? await chargerCentreGere(sessionReelle.centreId) : null;
+      if (!estActuelle()) return; // une requête plus récente a déjà répondu
+      setCenters(verifies);
+      setCentreGere(gere);
     } catch (erreur) {
       notify(messageErreur(erreur as Error));
     }
@@ -258,8 +264,18 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
    * Ouvre la mise à jour du centre : en démo le premier centre, en mode réel le
    * centre rattaché au compte connecté.
    */
-  const ouvrirMiseAJourCentre = () => {
-    const centre = MODE_DEMO ? centers[0] : centreGere;
+  const ouvrirMiseAJourCentre = async () => {
+    let centre = MODE_DEMO ? centers[0] : centreGere;
+    // Mode réel : centre pas encore chargé (clic juste après la connexion) → chargement à la demande
+    if (!centre && MODE_REEL && sessionReelle?.centreId) {
+      try {
+        centre = await chargerCentreGere(sessionReelle.centreId);
+        setCentreGere(centre);
+      } catch (erreur) {
+        notify(messageErreur(erreur as Error));
+        return;
+      }
+    }
     if (!centre) {
       notify("Aucun centre n'est rattaché à votre compte pour le moment.");
       return;

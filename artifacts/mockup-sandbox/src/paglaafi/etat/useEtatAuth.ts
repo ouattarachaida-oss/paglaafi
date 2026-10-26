@@ -5,6 +5,7 @@ import { initialPendingRegistrations } from "../donnees/inscriptions";
 import { MODE_DEMO, MODE_REEL } from "../config";
 import { client, messageErreur, supabase } from "../lib/supabase";
 import { chargerProfilConnecte, type SessionReelle } from "../depot/profils";
+import { useDerniereRequete } from "../lib/derniereRequete";
 import type { EtatUi } from "./useEtatUi";
 
 // Type de structure demandé à l'inscription (adhésion validée par le superadmin)
@@ -60,21 +61,23 @@ export function useEtatAuth({ ui }: { ui: EtatUi }) {
   const [sessionReelle, setSessionReelle] = useState<SessionReelle | null>(null);
 
   // Mode réel : suit la session Supabase (conservée après rechargement) et charge le profil
+  const nouvelleRequete = useDerniereRequete();
   useEffect(() => {
     if (!MODE_REEL || !supabase) return;
     let actif = true;
     const { data } = supabase.auth.onAuthStateChange((evenement, session) => {
       if (evenement === "TOKEN_REFRESHED") return;
       // Hors du rappel : Supabase déconseille d'y attendre d'autres appels
+      const estActuelle = nouvelleRequete();
       setTimeout(async () => {
-        if (!actif) return;
+        if (!actif || !estActuelle()) return;
         if (!session) {
           setSessionReelle(null);
           setCurrentUser(null);
           return;
         }
         const resultat = await chargerProfilConnecte(session.user);
-        if (!actif) return;
+        if (!actif || !estActuelle()) return; // un événement plus récent a pris le relais
         if ("erreur" in resultat) {
           notify(`Profil indisponible : ${resultat.erreur}`);
           return;

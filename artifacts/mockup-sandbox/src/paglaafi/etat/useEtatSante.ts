@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MODE_REEL } from "../config";
 import { messageErreur } from "../lib/supabase";
 import { chargerRappels, creerRappel, type Rappel } from "../depot/rappels";
+import { useDerniereRequete } from "../lib/derniereRequete";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatAuth } from "./useEtatAuth";
 
@@ -140,14 +141,16 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   }, [lastPeriodDate, cycleLengthDays, autopalpationDoneThisMonth, lastAutopalpationDate, cycleHistory, reminders]);
 
   // Mode réel : rappels de la personne connectée (vidés à la déconnexion)
+  const nouvelleRequete = useDerniereRequete();
   useEffect(() => {
     if (!MODE_REEL) return;
+    const estActuelle = nouvelleRequete();
     if (!sessionReelle) {
       setReminders([]);
       return;
     }
     chargerRappels()
-      .then(setReminders)
+      .then((rappels) => estActuelle() && setReminders(rappels))
       .catch((erreur) => notify(messageErreur(erreur)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionReelle?.userId]);

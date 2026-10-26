@@ -5,6 +5,7 @@ import { MODE_DEMO, MODE_REEL } from "../config";
 import { messageErreur } from "../lib/supabase";
 import { chargerAnnonces, creerAnnonce, modererAnnonce } from "../depot/annonces";
 import { moisCourant } from "../depot/format";
+import { useDerniereRequete } from "../lib/derniereRequete";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatAuth } from "./useEtatAuth";
 
@@ -42,10 +43,13 @@ export function useEtatAnnonces({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   const [announcements, setAnnouncements] = useState<PartnerAnnouncement[]>(MODE_DEMO ? initialAnnouncements : []);
 
   // Mode réel : (re)chargement selon le compte connecté (la base filtre ce que chacun peut voir)
+  const nouvelleRequete = useDerniereRequete();
   const rechargerAnnonces = async () => {
     if (!MODE_REEL) return;
+    const estActuelle = nouvelleRequete();
     try {
-      setAnnouncements(await chargerAnnonces());
+      const annonces = await chargerAnnonces();
+      if (estActuelle()) setAnnouncements(annonces);
     } catch (erreur) {
       notify(messageErreur(erreur as Error));
     }
