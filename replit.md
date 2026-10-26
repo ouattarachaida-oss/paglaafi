@@ -4,6 +4,8 @@ Application mobile francophone d’information, d’orientation et de soutien au
 
 ## Run & Operate
 
+- `pnpm run dev` — application PagLaafi (mode démo ou réel selon `artifacts/mockup-sandbox/.env`), `pnpm run dev:lan` pour le réseau local
+- `pnpm run db:migrer`, `pnpm run db:superadmin -- <email>`, `pnpm run db:test-rls` — backend Supabase (voir DOCUMENTATION.md §7)
 - `pnpm --filter @workspace/paglaafi run dev` — lancer l’application Expo
 - `pnpm --filter @workspace/paglaafi run typecheck` — vérifier l’application mobile
 

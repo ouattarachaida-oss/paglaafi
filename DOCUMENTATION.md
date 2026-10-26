@@ -499,3 +499,36 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
   - Barre de progression 5 secondes aux couleurs de la charte PagLaafi (dégradé bordeaux vers rose éclatant) avec compte à rebours précis.
   - Badge d'autorité en bas : « *Plateforme Nationale de Santé · Propulsé par Rose IA* » avec icône `ShieldCheck`.
 
+
+---
+
+## 7. Backend Supabase & Modes Démo / Réel (refonte, phase 2)
+
+### A. Deux modes de fonctionnement (`artifacts/mockup-sandbox/.env`)
+- **Mode démo** (`VITE_MODE_DEMO=true`, compétition) : données fictives locales, 5 accès rapides, pastille « Démo · données fictives » visible, numéro vert affiché avec la mention « à vérifier ». Aucun appel à Supabase.
+- **Mode réel** (`VITE_MODE_DEMO=false`) : comptes Supabase (email + mot de passe), session conservée après rechargement, rôles attribués uniquement côté serveur, données protégées par Row Level Security. Le numéro vert (non confirmé) est masqué.
+- Si `VITE_SUPABASE_URL` ou `VITE_SUPABASE_PUBLISHABLE_KEY` manque, l'application repasse en mode démo.
+- Lancer le mode réel en local : `VITE_MODE_DEMO=false pnpm run dev` (ou modifier `.env`).
+
+### B. Fichiers
+- `supabase/migrations/` : schéma (profils, centres, associations, annonces, demandes d'adhésion, rappels), fonctions et triggers, règles RLS.
+- `supabase/seed.sql` : 5 centres et 5 associations de démonstration, **non vérifiés** (`verifie = false`) donc masqués en mode réel.
+- `supabase/scripts/` : outillage (connexion via le session pooler, mot de passe encodé depuis `supabase/.env`).
+- `supabase/tests/rls.test.mjs` : tests des autorisations et des refus pour chaque rôle.
+- `artifacts/mockup-sandbox/src/paglaafi/depot/` : accès aux données Supabase (conversion vers les types de l'interface).
+- Secrets : `supabase/.env` et `artifacts/mockup-sandbox/.env` ne sont jamais versionnés (modèles : `.env.example`). La clé secrète et le mot de passe de la base ne doivent jamais aller dans le `.env` de l'application.
+
+### C. Commandes (racine du dépôt)
+- `pnpm run db:migrer` : applique les migrations manquantes (`-- --seed` pour insérer les données initiales, une seule fois).
+- `pnpm run db:superadmin -- <email>` : nomme un compte existant Superadmin National (seul moyen d'obtenir ce rôle).
+- `pnpm run db:test-rls` : lance les tests RLS (crée puis supprime des comptes de test `rls-test-…@example.com`).
+
+### D. Règles d'accès (appliquées par la base, pas par l'interface)
+- Inscription : profil créé automatiquement avec le rôle **utilisatrice** ; tout rôle envoyé par le client est ignoré. L'inscription d'une structure crée une **demande d'adhésion**.
+- Rôles : modifiables uniquement par le superadmin via la fonction `approuver_demande` (le superadmin choisit aussi le rattachement à un centre ou une association existants).
+- Centres : lecture des centres vérifiés par tous ; mise à jour des **disponibilités** par l'admin du centre et ses docteurs uniquement ; identité et vérification réservées au superadmin.
+- Annonces : toujours créées « en attente » ; seul le superadmin publie ou refuse ; seules les annonces publiées sont visibles du public.
+- Rappels : visibles et modifiables par leur seule propriétaire.
+
+### E. Encore simulé en mode réel
+Rose IA (phase 3), paiement Orange Money et tableau de bord des dons, orientations d'urgence, statistiques du superadmin, cycle et autopalpation (stockés sur l'appareil, phase 4).
