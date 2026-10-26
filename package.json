@@ -9,7 +9,7 @@
     "start": "pnpm --filter @workspace/mockup-sandbox run dev",
     "build:mockup": "pnpm --filter @workspace/mockup-sandbox run build",
     "build": "pnpm --filter @workspace/mockup-sandbox run build",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -b tsconfig.json && pnpm --filter @workspace/mockup-sandbox run typecheck"
   },
   "private": true,
   "dependencies": {
