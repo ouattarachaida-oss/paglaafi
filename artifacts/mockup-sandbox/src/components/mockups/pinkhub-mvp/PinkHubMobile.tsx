@@ -65,11 +65,14 @@ import {
   X,
 } from "lucide-react";
 import type { AdminType, HealthCenter, MedicalKnowledge, PartnerAnnouncement, PartnerAssociation, PendingRegistration, Section, UserProfile, UserRole } from "@/paglaafi/types";
+import { hapticFeedback } from "@/paglaafi/lib/haptique";
 import { initialPendingRegistrations } from "@/paglaafi/donnees/inscriptions";
 import { initialCenters } from "@/paglaafi/donnees/centres";
+import { initialDefaultRoseMessages } from "@/paglaafi/donnees/rose";
 import { initialAnnouncements } from "@/paglaafi/donnees/annonces";
 import { partnerAssociations } from "@/paglaafi/donnees/associations";
 import { roseDailyTips } from "@/paglaafi/donnees/conseilsRose";
+import { getProfileIdentity } from "@/paglaafi/lib/identiteProfil";
 import { lessons } from "@/paglaafi/donnees/lecons";
 
 /**
@@ -111,17 +114,6 @@ export function PinkHubMobile() {
     telephone: "70 12 34 56",
     motDePasse: "123456",
   });
-
-  // Retour haptique tactile pour ergonomie d'application mobile native
-  const hapticFeedback = (duration: number = 15) => {
-    if (typeof window !== "undefined" && "vibrate" in navigator) {
-      try {
-        navigator.vibrate(duration);
-      } catch {
-        // Silencieux si non supporté
-      }
-    }
-  };
 
   // Utilisateur actuellement connecté (initialisé à null au démarrage pour atterrir sur l'écran de connexion après le splash de 5 secondes)
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -193,86 +185,6 @@ export function PinkHubMobile() {
     notify("Vous avez été déconnecté(e) avec succès.");
   };
 
-  // Identité visuelle et icône personnalisée selon chaque profil
-  const getProfileIdentity = (user: UserProfile | null) => {
-    if (!user) {
-      return {
-        icon: <User size={18} className="text-slate-600" />,
-        bg: "bg-slate-100",
-        text: "text-slate-600",
-        border: "border-slate-300",
-        badgeText: "Non connecté",
-        badgeBg: "bg-slate-500 text-white",
-        dotColor: "bg-slate-400",
-        label: "Invité / Visiteur",
-      };
-    }
-
-    if (user.role === "superadmin") {
-      return {
-        icon: <ShieldCheck size={18} className="text-amber-300" />,
-        bg: "bg-gradient-to-tr from-purple-950 via-purple-900 to-indigo-950",
-        text: "text-amber-300",
-        border: "border-amber-400",
-        badgeText: "Superadmin",
-        badgeBg: "bg-gradient-to-r from-amber-400 to-amber-500 text-purple-950 font-black",
-        dotColor: "bg-amber-400",
-        label: "Super-Administrateur National",
-      };
-    }
-
-    if (user.role === "admin" && user.adminType === "center") {
-      return {
-        icon: <Activity size={18} className="text-white" />,
-        bg: "bg-emerald-600",
-        text: "text-white",
-        border: "border-emerald-400",
-        badgeText: "Centre de Santé",
-        badgeBg: "bg-emerald-700 text-white",
-        dotColor: "bg-emerald-400",
-        label: "Admin Centre Médical",
-      };
-    }
-
-    if (user.role === "admin" && user.adminType === "doctor") {
-      return {
-        icon: <Stethoscope size={18} className="text-white" />,
-        bg: "bg-blue-600",
-        text: "text-white",
-        border: "border-blue-400",
-        badgeText: "Docteur / Praticien",
-        badgeBg: "bg-blue-700 text-white",
-        dotColor: "bg-blue-400",
-        label: "Docteur / Praticien de Santé",
-      };
-    }
-
-    if (user.role === "admin" && user.adminType === "association") {
-      return {
-        icon: <HeartHandshake size={18} className="text-white" />,
-        bg: "bg-purple-700",
-        text: "text-white",
-        border: "border-purple-300",
-        badgeText: "Association ONG",
-        badgeBg: "bg-purple-800 text-white",
-        dotColor: "bg-purple-400",
-        label: "Admin Association Partenaire",
-      };
-    }
-
-    // Utilisatrice standard
-    return {
-      icon: <Heart size={17} className="text-white fill-white" />,
-      bg: "bg-gradient-to-tr from-[#6c1543] to-[#ba486e]",
-      text: "text-white",
-      border: "border-rose-300",
-      badgeText: "Utilisatrice",
-      badgeBg: "bg-[#6c1543] text-white",
-      dotColor: "bg-pink-400",
-      label: "Utilisatrice / Patiente",
-    };
-  };
-
   // 5. Superadmin : Modération nationale, Statistiques de trafic & Inscriptions
   const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>(
     initialPendingRegistrations,
@@ -305,17 +217,6 @@ export function PinkHubMobile() {
   const [dailyTipIndex, setDailyTipIndex] = useState(0);
   const [dailyTipLang, setDailyTipLang] = useState<"fr" | "moore" | "dioula" | "en">("fr");
   const [notificationEnabled, setNotificationEnabled] = useState(false);
-
-  const initialDefaultRoseMessages = [
-    {
-      sender: "rose" as const,
-      text: "Bonjour ma sœur, je suis Rose IA, ta compagne de santé et de bien-être. Je suis à ton écoute avec bienveillance, sans jugement et dans le respect total de ta pudeur : hygiène intime, nutrition sahélienne (moringa, baobab), apaisement des règles, sérénité mentale ou dépistage. Écris-moi en toute confiance ou touche le micro.",
-      englishText: "Hello my sister, I am Rose AI, your caring health and well-being companion. I am here for your holistic health: intimate care, nutrition, menstrual comfort, mental peace, and screenings.",
-      mooreText: "Ne y beogo m maaso ! Mam yaa Rose IA, fo laafi zoa. Mam be ka n na n sõng yãmba ne yĩn-sõngr, rɩɩb sõma, pʋg-tõor bɩ bãas gɩdgre. Sok-y maam bũmb fãa y sẽn ratã.",
-      dioulaText: "I ni sɔgɔma n ma muso ! Ne ye Rose IA ye. Ne bɛ yan k'i dɛmɛ kɛnɛya, i yɛrɛ saniya, kalo-sira ani hakili-sigi la. Mun b'i kɔnɔ bi ?",
-      time: "Maintenant",
-    },
-  ];
 
   const [roseMessages, setRoseMessages] = useState<
     Array<{ sender: "user" | "rose"; text: string; time: string; englishText?: string; mooreText?: string; dioulaText?: string }>
