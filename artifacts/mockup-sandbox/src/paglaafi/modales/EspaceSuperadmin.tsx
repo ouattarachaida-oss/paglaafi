@@ -1,10 +1,4 @@
-import {
-  Activity,
-  GraduationCap,
-  ShieldCheck,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { Activity, GraduationCap, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useAuth, useDocteur, useAnnonces, useAdministration } from "../etat/contextes";
 
 /**
@@ -13,10 +7,23 @@ import { useAuth, useDocteur, useAnnonces, useAdministration } from "../etat/con
 export function EspaceSuperadmin() {
   const { pendingRegistrations } = useAuth();
   const { setShowDoctorTrainModal } = useDocteur();
-  const { announcements, handleApproveAndPushAnnouncement, handleApproveAnnouncement, handleRejectAnnouncement } = useAnnonces();
-  const { handleApproveRegistration, handleRejectRegistration, setShowSuperadminModal, setSuperadminActiveTab, setSuperadminAnnouncementTab, setSuperadminRegionFilter, showSuperadminModal, superadminActiveTab, superadminAnnouncementTab, superadminRegionFilter, superadminSortedCenters } = useAdministration();
+  const { announcements, handleApproveAndPushAnnouncement, handleApproveAnnouncement, handleRejectAnnouncement } =
+    useAnnonces();
+  const {
+    handleApproveRegistration,
+    handleRejectRegistration,
+    setShowSuperadminModal,
+    setSuperadminActiveTab,
+    setSuperadminAnnouncementTab,
+    setSuperadminRegionFilter,
+    showSuperadminModal,
+    superadminActiveTab,
+    superadminAnnouncementTab,
+    superadminRegionFilter,
+    superadminSortedCenters,
+  } = useAdministration();
 
-  if (!(showSuperadminModal)) return null;
+  if (!showSuperadminModal) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
@@ -113,9 +120,7 @@ export function EspaceSuperadmin() {
               <div className="flex items-center justify-between border-b border-purple-100 pb-2">
                 <div className="flex items-center gap-1.5">
                   <Activity size={16} className="text-purple-900" />
-                  <h4 className="ph-display text-xs font-bold text-purple-950">
-                    Centres les plus fréquentés
-                  </h4>
+                  <h4 className="ph-display text-xs font-bold text-purple-950">Centres les plus fréquentés</h4>
                 </div>
                 <span className="text-[9.5px] font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full">
                   {superadminSortedCenters.length} centres
@@ -170,9 +175,7 @@ export function EspaceSuperadmin() {
                             #{index + 1}
                           </span>
                           <div>
-                            <h5 className="font-bold text-[#351c2a] text-[11.5px] leading-tight">
-                              {center.shortName}
-                            </h5>
+                            <h5 className="font-bold text-[#351c2a] text-[11.5px] leading-tight">{center.shortName}</h5>
                             <p className="text-[10px] text-purple-800">
                               {center.place} ({center.city})
                             </p>
@@ -199,12 +202,8 @@ export function EspaceSuperadmin() {
                           />
                           {center.isApparatusWorking ? "Mammographe actif" : "Mammographe en révision"}
                         </span>
-                        <span className="text-purple-900 font-bold">
-                          Attente : {center.estimatedWait}
-                        </span>
-                        <span className="text-purple-800">
-                          👥 {center.agentsPresent} soignants
-                        </span>
+                        <span className="text-purple-900 font-bold">Attente : {center.estimatedWait}</span>
+                        <span className="text-purple-800">👥 {center.agentsPresent} soignants</span>
                       </div>
 
                       {/* Barre de tension relative */}
@@ -281,9 +280,7 @@ export function EspaceSuperadmin() {
               <button
                 onClick={() => setSuperadminAnnouncementTab("all")}
                 className={`flex-1 py-1 rounded-lg transition ${
-                  superadminAnnouncementTab === "all"
-                    ? "bg-purple-950 text-white shadow-xs"
-                    : "text-purple-900"
+                  superadminAnnouncementTab === "all" ? "bg-purple-950 text-white shadow-xs" : "text-purple-900"
                 }`}
               >
                 Toutes ({announcements.filter((a) => a.status === "pending_validation").length})
@@ -291,37 +288,23 @@ export function EspaceSuperadmin() {
               <button
                 onClick={() => setSuperadminAnnouncementTab("rose_ai")}
                 className={`flex-1 py-1 rounded-lg transition inline-flex items-center justify-center gap-1 ${
-                  superadminAnnouncementTab === "rose_ai"
-                    ? "bg-purple-950 text-white shadow-xs"
-                    : "text-purple-900"
+                  superadminAnnouncementTab === "rose_ai" ? "bg-purple-950 text-white shadow-xs" : "text-purple-900"
                 }`}
               >
                 <Sparkles size={11} className="text-amber-400" />
                 <span>
                   Veille Rose IA (
-                  {
-                    announcements.filter(
-                      (a) => a.status === "pending_validation" && a.isRoseAIDetected,
-                    ).length
-                  }
-                  )
+                  {announcements.filter((a) => a.status === "pending_validation" && a.isRoseAIDetected).length})
                 </span>
               </button>
               <button
                 onClick={() => setSuperadminAnnouncementTab("partners")}
                 className={`flex-1 py-1 rounded-lg transition ${
-                  superadminAnnouncementTab === "partners"
-                    ? "bg-purple-950 text-white shadow-xs"
-                    : "text-purple-900"
+                  superadminAnnouncementTab === "partners" ? "bg-purple-950 text-white shadow-xs" : "text-purple-900"
                 }`}
               >
                 Partenaires (
-                {
-                  announcements.filter(
-                    (a) => a.status === "pending_validation" && !a.isRoseAIDetected,
-                  ).length
-                }
-                )
+                {announcements.filter((a) => a.status === "pending_validation" && !a.isRoseAIDetected).length})
               </button>
             </div>
 
@@ -345,14 +328,10 @@ export function EspaceSuperadmin() {
                   >
                     {/* Badge et Origine */}
                     <div className="flex justify-between items-start gap-2">
-                      <span className="font-bold text-[#3a1d2d] text-[12px] leading-tight">
-                        {ann.title}
-                      </span>
+                      <span className="font-bold text-[#3a1d2d] text-[12px] leading-tight">{ann.title}</span>
                       <span
                         className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${
-                          ann.isRoseAIDetected
-                            ? "bg-purple-900 text-white"
-                            : "bg-amber-200 text-amber-900"
+                          ann.isRoseAIDetected ? "bg-purple-900 text-white" : "bg-amber-200 text-amber-900"
                         }`}
                       >
                         {ann.isRoseAIDetected ? "🤖 Veille Web Rose IA" : "En attente partenaire"}
@@ -438,12 +417,18 @@ export function EspaceSuperadmin() {
                 <div key={reg.id} className="rounded-xl border border-[#ebd6dc] bg-[#fffafc] p-3 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-[#580e36]">{reg.structure}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${reg.status === "pending" ? "bg-amber-100 text-amber-900" : reg.status === "approved" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${reg.status === "pending" ? "bg-amber-100 text-amber-900" : reg.status === "approved" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}
+                    >
                       {reg.status === "pending" ? "En attente" : reg.status === "approved" ? "Validé ✓" : "Refusé"}
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#735765] mt-0.5">Resp. : {reg.responsable} · {reg.telephone}</p>
-                  <p className="text-[10px] text-[#916b7c]">{reg.ville} · {reg.type}</p>
+                  <p className="text-[11px] text-[#735765] mt-0.5">
+                    Resp. : {reg.responsable} · {reg.telephone}
+                  </p>
+                  <p className="text-[10px] text-[#916b7c]">
+                    {reg.ville} · {reg.type}
+                  </p>
 
                   {reg.status === "pending" && (
                     <div className="mt-2 flex gap-2">

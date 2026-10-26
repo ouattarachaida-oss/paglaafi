@@ -1,11 +1,4 @@
-import {
-  ChevronRight,
-  HeartHandshake,
-  MapPin,
-  ShieldCheck,
-  Sparkles,
-  Stethoscope,
-} from "lucide-react";
+import { ChevronRight, HeartHandshake, MapPin, ShieldCheck, Sparkles, Stethoscope } from "lucide-react";
 import { hapticFeedback } from "../lib/haptique";
 import { useAuth, useDemarrage } from "../etat/contextes";
 
@@ -16,7 +9,7 @@ export function EcranDemarrage() {
   const { setCurrentUser } = useAuth();
   const { setShowSplash, showSplash, splashProgress } = useDemarrage();
 
-  if (!(showSplash)) return null;
+  if (!showSplash) return null;
 
   return (
     <div className="absolute inset-0 z-50 flex flex-col justify-between overflow-hidden bg-[#fff0f5] text-[#580e36] ph-enter sm:rounded-[36px]">
@@ -58,16 +51,10 @@ export function EcranDemarrage() {
       <div className="relative z-10 p-5 pb-7 text-center">
         {/* Logo PagLaafi agrandi avec mise en valeur */}
         <div className="mx-auto mb-2.5 flex h-20 w-20 items-center justify-center rounded-2xl bg-white p-2.5 shadow-[0_10px_25px_rgba(234,45,109,0.22)] ring-4 ring-[#ea2d6d]/20 transition-transform duration-300 hover:scale-105">
-          <img
-            src="/images/pinkhub-mvp-paglaafi.png"
-            alt="Logo PagLaafi"
-            className="h-full w-full object-contain"
-          />
+          <img src="/images/pinkhub-mvp-paglaafi.png" alt="Logo PagLaafi" className="h-full w-full object-contain" />
         </div>
 
-        <h1 className="ph-display text-3xl font-extrabold tracking-tight text-[#580e36] drop-shadow-xs">
-          PagLaafi
-        </h1>
+        <h1 className="ph-display text-3xl font-extrabold tracking-tight text-[#580e36] drop-shadow-xs">PagLaafi</h1>
         <p className="mt-1 text-[13px] font-bold text-[#ea2d6d] tracking-wide">
           Mieux s'informer · Mieux s'orienter · Jamais seule
         </p>

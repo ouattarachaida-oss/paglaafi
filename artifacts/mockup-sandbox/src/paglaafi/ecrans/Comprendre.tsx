@@ -1,10 +1,4 @@
-import {
-  BookOpen,
-  Headphones,
-  Pause,
-  Play,
-  RotateCcw,
-} from "lucide-react";
+import { BookOpen, Headphones, Pause, Play, RotateCcw } from "lucide-react";
 import { lessons } from "../donnees/lecons";
 import { useUi, useAudio, useEducation } from "../etat/contextes";
 
@@ -13,7 +7,15 @@ import { useUi, useAudio, useEducation } from "../etat/contextes";
  */
 export function Comprendre() {
   const { section } = useUi();
-  const { audioProgress, handlePlayAudio, isPlaying, setAudioProgress, setIsPlaying, setSpeechLanguage, speechLanguage } = useAudio();
+  const {
+    audioProgress,
+    handlePlayAudio,
+    isPlaying,
+    setAudioProgress,
+    setIsPlaying,
+    setSpeechLanguage,
+    speechLanguage,
+  } = useAudio();
   const { activeLesson, setActiveLesson, setShowAutopalpationVideoModal } = useEducation();
 
   return (
@@ -21,9 +23,7 @@ export function Comprendre() {
       <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
         Guide vocal & écrit en 4 langues
       </span>
-      <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">
-        Comprendre, pas à pas
-      </h1>
+      <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">Comprendre, pas à pas</h1>
       <p className="mt-1 text-xs text-[#795f6d]">
         Des repères simples pour s'informer sans jargon, avec écoute vocale en Français, English, Mooré ou Dioula.
       </p>
@@ -62,9 +62,7 @@ export function Comprendre() {
           </div>
         </div>
 
-        <h2 className="ph-display mt-2.5 text-lg leading-snug">
-          {lessons[activeLesson].title}
-        </h2>
+        <h2 className="ph-display mt-2.5 text-lg leading-snug">{lessons[activeLesson].title}</h2>
 
         <p className="mt-1.5 text-xs text-white/85 leading-relaxed">
           {speechLanguage === "en"
@@ -119,12 +117,14 @@ export function Comprendre() {
             className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#734059] shadow hover:bg-white/90"
           >
             {isPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
-            <span>{isPlaying ? "Pause" : `Écouter en ${speechLanguage === "fr" ? "Français" : speechLanguage === "en" ? "English" : speechLanguage === "moore" ? "Mooré" : "Dioula"}`}</span>
+            <span>
+              {isPlaying
+                ? "Pause"
+                : `Écouter en ${speechLanguage === "fr" ? "Français" : speechLanguage === "en" ? "English" : speechLanguage === "moore" ? "Mooré" : "Dioula"}`}
+            </span>
           </button>
 
-          <span className="text-[10px] font-semibold text-white/80">
-            {speechLanguage.toUpperCase()}
-          </span>
+          <span className="text-[10px] font-semibold text-white/80">{speechLanguage.toUpperCase()}</span>
         </div>
       </div>
 
@@ -192,12 +192,16 @@ export function Comprendre() {
             }}
             className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${activeLesson === idx ? "border-[#cf869f] bg-[#fbf0f4]" : "border-[#f0dfe4] bg-white"}`}
           >
-            <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${activeLesson === idx ? "bg-[#ea2d6d] text-white" : "bg-[#f9e9ed] text-[#ea2d6d]"}`}>
+            <span
+              className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${activeLesson === idx ? "bg-[#ea2d6d] text-white" : "bg-[#f9e9ed] text-[#ea2d6d]"}`}
+            >
               <BookOpen size={16} />
             </span>
             <div className="flex-1 min-w-0">
               <span className="block text-xs font-bold text-[#4c2d3c]">{lesson.title}</span>
-              <span className="text-[10px] text-[#8e6e7c]">{lesson.category} · {lesson.duration}</span>
+              <span className="text-[10px] text-[#8e6e7c]">
+                {lesson.category} · {lesson.duration}
+              </span>
             </div>
           </button>
         ))}

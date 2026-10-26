@@ -14,9 +14,7 @@ export function useEtatDons({ ui }: { ui: EtatUi }) {
 
   const [isAnonymousDonation, setIsAnonymousDonation] = useState(false);
 
-  const [selectedAssociation, setSelectedAssociation] = useState<PartnerAssociation>(
-    partnerAssociations[0],
-  );
+  const [selectedAssociation, setSelectedAssociation] = useState<PartnerAssociation>(partnerAssociations[0]);
 
   const [donationAmount, setDonationAmount] = useState<number>(2500);
 

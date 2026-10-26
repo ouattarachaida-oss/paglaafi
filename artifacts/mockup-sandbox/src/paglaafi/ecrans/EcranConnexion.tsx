@@ -1,14 +1,4 @@
-import {
-  ArrowRight,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  Lock,
-  Phone,
-  Sparkles,
-  UserPlus,
-  UsersRound,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Phone, Sparkles, UserPlus, UsersRound } from "lucide-react";
 import type { AdminType } from "../types";
 import { getProfileIdentity } from "../lib/identiteProfil";
 import { useUi, useAuth } from "../etat/contextes";
@@ -18,7 +8,22 @@ import { useUi, useAuth } from "../etat/contextes";
  */
 export function EcranConnexion() {
   const { notify, section } = useUi();
-  const { authMode, handleLoginSubmit, handleRegisterSubmit, loginForm, quickLoginAs, registerForm, setAuthMode, setCurrentUser, setLoginForm, setRegisterForm, setShowConfirmPassword, setShowPassword, showConfirmPassword, showPassword } = useAuth();
+  const {
+    authMode,
+    handleLoginSubmit,
+    handleRegisterSubmit,
+    loginForm,
+    quickLoginAs,
+    registerForm,
+    setAuthMode,
+    setCurrentUser,
+    setLoginForm,
+    setRegisterForm,
+    setShowConfirmPassword,
+    setShowPassword,
+    showConfirmPassword,
+    showPassword,
+  } = useAuth();
 
   return (
     <section className="ph-enter px-4 py-5 space-y-4">
@@ -64,11 +69,12 @@ export function EcranConnexion() {
       {/* SI ONGLET CONNEXION */}
       {authMode === "login" && (
         <div className="space-y-4">
-          <form onSubmit={handleLoginSubmit} className="space-y-3.5 rounded-3xl bg-white p-4.5 border border-[#edd6df] shadow-xs">
+          <form
+            onSubmit={handleLoginSubmit}
+            className="space-y-3.5 rounded-3xl bg-white p-4.5 border border-[#edd6df] shadow-xs"
+          >
             <div>
-              <label className="text-[11px] font-bold text-[#580e36] block mb-1.5">
-                Numéro de téléphone (+226)
-              </label>
+              <label className="text-[11px] font-bold text-[#580e36] block mb-1.5">Numéro de téléphone (+226)</label>
               <div className="relative flex items-center">
                 <span className="absolute left-3.5 flex items-center gap-1.5 text-xs font-bold text-[#713f53] pointer-events-none">
                   <Phone size={13} className="text-[#ea2d6d]" />
@@ -86,9 +92,7 @@ export function EcranConnexion() {
             </div>
 
             <div>
-              <label className="text-[11px] font-bold text-[#580e36] block mb-1.5">
-                Mot de passe
-              </label>
+              <label className="text-[11px] font-bold text-[#580e36] block mb-1.5">Mot de passe</label>
               <div className="relative flex items-center">
                 <span className="absolute left-3.5 text-[#ea2d6d] pointer-events-none">
                   <Lock size={14} />
@@ -174,7 +178,9 @@ export function EcranConnexion() {
                     className="flex flex-col items-start gap-1.5 rounded-2xl bg-white p-3 text-left border border-[#ecd5de] hover:border-[#ea2d6d] hover:shadow-xs transition group"
                   >
                     <div className="flex w-full items-center justify-between">
-                      <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${ident.bg} ${ident.text} border ${ident.border} shadow-2xs group-hover:scale-105 transition`}>
+                      <div
+                        className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${ident.bg} ${ident.text} border ${ident.border} shadow-2xs group-hover:scale-105 transition`}
+                      >
                         {ident.icon}
                       </div>
                       <span className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded-full ${ident.badgeBg}`}>
@@ -199,17 +205,23 @@ export function EcranConnexion() {
                   onClick={() => quickLoginAs("superadmin")}
                   className="w-full flex items-center gap-3 rounded-2xl bg-gradient-to-r from-purple-950/5 via-purple-900/10 to-indigo-950/5 p-3 text-left border border-purple-200/80 hover:border-purple-400 hover:shadow-xs transition group"
                 >
-                  <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${superadminIdentity.bg} ${superadminIdentity.text} border ${superadminIdentity.border} shadow-xs group-hover:scale-105 transition`}>
+                  <div
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${superadminIdentity.bg} ${superadminIdentity.text} border ${superadminIdentity.border} shadow-xs group-hover:scale-105 transition`}
+                  >
                     {superadminIdentity.icon}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-bold text-[#351a42]">Alimata Kaboré</p>
-                      <span className={`text-[8.5px] font-black px-2 py-0.5 rounded-full ${superadminIdentity.badgeBg}`}>
+                      <span
+                        className={`text-[8.5px] font-black px-2 py-0.5 rounded-full ${superadminIdentity.badgeBg}`}
+                      >
                         Superadmin National
                       </span>
                     </div>
-                    <p className="text-[10px] text-purple-900/80">Supervision nationale, modération des annonces & statistiques</p>
+                    <p className="text-[10px] text-purple-900/80">
+                      Supervision nationale, modération des annonces & statistiques
+                    </p>
                   </div>
                 </button>
               );
@@ -242,7 +254,10 @@ export function EcranConnexion() {
 
       {/* SI ONGLET INSCRIPTION */}
       {authMode === "register" && (
-        <form onSubmit={handleRegisterSubmit} className="space-y-3 rounded-3xl bg-white p-4 border border-[#edd6df] shadow-xs">
+        <form
+          onSubmit={handleRegisterSubmit}
+          className="space-y-3 rounded-3xl bg-white p-4 border border-[#edd6df] shadow-xs"
+        >
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[11px] font-bold text-[#580e36] block mb-1">Prénom</label>

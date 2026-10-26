@@ -30,7 +30,7 @@ export function useEtatEducation() {
 
     const interval = window.setInterval(() => {
       setVideoProgressSeconds((prev) => {
-        const next = prev + (0.5 * videoSpeed);
+        const next = prev + 0.5 * videoSpeed;
         if (next >= 165) {
           return 0; // Boucle de lecture continue
         }

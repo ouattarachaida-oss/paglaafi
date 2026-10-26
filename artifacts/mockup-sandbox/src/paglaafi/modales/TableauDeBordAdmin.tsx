@@ -1,7 +1,4 @@
-import {
-  BarChart3,
-  X,
-} from "lucide-react";
+import { BarChart3, X } from "lucide-react";
 import { useAdministration } from "../etat/contextes";
 
 /**
@@ -10,7 +7,7 @@ import { useAdministration } from "../etat/contextes";
 export function TableauDeBordAdmin() {
   const { setShowAdminDashboardModal, showAdminDashboardModal } = useAdministration();
 
-  if (!(showAdminDashboardModal)) return null;
+  if (!showAdminDashboardModal) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
@@ -54,16 +51,39 @@ export function TableauDeBordAdmin() {
 
           <div className="space-y-1.5 max-h-[180px] overflow-y-auto">
             {[
-              { id: "OM-ANON-904123", donor: "Donatrice anonyme (Chiffré AES)", amount: 10000, date: "Aujourd'hui 17h42", assoc: "ABAC" },
+              {
+                id: "OM-ANON-904123",
+                donor: "Donatrice anonyme (Chiffré AES)",
+                amount: 10000,
+                date: "Aujourd'hui 17h42",
+                assoc: "ABAC",
+              },
               { id: "OM-BF-893102", donor: "Ouedraogo A.", amount: 5000, date: "Aujourd'hui 15h18", assoc: "ABAC" },
-              { id: "OM-ANON-872291", donor: "Donatrice anonyme (Chiffré AES)", amount: 25000, date: "Hier 19h10", assoc: "Beneere For A Cause" },
+              {
+                id: "OM-ANON-872291",
+                donor: "Donatrice anonyme (Chiffré AES)",
+                amount: 25000,
+                date: "Hier 19h10",
+                assoc: "Beneere For A Cause",
+              },
               { id: "OM-BF-861109", donor: "Traoré S.", amount: 2500, date: "14/10/2026", assoc: "GenitCare" },
-              { id: "OM-BF-850012", donor: "Association WTM", amount: 50000, date: "13/10/2026", assoc: "WomenTech Makers" },
+              {
+                id: "OM-BF-850012",
+                donor: "Association WTM",
+                amount: 50000,
+                date: "13/10/2026",
+                assoc: "WomenTech Makers",
+              },
             ].map((tx) => (
-              <div key={tx.id} className="rounded-xl border border-[#ebdbe2] bg-[#fffbfd] p-2 flex items-center justify-between text-[10.5px]">
+              <div
+                key={tx.id}
+                className="rounded-xl border border-[#ebdbe2] bg-[#fffbfd] p-2 flex items-center justify-between text-[10.5px]"
+              >
                 <div>
                   <span className="font-bold text-[#580e36]">{tx.donor}</span>
-                  <p className="text-[9px] text-[#7a5969]">{tx.assoc} · {tx.date}</p>
+                  <p className="text-[9px] text-[#7a5969]">
+                    {tx.assoc} · {tx.date}
+                  </p>
                 </div>
                 <span className="font-bold text-[#f16e00]">+{tx.amount.toLocaleString("fr-FR")} F</span>
               </div>

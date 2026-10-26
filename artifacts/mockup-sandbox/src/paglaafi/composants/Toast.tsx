@@ -1,6 +1,4 @@
-import {
-  Check,
-} from "lucide-react";
+import { Check } from "lucide-react";
 import { useUi } from "../etat/contextes";
 
 /**
@@ -9,7 +7,7 @@ import { useUi } from "../etat/contextes";
 export function Toast() {
   const { toast } = useUi();
 
-  if (!(toast)) return null;
+  if (!toast) return null;
 
   return (
     <div

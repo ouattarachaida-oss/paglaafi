@@ -1,10 +1,4 @@
-import {
-  Check,
-  Download,
-  Smartphone,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { Check, Download, Smartphone, Sparkles, X } from "lucide-react";
 import { useUi } from "../etat/contextes";
 
 /**
@@ -13,7 +7,7 @@ import { useUi } from "../etat/contextes";
 export function ModaleInstallationPwa() {
   const { deferredPrompt, handleTriggerInstall, setShowPwaInstallModal, showPwaInstallModal } = useUi();
 
-  if (!(showPwaInstallModal)) return null;
+  if (!showPwaInstallModal) return null;
 
   return (
     <div
@@ -51,15 +45,21 @@ export function ModaleInstallationPwa() {
             <ul className="space-y-1 text-[11px] text-[#6b4757]">
               <li className="flex items-center gap-1.5">
                 <Check size={12} className="text-emerald-600 shrink-0" />
-                <span><strong>Accès 100% Hors-Ligne</strong> sans consommer vos données internet</span>
+                <span>
+                  <strong>Accès 100% Hors-Ligne</strong> sans consommer vos données internet
+                </span>
               </li>
               <li className="flex items-center gap-1.5">
                 <Check size={12} className="text-emerald-600 shrink-0" />
-                <span><strong>Plein écran tactile</strong> sans barre d'adresse de navigateur</span>
+                <span>
+                  <strong>Plein écran tactile</strong> sans barre d'adresse de navigateur
+                </span>
               </li>
               <li className="flex items-center gap-1.5">
                 <Check size={12} className="text-emerald-600 shrink-0" />
-                <span><strong>Sauvegarde continue</strong> de votre cycle et autopalpation</span>
+                <span>
+                  <strong>Sauvegarde continue</strong> de votre cycle et autopalpation
+                </span>
               </li>
             </ul>
           </div>
@@ -74,12 +74,21 @@ export function ModaleInstallationPwa() {
             <div className="space-y-2 text-[10.5px] text-slate-700">
               <div className="rounded-xl bg-white p-2 border border-slate-200">
                 <span className="font-bold text-[#8a3350] block">🤖 Sur Android (Chrome / Samsung) :</span>
-                <span>Si le bouton ci-dessous ne s'affiche pas, ouvrez le menu <strong>(⋮)</strong> en haut à droite du navigateur puis choisissez <strong>« Installer l'application »</strong> ou « Ajouter à l'écran d'accueil ».</span>
+                <span>
+                  Si le bouton ci-dessous ne s'affiche pas, ouvrez le menu <strong>(⋮)</strong> en haut à droite du
+                  navigateur puis choisissez <strong>« Installer l'application »</strong> ou « Ajouter à l'écran
+                  d'accueil ».
+                </span>
               </div>
 
               <div className="rounded-xl bg-white p-2 border border-slate-200">
                 <span className="font-bold text-[#8a3350] block">🍎 Sur iPhone / iPad (Safari) :</span>
-                <span>1. Touchez le bouton <strong>Partager ⎋</strong> (carré avec flèche en bas d'écran).<br />2. Faites défiler et touchez <strong>« Sur l'écran d'accueil » ➕</strong>.<br />3. Validez avec <strong>« Ajouter »</strong>.</span>
+                <span>
+                  1. Touchez le bouton <strong>Partager ⎋</strong> (carré avec flèche en bas d'écran).
+                  <br />
+                  2. Faites défiler et touchez <strong>« Sur l'écran d'accueil » ➕</strong>.<br />
+                  3. Validez avec <strong>« Ajouter »</strong>.
+                </span>
               </div>
             </div>
           </div>

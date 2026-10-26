@@ -1,20 +1,20 @@
-import {
-  Check,
-  RotateCcw,
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import { Check, RotateCcw, Shield, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import { useSante } from "../etat/contextes";
 
 /**
  * Paramètres de confidentialité et droit à l'oubli.
  */
 export function ModaleConfidentialite() {
-  const { handleClearAllLocalData, handleSavePrivacySettings, privacySettings, setPrivacySettings, setShowPrivacyModal, showPrivacyModal } = useSante();
+  const {
+    handleClearAllLocalData,
+    handleSavePrivacySettings,
+    privacySettings,
+    setPrivacySettings,
+    setShowPrivacyModal,
+    showPrivacyModal,
+  } = useSante();
 
-  if (!(showPrivacyModal)) return null;
+  if (!showPrivacyModal) return null;
 
   return (
     <div
@@ -32,12 +32,8 @@ export function ModaleConfidentialite() {
               <ShieldCheck size={20} />
             </div>
             <div>
-              <h3 className="ph-display text-sm font-bold text-[#580e36]">
-                Confidentialité & Données
-              </h3>
-              <p className="text-[10px] text-emerald-700 font-bold">
-                Zero Tracking · Local-First · Éthique Médicale
-              </p>
+              <h3 className="ph-display text-sm font-bold text-[#580e36]">Confidentialité & Données</h3>
+              <p className="text-[10px] text-emerald-700 font-bold">Zero Tracking · Local-First · Éthique Médicale</p>
             </div>
           </div>
           <button
@@ -59,15 +55,25 @@ export function ModaleConfidentialite() {
             <ul className="space-y-1.5 text-[11px] leading-relaxed text-[#2c523c]">
               <li className="flex items-start gap-1.5">
                 <Check size={13} className="shrink-0 text-emerald-600 mt-0.5" />
-                <span><strong>Aucune donnée personnelle n'est collectée</strong> par l'application sans votre demande expresse. Vos règles et notes restent 100% sur votre téléphone.</span>
+                <span>
+                  <strong>Aucune donnée personnelle n'est collectée</strong> par l'application sans votre demande
+                  expresse. Vos règles et notes restent 100% sur votre téléphone.
+                </span>
               </li>
               <li className="flex items-start gap-1.5">
                 <Check size={13} className="shrink-0 text-emerald-600 mt-0.5" />
-                <span><strong>Entraînement de Rose IA</strong> : Seules les recommandations certifiées par les <strong>docteurs, sages-femmes et associations</strong> alimentent l'IA pour la rendre naturelle, empathique et culturellement adaptée (Français, Mooré, Dioula).</span>
+                <span>
+                  <strong>Entraînement de Rose IA</strong> : Seules les recommandations certifiées par les{" "}
+                  <strong>docteurs, sages-femmes et associations</strong> alimentent l'IA pour la rendre naturelle,
+                  empathique et culturellement adaptée (Français, Mooré, Dioula).
+                </span>
               </li>
               <li className="flex items-start gap-1.5">
                 <Check size={13} className="shrink-0 text-emerald-600 mt-0.5" />
-                <span><strong>Partage médical sur demande uniquement</strong> : En cas de nodule suspect ou d'urgence, vous choisissez explicitement si vous transmettez votre fiche à un centre.</span>
+                <span>
+                  <strong>Partage médical sur demande uniquement</strong> : En cas de nodule suspect ou d'urgence, vous
+                  choisissez explicitement si vous transmettez votre fiche à un centre.
+                </span>
               </li>
             </ul>
           </div>
@@ -81,9 +87,7 @@ export function ModaleConfidentialite() {
             {/* Toggle 1 : Stockage 100% Local */}
             <label className="flex items-center justify-between rounded-xl border border-[#edd7e1] bg-[#fffcfd] p-3 cursor-pointer hover:bg-pink-50/50 transition">
               <div className="pr-2">
-                <span className="font-bold text-[#580e36] text-xs block">
-                  Stockage 100% Local (Cycle & Calendrier)
-                </span>
+                <span className="font-bold text-[#580e36] text-xs block">Stockage 100% Local (Cycle & Calendrier)</span>
                 <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
                   Vos dates de règles et autopalpations restent enregistrées uniquement dans la mémoire de cet appareil.
                 </span>
@@ -91,9 +95,7 @@ export function ModaleConfidentialite() {
               <input
                 type="checkbox"
                 checked={privacySettings.localOnlyCycle}
-                onChange={(e) =>
-                  setPrivacySettings({ ...privacySettings, localOnlyCycle: e.target.checked })
-                }
+                onChange={(e) => setPrivacySettings({ ...privacySettings, localOnlyCycle: e.target.checked })}
                 className="h-4 w-4 rounded border-gray-300 text-[#ea2d6d] focus:ring-[#ea2d6d]"
               />
             </label>
@@ -105,15 +107,14 @@ export function ModaleConfidentialite() {
                   Entraînement de Rose IA par les soignants
                 </span>
                 <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
-                  Permet de recevoir les protocoles médicaux validés par les médecins du Burkina Faso pour des réponses naturelles.
+                  Permet de recevoir les protocoles médicaux validés par les médecins du Burkina Faso pour des réponses
+                  naturelles.
                 </span>
               </div>
               <input
                 type="checkbox"
                 checked={privacySettings.contributeAiClinical}
-                onChange={(e) =>
-                  setPrivacySettings({ ...privacySettings, contributeAiClinical: e.target.checked })
-                }
+                onChange={(e) => setPrivacySettings({ ...privacySettings, contributeAiClinical: e.target.checked })}
                 className="h-4 w-4 rounded border-gray-300 text-[#ea2d6d] focus:ring-[#ea2d6d]"
               />
             </label>
@@ -125,7 +126,8 @@ export function ModaleConfidentialite() {
                   Statistiques anonymisées pour les Associations
                 </span>
                 <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
-                  Aide les ONG (ex: ABAC, Espoir pour Demain) à cibler les campagnes de dépistage selon la fréquentation régionale.
+                  Aide les ONG (ex: ABAC, Espoir pour Demain) à cibler les campagnes de dépistage selon la fréquentation
+                  régionale.
                 </span>
               </div>
               <input
@@ -145,15 +147,14 @@ export function ModaleConfidentialite() {
                   Transmission médicale sur demande expresse
                 </span>
                 <span className="text-[10px] text-[#785968] leading-tight block mt-0.5">
-                  Exiger une confirmation par code PIN ou clic avant d'adresser une fiche d'orientation à un médecin référent.
+                  Exiger une confirmation par code PIN ou clic avant d'adresser une fiche d'orientation à un médecin
+                  référent.
                 </span>
               </div>
               <input
                 type="checkbox"
                 checked={privacySettings.urgentClinicalConsent}
-                onChange={(e) =>
-                  setPrivacySettings({ ...privacySettings, urgentClinicalConsent: e.target.checked })
-                }
+                onChange={(e) => setPrivacySettings({ ...privacySettings, urgentClinicalConsent: e.target.checked })}
                 className="h-4 w-4 rounded border-gray-300 text-[#ea2d6d] focus:ring-[#ea2d6d]"
               />
             </label>
@@ -170,7 +171,8 @@ export function ModaleConfidentialite() {
               </span>
             </div>
             <p className="text-[10.5px] text-rose-800 leading-snug">
-              Vous pouvez à tout moment effacer instantanément l'ensemble de votre historique, vos rappels et vos messages stockés sur ce téléphone.
+              Vous pouvez à tout moment effacer instantanément l'ensemble de votre historique, vos rappels et vos
+              messages stockés sur ce téléphone.
             </p>
             <button
               onClick={handleClearAllLocalData}

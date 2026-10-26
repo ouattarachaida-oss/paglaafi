@@ -30,10 +30,14 @@ export const initialCenters: HealthCenter[] = [
       { name: "Échographie mammaire bilatérale", price: 6000, free: false },
       { name: "Mammographie numérique", price: 12000, free: false, notes: "Résultats en 48h" },
     ],
-    audioMessageFr: "Bonjour, ici la sage-femme de Schiphra. Notre mammographe fonctionne parfaitement aujourd'hui. L'attente est faible, moins de 20 minutes.",
-    audioMessageEn: "Hello, this is the midwife from Schiphra. Our digital mammography unit is fully functional today with minimal wait time (under 20 minutes).",
-    audioMessageMoore: "Ne y beogo pagbã fãa, CMA Schiphra tɩɩm zĩiga yaa kaset. Masã masã, mammographie masĩnã tʋmdame tɩ zĩigã pa noom ye. Wa-y laafi.",
-    audioMessageDioula: "Aw ni sɔgɔma, CMA Schiphra kɛnɛyaso la masin bɛ baara kɛ kosɛbɛ bi. Mɔgɔ caman t'a la, aw bɛ se ka na sisan.",
+    audioMessageFr:
+      "Bonjour, ici la sage-femme de Schiphra. Notre mammographe fonctionne parfaitement aujourd'hui. L'attente est faible, moins de 20 minutes.",
+    audioMessageEn:
+      "Hello, this is the midwife from Schiphra. Our digital mammography unit is fully functional today with minimal wait time (under 20 minutes).",
+    audioMessageMoore:
+      "Ne y beogo pagbã fãa, CMA Schiphra tɩɩm zĩiga yaa kaset. Masã masã, mammographie masĩnã tʋmdame tɩ zĩigã pa noom ye. Wa-y laafi.",
+    audioMessageDioula:
+      "Aw ni sɔgɔma, CMA Schiphra kɛnɛyaso la masin bɛ baara kɛ kosɛbɛ bi. Mɔgɔ caman t'a la, aw bɛ se ka na sisan.",
     confirmedVisitsToday: 48,
     phone: "+226 25 36 30 70",
     address: "Tanghin, Arrondissement 4 (ex-Secteur 30), Ouagadougou",
@@ -63,9 +67,12 @@ export const initialCenters: HealthCenter[] = [
       { name: "Mammographie de dépistage", price: 10000, free: false },
       { name: "Micro-biopsie guidée", price: 25000, free: false },
     ],
-    audioMessageFr: "Au CHU de Bogodogo, les deux appareils fonctionnent mais nous avons une forte affluence ce matin. Privilégiez le début d'après-midi.",
-    audioMessageEn: "At Bogodogo University Hospital, both machines are operational but there is heavy attendance this morning. Early afternoon is recommended.",
-    audioMessageMoore: "CHU Bogodogo tʋmdame, la neb wʋsg n be kãenkãenga rũnda. Bɩ y bãng tɩ zãama nooma, sã n yaa ne yãmb yaa sõma tɩ y wa zaabre.",
+    audioMessageFr:
+      "Au CHU de Bogodogo, les deux appareils fonctionnent mais nous avons une forte affluence ce matin. Privilégiez le début d'après-midi.",
+    audioMessageEn:
+      "At Bogodogo University Hospital, both machines are operational but there is heavy attendance this morning. Early afternoon is recommended.",
+    audioMessageMoore:
+      "CHU Bogodogo tʋmdame, la neb wʋsg n be kãenkãenga rũnda. Bɩ y bãng tɩ zãama nooma, sã n yaa ne yãmb yaa sõma tɩ y wa zaabre.",
     audioMessageDioula: "CHU Bogodogo masinw bɛ baara kɛ, nka mɔgɔw ka ca bi. Ni aw bɛ fɛ, aw bɛ se ka na wula fɛ.",
     confirmedVisitsToday: 76,
     phone: "+226 25 37 40 40",
@@ -95,10 +102,14 @@ export const initialCenters: HealthCenter[] = [
       { name: "Échographie mammaire", price: 7000, free: false },
       { name: "Mammographie numérique", price: 12000, free: false },
     ],
-    audioMessageFr: "Bonjour aux femmes de Bobo. Le service de dépistage est ouvert en continu jusqu'à 16 heures. L'équipe est au complet et prête à vous orienter.",
-    audioMessageEn: "Hello to all women in Bobo-Dioulasso. Our screening unit is open continuously until 4 PM with complete medical staff.",
-    audioMessageMoore: "Bobo CHU Sourô Sanou pʋgẽ, b sɩngame tɩ b gũusd pagbã ne laafi. Ned baa a yembre pa be n gũud wʋsg ye. Wa-y tɩ b ges yãmba.",
-    audioMessageDioula: "I ni sɔgɔma Bobo musow. CHU Sourô Sanou dayɛlɛn bɛ fo ka taga se lere naani wula fɛ. Dɔgɔtɔrɔmusow bɛ yan k'aw bisimila.",
+    audioMessageFr:
+      "Bonjour aux femmes de Bobo. Le service de dépistage est ouvert en continu jusqu'à 16 heures. L'équipe est au complet et prête à vous orienter.",
+    audioMessageEn:
+      "Hello to all women in Bobo-Dioulasso. Our screening unit is open continuously until 4 PM with complete medical staff.",
+    audioMessageMoore:
+      "Bobo CHU Sourô Sanou pʋgẽ, b sɩngame tɩ b gũusd pagbã ne laafi. Ned baa a yembre pa be n gũud wʋsg ye. Wa-y tɩ b ges yãmba.",
+    audioMessageDioula:
+      "I ni sɔgɔma Bobo musow. CHU Sourô Sanou dayɛlɛn bɛ fo ka taga se lere naani wula fɛ. Dɔgɔtɔrɔmusow bɛ yan k'aw bisimila.",
     confirmedVisitsToday: 52,
     phone: "+226 20 97 00 44",
     address: "Avenue de la République, Bobo-Dioulasso",
@@ -126,9 +137,12 @@ export const initialCenters: HealthCenter[] = [
       { name: "Palpation clinique manuelle", price: 0, free: true, notes: "Maintenue normalement" },
       { name: "Mammographie", price: 10000, free: false, notes: "🔴 Suspendue aujourd'hui" },
     ],
-    audioMessageFr: "Attention pour le CHR de Koudougou : le mammographe est en maintenance. Les sages-femmes assurent la palpation manuelle gratuite.",
-    audioMessageEn: "Notice for Koudougou Regional Hospital: mammography machine is under maintenance today. Manual clinical breast examinations remain open.",
-    audioMessageMoore: "CHR Koudougou: Masĩnã komsame bilfu tɩ b ket n manegda. La pagbã tõe n waame tɩ b ning-b nus n ges b yĩnsa zaalem.",
+    audioMessageFr:
+      "Attention pour le CHR de Koudougou : le mammographe est en maintenance. Les sages-femmes assurent la palpation manuelle gratuite.",
+    audioMessageEn:
+      "Notice for Koudougou Regional Hospital: mammography machine is under maintenance today. Manual clinical breast examinations remain open.",
+    audioMessageMoore:
+      "CHR Koudougou: Masĩnã komsame bilfu tɩ b ket n manegda. La pagbã tõe n waame tɩ b ning-b nus n ges b yĩnsa zaalem.",
     audioMessageDioula: "Koudougou CHR masin tiɲɛna dɔɔni bi. Musow bɛ se ka na dɔgɔtɔrɔmusow bɛ bɔlɔkɔrɔ lajɛ kɛ.",
     confirmedVisitsToday: 19,
     phone: "+226 25 44 01 24",
@@ -157,7 +171,8 @@ export const initialCenters: HealthCenter[] = [
       { name: "Consultation d'orientation", price: 1000, free: false },
       { name: "Palpation clinique", price: 0, free: true },
     ],
-    audioMessageFr: "Ce centre n'a pas encore validé son rapport ce matin. Veuillez appeler le centre avant de vous déplacer.",
+    audioMessageFr:
+      "Ce centre n'a pas encore validé son rapport ce matin. Veuillez appeler le centre avant de vous déplacer.",
     audioMessageEn: "This medical center has not confirmed daily status yet. Please call beforehand.",
     audioMessageMoore: "Kasetã pa paam kʋdemd sebr rũnda ye. Bɩ y tẽeg n bãng bãmb sã n sɩngame tɩ y yaool n ta.",
     audioMessageDioula: "Kɛnɛyaso nin ma kuma fɔ bi fɔlɔ. Aw k'u weele telefone fɛ k'a lɔn sani aw ka taga.",

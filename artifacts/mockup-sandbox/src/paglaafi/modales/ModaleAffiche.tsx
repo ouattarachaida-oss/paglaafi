@@ -1,6 +1,4 @@
-import {
-  X,
-} from "lucide-react";
+import { X } from "lucide-react";
 import { useAnnonces } from "../etat/contextes";
 
 /**
@@ -9,7 +7,7 @@ import { useAnnonces } from "../etat/contextes";
 export function ModaleAffiche() {
   const { selectedPosterModal, setSelectedPosterModal } = useAnnonces();
 
-  if (!(selectedPosterModal)) return null;
+  if (!selectedPosterModal) return null;
 
   return (
     <div
@@ -22,12 +20,8 @@ export function ModaleAffiche() {
       >
         <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
           <div className="min-w-0 pr-2">
-            <h3 className="ph-display text-sm font-bold text-white truncate">
-              {selectedPosterModal.title}
-            </h3>
-            <p className="text-[10px] text-pink-400 font-bold truncate">
-              {selectedPosterModal.author}
-            </p>
+            <h3 className="ph-display text-sm font-bold text-white truncate">{selectedPosterModal.title}</h3>
+            <p className="text-[10px] text-pink-400 font-bold truncate">{selectedPosterModal.author}</p>
           </div>
           <button
             onClick={() => setSelectedPosterModal(null)}
@@ -46,9 +40,7 @@ export function ModaleAffiche() {
         </div>
 
         {selectedPosterModal.caption && (
-          <p className="mt-2 text-center text-[10.5px] text-slate-300 italic">
-            {selectedPosterModal.caption}
-          </p>
+          <p className="mt-2 text-center text-[10.5px] text-slate-300 italic">{selectedPosterModal.caption}</p>
         )}
 
         <button

@@ -1,14 +1,4 @@
-import {
-  AlertCircle,
-  Bell,
-  Calendar,
-  Check,
-  CheckCheck,
-  CheckCircle2,
-  Clock,
-  RotateCcw,
-  Sparkles,
-} from "lucide-react";
+import { AlertCircle, Bell, Calendar, Check, CheckCheck, CheckCircle2, Clock, RotateCcw, Sparkles } from "lucide-react";
 import { useUi, useSante } from "../etat/contextes";
 
 /**
@@ -16,16 +6,38 @@ import { useUi, useSante } from "../etat/contextes";
  */
 export function Cycle() {
   const { notify, section } = useUi();
-  const { cycleHistory, cycleInfo, cycleLengthDays, handleRecalibratePeriod, lastAutopalpationDate, lastPeriodDate, newReminderDate, newReminderTitle, newReminderType, realPeriodDateInput, recalibrationFeedback, reminders, setAutopalpationDoneThisMonth, setLastAutopalpationDate, setNewReminderDate, setNewReminderTitle, setNewReminderType, setRealPeriodDateInput, setReminders, setShowCycleHistory, setShowNewReminderForm, setShowRecalibrateBox, showCycleHistory, showNewReminderForm, showRecalibrateBox } = useSante();
+  const {
+    cycleHistory,
+    cycleInfo,
+    cycleLengthDays,
+    handleRecalibratePeriod,
+    lastAutopalpationDate,
+    lastPeriodDate,
+    newReminderDate,
+    newReminderTitle,
+    newReminderType,
+    realPeriodDateInput,
+    recalibrationFeedback,
+    reminders,
+    setAutopalpationDoneThisMonth,
+    setLastAutopalpationDate,
+    setNewReminderDate,
+    setNewReminderTitle,
+    setNewReminderType,
+    setRealPeriodDateInput,
+    setReminders,
+    setShowCycleHistory,
+    setShowNewReminderForm,
+    setShowRecalibrateBox,
+    showCycleHistory,
+    showNewReminderForm,
+    showRecalibrateBox,
+  } = useSante();
 
   return (
     <section className="ph-enter px-5 pt-4">
-      <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-        Santé intime & Prévention
-      </span>
-      <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">
-        Cycle & Autopalpation
-      </h1>
+      <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">Santé intime & Prévention</span>
+      <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">Cycle & Autopalpation</h1>
       <p className="mt-1 text-xs text-[#795f6d]">
         Suivez vos règles, sachez le moment idéal pour observer vos seins et programmez vos rappels médicaux.
       </p>
@@ -54,9 +66,7 @@ export function Cycle() {
               <span className="text-[10px] font-bold text-[#91586e] uppercase tracking-wider">
                 Prochaines règles estimées :
               </span>
-              <p className="text-base font-extrabold text-[#580e36] mt-0.5">
-                {cycleInfo.nextPeriodStr}
-              </p>
+              <p className="text-base font-extrabold text-[#580e36] mt-0.5">{cycleInfo.nextPeriodStr}</p>
               <p className="text-[10px] text-[#785566]">
                 Dernier début noté : {new Date(lastPeriodDate).toLocaleDateString("fr-FR")}
               </p>
@@ -82,13 +92,15 @@ export function Cycle() {
 
         {/* Feedback vivant lors d'un recalibrage récent */}
         {recalibrationFeedback && (
-          <div className={`mt-2.5 rounded-xl p-2.5 text-xs flex items-start gap-2 border ${
-            recalibrationFeedback.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-              : recalibrationFeedback.type === "warning"
-              ? "bg-amber-50 border-amber-200 text-amber-900"
-              : "bg-blue-50 border-blue-200 text-blue-900"
-          }`}>
+          <div
+            className={`mt-2.5 rounded-xl p-2.5 text-xs flex items-start gap-2 border ${
+              recalibrationFeedback.type === "success"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+                : recalibrationFeedback.type === "warning"
+                  ? "bg-amber-50 border-amber-200 text-amber-900"
+                  : "bg-blue-50 border-blue-200 text-blue-900"
+            }`}
+          >
             <Sparkles size={15} className="shrink-0 mt-0.5 text-[#ea2d6d]" />
             <div className="flex-1 text-[11px] leading-relaxed">
               <p className="font-bold">Ajustement automatique du cycle :</p>
@@ -136,9 +148,7 @@ export function Cycle() {
           {/* Volet rétractable pour choisir une date spécifique et recalibrer */}
           {showRecalibrateBox && (
             <div className="mt-3 rounded-xl bg-white p-3 border border-[#ebd0db] shadow-xs space-y-2.5">
-              <p className="font-bold text-[#553043] text-xs">
-                Indiquez le jour réel où vos règles ont commencé :
-              </p>
+              <p className="font-bold text-[#553043] text-xs">Indiquez le jour réel où vos règles ont commencé :</p>
 
               {/* Raccourcis tactiles rapides */}
               <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
@@ -150,7 +160,8 @@ export function Cycle() {
                     setRealPeriodDateInput(str);
                   }}
                   className={`rounded-lg px-2.5 py-1 font-semibold border ${
-                    realPeriodDateInput === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`
+                    realPeriodDateInput ===
+                    `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`
                       ? "bg-[#ea2d6d] text-white border-[#ea2d6d]"
                       : "bg-[#faeff2] text-[#6b3c50] border-[#ebd1dc]"
                   }`}
@@ -199,9 +210,17 @@ export function Cycle() {
               {/* Aperçu du calcul de l'écart */}
               {(() => {
                 const prevParts = lastPeriodDate.split("-");
-                const prevDate = new Date(parseInt(prevParts[0], 10), parseInt(prevParts[1], 10) - 1, parseInt(prevParts[2], 10));
+                const prevDate = new Date(
+                  parseInt(prevParts[0], 10),
+                  parseInt(prevParts[1], 10) - 1,
+                  parseInt(prevParts[2], 10),
+                );
                 const realParts = realPeriodDateInput.split("-");
-                const realDate = new Date(parseInt(realParts[0], 10), parseInt(realParts[1], 10) - 1, parseInt(realParts[2], 10));
+                const realDate = new Date(
+                  parseInt(realParts[0], 10),
+                  parseInt(realParts[1], 10) - 1,
+                  parseInt(realParts[2], 10),
+                );
                 const diff = Math.round((realDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
                 return (
                   <div className="rounded-lg bg-[#faeff2] p-2 text-[11px] text-[#6a3c50] flex items-center justify-between">
@@ -272,7 +291,8 @@ export function Cycle() {
           Fenêtre d'autopalpation : {cycleInfo.autopalpWindowStr}
         </h3>
         <p className="mt-1 text-xs text-[#39614c] leading-relaxed">
-          Le meilleur moment pour observer vos seins est <strong>2 à 5 jours après la fin des règles</strong>, quand les tissus mammaires sont souples et non douloureux.
+          Le meilleur moment pour observer vos seins est <strong>2 à 5 jours après la fin des règles</strong>, quand les
+          tissus mammaires sont souples et non douloureux.
         </p>
 
         <div className="mt-3 space-y-1.5 text-xs">
@@ -280,10 +300,12 @@ export function Cycle() {
             <b>1. Devant le miroir :</b> Observez bras le long du corps, puis levés (recherchez une fossette ou un pli).
           </div>
           <div className="rounded-xl bg-white/90 p-2 border border-emerald-200">
-            <b>2. Palpation circulaire :</b> Avec la pulpe des 3 doigts, faites des petits cercles fermes de l'extérieur vers le centre.
+            <b>2. Palpation circulaire :</b> Avec la pulpe des 3 doigts, faites des petits cercles fermes de l'extérieur
+            vers le centre.
           </div>
           <div className="rounded-xl bg-white/90 p-2 border border-emerald-200">
-            <b>3. Sous l'aisselle :</b> Vérifiez le creux du bras pour vous assurer de l'absence de nodule ou ganglion dur.
+            <b>3. Sous l'aisselle :</b> Vérifiez le creux du bras pour vous assurer de l'absence de nodule ou ganglion
+            dur.
           </div>
           <div className="rounded-xl bg-white/90 p-2 border border-emerald-200">
             <b>4. Pression douce :</b> Pincez légèrement le mamelon pour vérifier l'absence d'écoulement anormal.
@@ -351,7 +373,13 @@ export function Cycle() {
                   if (!newReminderTitle) return;
                   setReminders((prev: any[]) => [
                     ...prev,
-                    { id: Date.now(), title: newReminderTitle, date: newReminderDate || "Bientôt", type: newReminderType, active: true },
+                    {
+                      id: Date.now(),
+                      title: newReminderTitle,
+                      date: newReminderDate || "Bientôt",
+                      type: newReminderType,
+                      active: true,
+                    },
                   ]);
                   setNewReminderTitle("");
                   setNewReminderDate("");
@@ -368,9 +396,14 @@ export function Cycle() {
 
         <div className="mt-3 space-y-2 text-xs">
           {reminders.map((r: any) => (
-            <div key={r.id} className="flex items-center justify-between rounded-xl border border-[#f2e2e7] p-2.5 bg-[#fffafc]">
+            <div
+              key={r.id}
+              className="flex items-center justify-between rounded-xl border border-[#f2e2e7] p-2.5 bg-[#fffafc]"
+            >
               <div className="flex items-center gap-2.5">
-                <span className={`grid h-7 w-7 place-items-center rounded-lg ${r.type === "screening" ? "bg-purple-100 text-purple-800" : r.type === "appointment" ? "bg-blue-100 text-blue-800" : "bg-emerald-100 text-emerald-800"}`}>
+                <span
+                  className={`grid h-7 w-7 place-items-center rounded-lg ${r.type === "screening" ? "bg-purple-100 text-purple-800" : r.type === "appointment" ? "bg-blue-100 text-blue-800" : "bg-emerald-100 text-emerald-800"}`}
+                >
                   <Clock size={14} />
                 </span>
                 <div>

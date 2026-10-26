@@ -1,10 +1,4 @@
-import {
-  BookOpen,
-  Gift,
-  Heart,
-  MapPin,
-  Sparkles,
-} from "lucide-react";
+import { BookOpen, Gift, Heart, MapPin, Sparkles } from "lucide-react";
 import type { Section } from "../types";
 import { hapticFeedback } from "../lib/haptique";
 import { useUi, useAuth, useCentres, useDons } from "../etat/contextes";
@@ -18,7 +12,7 @@ export function BarreNavigation() {
   const { setSelectedCenter } = useCentres();
   const { setShowDonationModal } = useDons();
 
-  if (!(currentUser)) return null;
+  if (!currentUser) return null;
 
   return (
     <nav
@@ -78,7 +72,11 @@ export function BarreNavigation() {
               <span
                 className={`grid h-7 w-9 place-items-center rounded-full transition-all duration-200 ${active ? "bg-[#fbe7ed] text-[#ea2d6d] shadow-xs" : ""}`}
               >
-                <Icon size={18} strokeWidth={active ? 2.5 : 1.8} className={label === "FaireUnDon" && active ? "fill-[#ea2d6d]" : ""} />
+                <Icon
+                  size={18}
+                  strokeWidth={active ? 2.5 : 1.8}
+                  className={label === "FaireUnDon" && active ? "fill-[#ea2d6d]" : ""}
+                />
               </span>
               <span
                 className={`text-[9.5px] tracking-tight transition ${active ? "font-bold text-[#ea2d6d]" : "font-medium text-[#9d838e]"}`}

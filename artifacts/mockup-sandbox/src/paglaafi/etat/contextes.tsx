@@ -89,9 +89,7 @@ export function FournisseurEtat({ children }: { children: ReactNode }) {
                         <ContexteAnnonces.Provider value={annonces}>
                           <ContexteDons.Provider value={dons}>
                             <ContexteAdministration.Provider value={admin}>
-                              <ContexteLangue.Provider value={langue}>
-                                {children}
-                              </ContexteLangue.Provider>
+                              <ContexteLangue.Provider value={langue}>{children}</ContexteLangue.Provider>
                             </ContexteAdministration.Provider>
                           </ContexteDons.Provider>
                         </ContexteAnnonces.Provider>

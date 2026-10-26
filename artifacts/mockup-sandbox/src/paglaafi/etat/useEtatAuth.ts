@@ -63,9 +63,7 @@ export function useEtatAuth({ ui }: { ui: EtatUi }) {
   };
 
   // 5. Superadmin : Modération nationale, Statistiques de trafic & Inscriptions
-  const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>(
-    initialPendingRegistrations,
-  );
+  const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>(initialPendingRegistrations);
 
   /**
    * Gestion de la connexion et inscription

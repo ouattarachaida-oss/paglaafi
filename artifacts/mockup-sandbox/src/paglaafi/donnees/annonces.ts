@@ -22,7 +22,8 @@ export const initialAnnouncements: PartnerAnnouncement[] = [
     badgeColor: "bg-emerald-100 text-emerald-800",
     imageUrl: "/images/affiche-evenement-beneere.jpg",
     imageCaption: "Affiche officielle de la Caravane Santé BE NEERE FOR CAUSE déployée au Burkina Faso",
-    content: "L'organisation BE NEERE FOR CAUSE déploie ses unités mobiles de santé : dépistage gratuit du cancer du sein et du col de l'utérus, ateliers d'autopalpation guidée, conseils nutritionnels et orientation médicale immédiate pour toutes les femmes.",
+    content:
+      "L'organisation BE NEERE FOR CAUSE déploie ses unités mobiles de santé : dépistage gratuit du cancer du sein et du col de l'utérus, ateliers d'autopalpation guidée, conseils nutritionnels et orientation médicale immédiate pour toutes les femmes.",
     contact: "+226 70 20 11 22 / info@beneere.org",
     likes: 312,
     status: "approved",
@@ -41,7 +42,8 @@ export const initialAnnouncements: PartnerAnnouncement[] = [
     badgeColor: "bg-purple-100 text-purple-900 border border-purple-200",
     imageUrl: "/images/affiche-wtm-odc.jpg",
     imageCaption: "Affiche WomenTechmakers & Orange Digital Center Burkina Faso : Innovating for Women's Health",
-    content: "Women Techmakers et Orange Digital Center Burkina Faso mobilisent les développeuses, soignantes et innovatrices pour concevoir des outils numériques d'impact : apprentissage de l'autopalpation sur mobile, diffusion d'alertes en langues locales et inclusion numérique des femmes.",
+    content:
+      "Women Techmakers et Orange Digital Center Burkina Faso mobilisent les développeuses, soignantes et innovatrices pour concevoir des outils numériques d'impact : apprentissage de l'autopalpation sur mobile, diffusion d'alertes en langues locales et inclusion numérique des femmes.",
     contact: "+226 76 50 33 44 / contact@wtmouaga.bf",
     likes: 278,
     status: "approved",
@@ -59,8 +61,10 @@ export const initialAnnouncements: PartnerAnnouncement[] = [
     badge: "Santé de la Femme",
     badgeColor: "bg-teal-100 text-teal-900 border border-teal-200",
     imageUrl: "/images/affiche-genit-care.jpg",
-    imageCaption: "Affiche Clinique GENIT CARE Burkina : Votre partenaire d'excellence pour la santé gynécologique et le dépistage précoce",
-    content: "La clinique GENIT CARE accueille les femmes du lundi au samedi pour un bilan complet : consultation gynécologique bienveillante, palpation mammaire experte, échographie, frottis et accompagnement des troubles du cycle et de l'endométriose à tarif hautement subventionné.",
+    imageCaption:
+      "Affiche Clinique GENIT CARE Burkina : Votre partenaire d'excellence pour la santé gynécologique et le dépistage précoce",
+    content:
+      "La clinique GENIT CARE accueille les femmes du lundi au samedi pour un bilan complet : consultation gynécologique bienveillante, palpation mammaire experte, échographie, frottis et accompagnement des troubles du cycle et de l'endométriose à tarif hautement subventionné.",
     contact: "+226 25 30 10 10 / www.genitcarebf.org",
     likes: 245,
     status: "approved",
@@ -77,7 +81,8 @@ export const initialAnnouncements: PartnerAnnouncement[] = [
     month: "Octobre 2026",
     badge: "Tarif Spécial 5 000 F",
     badgeColor: "bg-amber-100 text-amber-900",
-    content: "Grâce aux donateurs de PagLaafi, 200 mammographies numériques sont subventionnées à 5 000 FCFA (au lieu de 12 000 FCFA) pour les femmes sans couverture sanitaire.",
+    content:
+      "Grâce aux donateurs de PagLaafi, 200 mammographies numériques sont subventionnées à 5 000 FCFA (au lieu de 12 000 FCFA) pour les femmes sans couverture sanitaire.",
     contact: "+226 25 36 30 70",
     likes: 195,
     status: "approved",
@@ -94,7 +99,8 @@ export const initialAnnouncements: PartnerAnnouncement[] = [
     month: "Octobre 2026",
     badge: "🤖 Détecté par Rose IA",
     badgeColor: "bg-purple-100 text-purple-900 border border-purple-300",
-    content: "Rose IA a détecté cette publication officielle sur les réseaux sociaux : Grande caravane de dépistage 100% gratuit du cancer du sein et du col de l'utérus (test IVA) au CSPS de Saaba avec échographies sur place.",
+    content:
+      "Rose IA a détecté cette publication officielle sur les réseaux sociaux : Grande caravane de dépistage 100% gratuit du cancer du sein et du col de l'utérus (test IVA) au CSPS de Saaba avec échographies sur place.",
     contact: "+226 25 39 80 00 (Standard Ministère)",
     likes: 0,
     status: "pending_validation",
@@ -103,7 +109,8 @@ export const initialAnnouncements: PartnerAnnouncement[] = [
     aiConfidence: "98% (Certifié Ministère)",
     submittedBy: "Rose IA Radar Web",
     submittedAt: "Détecté il y a 25 min",
-    pushMessageFr: "🌸 Rose IA : Dépistage seins & col 100% gratuit ce samedi au CSPS de Saaba ! Confirmé par le Ministère de la Santé.",
+    pushMessageFr:
+      "🌸 Rose IA : Dépistage seins & col 100% gratuit ce samedi au CSPS de Saaba ! Confirmé par le Ministère de la Santé.",
     pushMessageMoore: "🌸 Rose IA : Laafi tʋʋma Saaba CSPS pʋgẽ rũndã zaalem ! Dɔgɔtɔr dãmb na n ges yãmba.",
     pushMessageDioula: "🌸 Rose IA : Dɔgɔtɔrɔba kɛnɛya Saaba la bi fu ! Minisiriso bɛ bisimila kɛ musow ye.",
     pushSent: false,
@@ -118,7 +125,8 @@ export const initialAnnouncements: PartnerAnnouncement[] = [
     month: "Octobre 2026",
     badge: "🤖 Détecté par Rose IA",
     badgeColor: "bg-purple-100 text-purple-900 border border-purple-300",
-    content: "Repéré sur WhatsApp & Facebook : Journée de solidarité pour les femmes des Secteurs 24 et 25 de Bobo-Dioulasso avec autopalpation guidée, sensibilisation à la nutrition sahélienne et dépistage précoce.",
+    content:
+      "Repéré sur WhatsApp & Facebook : Journée de solidarité pour les femmes des Secteurs 24 et 25 de Bobo-Dioulasso avec autopalpation guidée, sensibilisation à la nutrition sahélienne et dépistage précoce.",
     contact: "+226 71 44 55 66",
     likes: 0,
     status: "pending_validation",

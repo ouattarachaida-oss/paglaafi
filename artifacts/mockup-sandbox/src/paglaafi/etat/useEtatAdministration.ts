@@ -24,16 +24,12 @@ export function useEtatAdministration({ auth, ui, centres }: { auth: EtatAuth; u
 
   // Modération Superadmin : structures
   const handleApproveRegistration = (id: number) => {
-    setPendingRegistrations((prev) =>
-      prev.map((reg) => (reg.id === id ? { ...reg, status: "approved" } : reg)),
-    );
+    setPendingRegistrations((prev) => prev.map((reg) => (reg.id === id ? { ...reg, status: "approved" } : reg)));
     notify("Structure validée avec succès par le Superadmin !");
   };
 
   const handleRejectRegistration = (id: number) => {
-    setPendingRegistrations((prev) =>
-      prev.map((reg) => (reg.id === id ? { ...reg, status: "rejected" } : reg)),
-    );
+    setPendingRegistrations((prev) => prev.map((reg) => (reg.id === id ? { ...reg, status: "rejected" } : reg)));
     notify("Demande d'inscription refusée.");
   };
 

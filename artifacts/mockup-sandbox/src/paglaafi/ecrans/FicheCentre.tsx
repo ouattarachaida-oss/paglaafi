@@ -1,10 +1,4 @@
-import {
-  ArrowLeft,
-  MapPin,
-  Navigation,
-  Phone,
-  Volume2,
-} from "lucide-react";
+import { ArrowLeft, MapPin, Navigation, Phone, Volume2 } from "lucide-react";
 import { useUi, useAudio, useCentres } from "../etat/contextes";
 
 /**
@@ -15,7 +9,7 @@ export function FicheCentre() {
   const { handlePlayAudio } = useAudio();
   const { mapInstanceRef, openNavigation, selectedCenter, setSelectedCenter } = useCentres();
 
-  if (!(selectedCenter)) return null;
+  if (!selectedCenter) return null;
 
   return (
     <section className="ph-enter px-5 pt-4">
@@ -73,7 +67,9 @@ export function FicheCentre() {
           </div>
           <div className="rounded-xl bg-white/90 p-2.5 border border-[#eed6de]">
             <p className="text-[9px] font-bold uppercase text-[#9f697d]">File d'attente</p>
-            <p className="font-bold text-[#580e36] mt-0.5">{selectedCenter.queueCount} personnes ({selectedCenter.estimatedWait})</p>
+            <p className="font-bold text-[#580e36] mt-0.5">
+              {selectedCenter.queueCount} personnes ({selectedCenter.estimatedWait})
+            </p>
           </div>
         </div>
       </div>
@@ -85,10 +81,30 @@ export function FicheCentre() {
         </span>
         <p className="mt-1 italic text-[#725462]">« {selectedCenter.audioMessageFr} »</p>
         <div className="mt-2.5 grid grid-cols-4 gap-1">
-          <button onClick={() => handlePlayAudio(selectedCenter.audioMessageFr, "fr")} className="rounded-xl bg-[#ea2d6d] py-1.5 text-[10px] font-bold text-white">FR</button>
-          <button onClick={() => handlePlayAudio(selectedCenter.audioMessageEn, "en")} className="rounded-xl bg-[#ea2d6d] py-1.5 text-[10px] font-bold text-white">EN</button>
-          <button onClick={() => handlePlayAudio(selectedCenter.audioMessageMoore, "moore")} className="rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-[10px] font-bold text-[#8a3350]">Mooré</button>
-          <button onClick={() => handlePlayAudio(selectedCenter.audioMessageDioula, "dioula")} className="rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-[10px] font-bold text-[#8a3350]">Dioula</button>
+          <button
+            onClick={() => handlePlayAudio(selectedCenter.audioMessageFr, "fr")}
+            className="rounded-xl bg-[#ea2d6d] py-1.5 text-[10px] font-bold text-white"
+          >
+            FR
+          </button>
+          <button
+            onClick={() => handlePlayAudio(selectedCenter.audioMessageEn, "en")}
+            className="rounded-xl bg-[#ea2d6d] py-1.5 text-[10px] font-bold text-white"
+          >
+            EN
+          </button>
+          <button
+            onClick={() => handlePlayAudio(selectedCenter.audioMessageMoore, "moore")}
+            className="rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-[10px] font-bold text-[#8a3350]"
+          >
+            Mooré
+          </button>
+          <button
+            onClick={() => handlePlayAudio(selectedCenter.audioMessageDioula, "dioula")}
+            className="rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-[10px] font-bold text-[#8a3350]"
+          >
+            Dioula
+          </button>
         </div>
       </div>
 

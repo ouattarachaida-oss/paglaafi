@@ -57,13 +57,15 @@ export function useEtatSante({ ui }: { ui: EtatUi }) {
     type: "success" | "info" | "warning";
   } | null>(null);
 
-  const [cycleHistory, setCycleHistory] = useState<Array<{
-    id: number;
-    date: string;
-    duration: number;
-    diff: number;
-    note: string;
-  }>>(() => {
+  const [cycleHistory, setCycleHistory] = useState<
+    Array<{
+      id: number;
+      date: string;
+      duration: number;
+      diff: number;
+      note: string;
+    }>
+  >(() => {
     const initialHist = [
       {
         id: 1,
@@ -84,9 +86,27 @@ export function useEtatSante({ ui }: { ui: EtatUi }) {
 
   const [reminders, setReminders] = useState(() => {
     const defaultReminders = [
-      { id: 1, title: "Dépistage annuel recommandé", date: "24 Octobre 2026", type: "screening" as const, active: true },
-      { id: 2, title: "Rendez-vous mammographie (CMA Schiphra)", date: "26 Octobre à 09h00", type: "appointment" as const, active: true },
-      { id: 3, title: "Prise de traitement hormonal / vitamines", date: "Tous les matins à 08h00", type: "treatment" as const, active: false },
+      {
+        id: 1,
+        title: "Dépistage annuel recommandé",
+        date: "24 Octobre 2026",
+        type: "screening" as const,
+        active: true,
+      },
+      {
+        id: 2,
+        title: "Rendez-vous mammographie (CMA Schiphra)",
+        date: "26 Octobre à 09h00",
+        type: "appointment" as const,
+        active: true,
+      },
+      {
+        id: 3,
+        title: "Prise de traitement hormonal / vitamines",
+        date: "Tous les matins à 08h00",
+        type: "treatment" as const,
+        active: false,
+      },
     ];
     if (typeof window === "undefined") return defaultReminders;
     try {
@@ -130,9 +150,10 @@ export function useEtatSante({ ui }: { ui: EtatUi }) {
   const cycleInfo = useMemo(() => {
     // Découpage strict de la date YYYY-MM-DD pour éviter les biais de fuseau GMT
     const parts = lastPeriodDate.split("-");
-    const lastDate = parts.length === 3
-      ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
-      : new Date(lastPeriodDate);
+    const lastDate =
+      parts.length === 3
+        ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
+        : new Date(lastPeriodDate);
 
     // Calcul de la date prévisionnelle des prochaines règles
     const nextPeriodDate = new Date(lastDate);
@@ -154,7 +175,11 @@ export function useEtatSante({ ui }: { ui: EtatUi }) {
 
     return {
       nextPeriodStr: nextPeriodDate.toLocaleDateString("fr-FR", { day: "numeric", month: "long" }),
-      nextPeriodFormatted: nextPeriodDate.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" }),
+      nextPeriodFormatted: nextPeriodDate.toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
       daysUntilNextPeriod,
       autopalpWindowStr: `Du ${autopalpStart.getDate()} au ${autopalpEnd.getDate()} ${autopalpEnd.toLocaleDateString("fr-FR", { month: "short" })}`,
       isOptimalWindow,

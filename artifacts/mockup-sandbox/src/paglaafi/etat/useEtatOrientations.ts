@@ -20,7 +20,8 @@ export function useEtatOrientations({ centres, auth, ui }: { centres: EtatCentre
     patientPhone: "70 88 99 00",
     urgencyLevel: "immediate" as "immediate" | "priority" | "routine",
     targetCenterId: 1,
-    clinicalObservations: "Masse rétro-aréolaire droite de 2.5 cm, indolore, évoluant depuis 2 mois. Pas d'adénopathie palpable.",
+    clinicalObservations:
+      "Masse rétro-aréolaire droite de 2.5 cm, indolore, évoluant depuis 2 mois. Pas d'adénopathie palpable.",
     recommendedExam: "Mammographie numérique bilatérale + Échographie mammaire",
   });
 
@@ -39,7 +40,8 @@ export function useEtatOrientations({ centres, auth, ui }: { centres: EtatCentre
       targetCenterName: "CMA Schiphra",
       urgencyLevel: "immediate" as "immediate" | "priority" | "routine",
       urgencyLabel: "🚨 Immédiat (< 24h)",
-      clinicalObservations: "Masse rétro-aréolaire droite de 2.5 cm, indolore, évoluant depuis 2 mois. Rétraction cutanée légère constatée.",
+      clinicalObservations:
+        "Masse rétro-aréolaire droite de 2.5 cm, indolore, évoluant depuis 2 mois. Rétraction cutanée légère constatée.",
       recommendedExam: "Mammographie numérique bilatérale + Échographie mammaire",
       status: "pending_center" as "pending_center" | "accepted_urgent" | "scheduled_wait",
       centerValidationMessage: "",
@@ -57,7 +59,8 @@ export function useEtatOrientations({ centres, auth, ui }: { centres: EtatCentre
       targetCenterName: "CMA Schiphra",
       urgencyLevel: "priority" as "immediate" | "priority" | "routine",
       urgencyLabel: "⚠️ Prioritaire (48h-72h)",
-      clinicalObservations: "Écoulement unilatéral suspect mamelon gauche sans nodule franc à la palpation. Antécédents familiaux de cancer du sein.",
+      clinicalObservations:
+        "Écoulement unilatéral suspect mamelon gauche sans nodule franc à la palpation. Antécédents familiaux de cancer du sein.",
       recommendedExam: "Échographie mammaire ciblée",
       status: "accepted_urgent" as "pending_center" | "accepted_urgent" | "scheduled_wait",
       centerValidationMessage: "Patiente attendue ! Équipe Schiphra prévenue. Accueil direct guichet 3.",
@@ -89,8 +92,8 @@ export function useEtatOrientations({ centres, auth, ui }: { centres: EtatCentre
         orientationForm.urgencyLevel === "immediate"
           ? "🚨 Immédiat (< 24h)"
           : orientationForm.urgencyLevel === "priority"
-          ? "⚠️ Prioritaire (48h-72h)"
-          : "ℹ️ Routine / Surveillance",
+            ? "⚠️ Prioritaire (48h-72h)"
+            : "ℹ️ Routine / Surveillance",
       clinicalObservations: orientationForm.clinicalObservations,
       recommendedExam: orientationForm.recommendedExam,
       status: "pending_center" as const,
@@ -110,7 +113,7 @@ export function useEtatOrientations({ centres, auth, ui }: { centres: EtatCentre
   const handleValidateOrientationByCenter = (
     orientationId: string,
     action: "immediate" | "scheduled",
-    customDelay?: string
+    customDelay?: string,
   ) => {
     hapticFeedback(20);
     setUrgentOrientations((prev) =>
@@ -133,12 +136,12 @@ export function useEtatOrientations({ centres, auth, ui }: { centres: EtatCentre
           }
         }
         return item;
-      })
+      }),
     );
     notify(
       action === "immediate"
         ? "Confirmation envoyée : Patiente attendue d'urgence !"
-        : "Créneau prioritaire programmé avec succès."
+        : "Créneau prioritaire programmé avec succès.",
     );
   };
 

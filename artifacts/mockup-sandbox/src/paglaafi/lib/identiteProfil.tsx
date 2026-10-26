@@ -2,14 +2,7 @@
  * Identité visuelle (icône, couleurs, libellés) associée à chaque profil.
  */
 
-import {
-  Activity,
-  Heart,
-  HeartHandshake,
-  ShieldCheck,
-  Stethoscope,
-  User,
-} from "lucide-react";
+import { Activity, Heart, HeartHandshake, ShieldCheck, Stethoscope, User } from "lucide-react";
 import type { UserProfile } from "../types";
 
 // Identité visuelle et icône personnalisée selon chaque profil

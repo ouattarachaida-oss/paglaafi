@@ -1,7 +1,4 @@
-import {
-  MessageCircle,
-  Phone,
-} from "lucide-react";
+import { MessageCircle, Phone } from "lucide-react";
 import { useUi } from "../etat/contextes";
 
 /**
@@ -12,14 +9,11 @@ export function Accompagnant() {
 
   return (
     <section className="ph-enter px-5 pt-4">
-      <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-        Aller à deux
-      </span>
-      <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">
-        L'Accompagnant
-      </h1>
+      <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">Aller à deux</span>
+      <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">L'Accompagnant</h1>
       <p className="mt-1 text-xs text-[#795f6d]">
-        Aller faire son dépistage, c'est plus facile à deux. Invitez une proche par WhatsApp ou directement par SMS simple (sans connexion internet requise).
+        Aller faire son dépistage, c'est plus facile à deux. Invitez une proche par WhatsApp ou directement par SMS
+        simple (sans connexion internet requise).
       </p>
 
       {/* Choix de la langue de message d'accompagnement */}
@@ -41,9 +35,11 @@ export function Accompagnant() {
         </div>
 
         <div className="mt-3 rounded-xl bg-[#fdf5f8] border border-[#f5dfeb] p-2.5 text-[11px] italic text-[#6f4b5d]">
-          « {smsLanguage === "fr"
+          «{" "}
+          {smsLanguage === "fr"
             ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${appShareUrl}`
-            : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${appShareUrl}`} »
+            : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${appShareUrl}`}{" "}
+          »
         </div>
 
         {/* 1. BOUTON ENVOI PAR WHATSAPP */}

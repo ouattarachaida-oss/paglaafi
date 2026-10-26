@@ -15,7 +15,8 @@ export const lessons: Lecon[] = [
     title: "Comprendre le cancer du sein sans jargon",
     category: "Les bases",
     duration: "4 min",
-    summary: "Des repères clairs pour comprendre ce qui se passe dans le corps, sans dramatiser et avec des mots simples.",
+    summary:
+      "Des repères clairs pour comprendre ce qui se passe dans le corps, sans dramatiser et avec des mots simples.",
     englishSummary: "Clear, non-technical explanations to understand what happens in the breast tissue without fear.",
     fullText:
       "Le cancer du sein commence lorsque des cellules du tissu mammaire se modifient et se multiplient anormalement. Dans la très grande majorité des cas, une petite boule ou un nodule n'est PAS un cancer : il s'agit souvent d'un kyste bénin ou d'un nodule fibreux sans danger. Cependant, seul un professionnel de santé peut faire la différence grâce à un examen indolore. Détecté très tôt, le cancer du sein se guérit dans plus de 9 cas sur 10. C'est pourquoi apprendre à observer sa poitrine chaque mois et réaliser un dépistage régulier peut vous sauver la vie.",
@@ -31,7 +32,8 @@ export const lessons: Lecon[] = [
     title: "Quand et comment demander conseil ?",
     category: "S'orienter",
     duration: "3 min",
-    summary: "Les signes qui doivent vous amener à consulter sans paniquer : une boule, un écoulement ou un pli inhabituel.",
+    summary:
+      "Les signes qui doivent vous amener à consulter sans paniquer : une boule, un écoulement ou un pli inhabituel.",
     englishSummary: "Signs that should prompt consultation: a palpable lump, discharge, or unusual skin dimpling.",
     fullText:
       "Il est recommandé de consulter dès que vous remarquez un changement inhabituel : une boule dans le sein ou sous l'aisselle qui ne disparaît pas après les règles, un écoulement au niveau du mamelon, ou un changement dans l'aspect de la peau comme une fossette ou une rougeur. N'ayez pas peur d'en parler. Les agents de santé des centres de santé du Burkina Faso sont formés pour vous écouter avec respect et discrétion. N'attendez pas d'avoir mal, car au tout début, le nodule ne fait généralement aucun mal.",
@@ -48,7 +50,8 @@ export const lessons: Lecon[] = [
     category: "Pour les proches",
     duration: "5 min",
     summary: "Comment soutenir une sœur, une amie ou une épouse sans jugement et faciliter sa démarche de santé.",
-    englishSummary: "How to support a sister, friend or wife without judgment and encourage regular healthcare checkups.",
+    englishSummary:
+      "How to support a sister, friend or wife without judgment and encourage regular healthcare checkups.",
     fullText:
       "Faire un dépistage peut susciter de l'inquiétude. Pour une femme, être accompagnée par une sœur, une amie, sa mère ou son conjoint transforme complètement cette expérience. Proposer un covoiturage, patienter ensemble dans la salle d'attente ou simplement lui rappeler avec douceur l'importance de ce geste sont des actes d'amour déterminants. L'application PagLaafi propose la fonction 'Aller à deux' pour envoyer une invitation chaleureuse par SMS direct ou sur WhatsApp.",
     englishFullText:

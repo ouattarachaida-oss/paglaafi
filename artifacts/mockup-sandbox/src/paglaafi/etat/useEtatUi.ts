@@ -35,8 +35,7 @@ export function useEtatUi() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as any).standalone === true;
+      window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone === true;
     setIsStandaloneApp(isStandalone);
 
     const handleBeforeInstall = (e: Event) => {
@@ -86,9 +85,7 @@ export function useEtatUi() {
   const mainScrollRef = useRef<HTMLDivElement | null>(null);
 
   // Détection de l'état de connexion internet (Mode Hors-Ligne PWA)
-  const [isOffline, setIsOffline] = useState(
-    typeof navigator !== "undefined" ? !navigator.onLine : false,
-  );
+  const [isOffline, setIsOffline] = useState(typeof navigator !== "undefined" ? !navigator.onLine : false);
 
   // Surveillance des transitions réseau en direct
   useEffect(() => {

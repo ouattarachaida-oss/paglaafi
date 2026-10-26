@@ -1,15 +1,17 @@
-import {
-  Check,
-  Edit3,
-  X,
-} from "lucide-react";
+import { Check, Edit3, X } from "lucide-react";
 import { useCentres } from "../etat/contextes";
 
 /**
  * Mise à jour des disponibilités d'un centre (admin centre / docteur).
  */
 export function ModaleMiseAJourCentre() {
-  const { centerUpdateData, handleSaveCenterUpdate, setCenterUpdateData, setShowCenterUpdateModal, showCenterUpdateModal } = useCentres();
+  const {
+    centerUpdateData,
+    handleSaveCenterUpdate,
+    setCenterUpdateData,
+    setShowCenterUpdateModal,
+    showCenterUpdateModal,
+  } = useCentres();
 
   if (!(showCenterUpdateModal && centerUpdateData)) return null;
 
@@ -29,12 +31,8 @@ export function ModaleMiseAJourCentre() {
               <Edit3 size={18} />
             </div>
             <div>
-              <h3 className="ph-display text-sm font-bold text-[#580e36]">
-                Mise à jour du Centre
-              </h3>
-              <p className="text-[10px] text-[#ea2d6d] font-bold">
-                {centerUpdateData.name}
-              </p>
+              <h3 className="ph-display text-sm font-bold text-[#580e36]">Mise à jour du Centre</h3>
+              <p className="text-[10px] text-[#ea2d6d] font-bold">{centerUpdateData.name}</p>
             </div>
           </div>
           <button
@@ -88,8 +86,8 @@ export function ModaleMiseAJourCentre() {
                         st.value === "available"
                           ? "Disponible · Attente fluide"
                           : st.value === "busy"
-                          ? "Forte affluence · Prévoir attente"
-                          : "Maintenance technique · Arrêt temporaire",
+                            ? "Forte affluence · Prévoir attente"
+                            : "Maintenance technique · Arrêt temporaire",
                       statusColor: st.dot,
                     });
                   }}
@@ -110,23 +108,17 @@ export function ModaleMiseAJourCentre() {
           {/* 2. Temps d'attente estimé & File d'attente */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
-                Temps d'attente estimé :
-              </label>
+              <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">Temps d'attente estimé :</label>
               <input
                 type="text"
                 value={centerUpdateData.estimatedWait}
-                onChange={(e) =>
-                  setCenterUpdateData({ ...centerUpdateData, estimatedWait: e.target.value })
-                }
+                onChange={(e) => setCenterUpdateData({ ...centerUpdateData, estimatedWait: e.target.value })}
                 placeholder="Ex: ~15 à 20 min"
                 className="w-full rounded-xl border border-gray-300 px-3 py-2 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
               />
             </div>
             <div>
-              <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
-                Patientes dans la file :
-              </label>
+              <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">Patientes dans la file :</label>
               <input
                 type="number"
                 value={centerUpdateData.queueCount}
@@ -145,9 +137,7 @@ export function ModaleMiseAJourCentre() {
           <div className="rounded-2xl bg-[#fdf2f6] p-3 border border-[#fce4ec]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-bold text-[#580e36] text-[11px]">
-                  Mammographe numérique en service :
-                </p>
+                <p className="font-bold text-[#580e36] text-[11px]">Mammographe numérique en service :</p>
                 <p className="text-[10px] text-[#785566]">
                   {centerUpdateData.isApparatusWorking
                     ? "✓ L'appareil fonctionne à 100%"
@@ -176,24 +166,18 @@ export function ModaleMiseAJourCentre() {
             <input
               type="text"
               value={centerUpdateData.apparatus}
-              onChange={(e) =>
-                setCenterUpdateData({ ...centerUpdateData, apparatus: e.target.value })
-              }
+              onChange={(e) => setCenterUpdateData({ ...centerUpdateData, apparatus: e.target.value })}
               className="mt-2 w-full rounded-xl border border-pink-200 bg-white px-2.5 py-1.5 text-xs text-[#580e36]"
             />
           </div>
 
           {/* 4. Personnel et agents présents */}
           <div>
-            <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
-              Équipe présente aujourd'hui :
-            </label>
+            <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">Équipe présente aujourd'hui :</label>
             <input
               type="text"
               value={centerUpdateData.staffDescription}
-              onChange={(e) =>
-                setCenterUpdateData({ ...centerUpdateData, staffDescription: e.target.value })
-              }
+              onChange={(e) => setCenterUpdateData({ ...centerUpdateData, staffDescription: e.target.value })}
               placeholder="Ex: 2 sages-femmes, 1 radiologue en poste"
               className="w-full rounded-xl border border-gray-300 px-3 py-2 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
             />
@@ -207,9 +191,7 @@ export function ModaleMiseAJourCentre() {
             <textarea
               rows={2}
               value={centerUpdateData.audioMessageFr}
-              onChange={(e) =>
-                setCenterUpdateData({ ...centerUpdateData, audioMessageFr: e.target.value })
-              }
+              onChange={(e) => setCenterUpdateData({ ...centerUpdateData, audioMessageFr: e.target.value })}
               className="w-full rounded-xl border border-gray-300 p-2.5 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
             />
           </div>

@@ -1,12 +1,4 @@
-import {
-  AlertTriangle,
-  Check,
-  Copy,
-  FileText,
-  Share2,
-  Stethoscope,
-  X,
-} from "lucide-react";
+import { AlertTriangle, Check, Copy, FileText, Share2, Stethoscope, X } from "lucide-react";
 import { useUi, useCentres, useOrientations } from "../etat/contextes";
 
 /**
@@ -15,9 +7,17 @@ import { useUi, useCentres, useOrientations } from "../etat/contextes";
 export function ModaleOrientation() {
   const { notify } = useUi();
   const { centers } = useCentres();
-  const { generatedOrientationCode, handleCreatePatientOrientation, orientationForm, setGeneratedOrientationCode, setOrientationForm, setShowOrientationModal, showOrientationModal } = useOrientations();
+  const {
+    generatedOrientationCode,
+    handleCreatePatientOrientation,
+    orientationForm,
+    setGeneratedOrientationCode,
+    setOrientationForm,
+    setShowOrientationModal,
+    showOrientationModal,
+  } = useOrientations();
 
-  if (!(showOrientationModal)) return null;
+  if (!showOrientationModal) return null;
 
   return (
     <div
@@ -38,12 +38,8 @@ export function ModaleOrientation() {
               <Stethoscope size={20} />
             </div>
             <div>
-              <h3 className="ph-display text-sm font-bold text-[#580e36]">
-                Orientation Médicale d'Urgence
-              </h3>
-              <p className="text-[10px] text-rose-600 font-bold">
-                Docteur ➔ Centre de Santé Partenaire
-              </p>
+              <h3 className="ph-display text-sm font-bold text-[#580e36]">Orientation Médicale d'Urgence</h3>
+              <p className="text-[10px] text-rose-600 font-bold">Docteur ➔ Centre de Santé Partenaire</p>
             </div>
           </div>
           <button
@@ -65,12 +61,8 @@ export function ModaleOrientation() {
               <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-500 text-white shadow-md">
                 <Check size={26} />
               </div>
-              <h4 className="ph-display mt-2 text-base font-bold text-emerald-950">
-                Orientation émise avec succès !
-              </h4>
-              <p className="mt-1 text-xs text-emerald-800">
-                Le centre cible a été alerté en priorité.
-              </p>
+              <h4 className="ph-display mt-2 text-base font-bold text-emerald-950">Orientation émise avec succès !</h4>
+              <p className="mt-1 text-xs text-emerald-800">Le centre cible a été alerté en priorité.</p>
               <div className="mt-3 rounded-xl bg-white p-2.5 border border-emerald-300">
                 <span className="text-[10px] uppercase font-bold text-gray-500 block">
                   Code d'Orientation Sécurisé :
@@ -94,18 +86,20 @@ export function ModaleOrientation() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Niveau d'urgence :</span>
-                <span className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
-                  orientationForm.urgencyLevel === "immediate"
-                    ? "bg-rose-600 text-white"
-                    : orientationForm.urgencyLevel === "priority"
-                    ? "bg-amber-500 text-white"
-                    : "bg-blue-600 text-white"
-                }`}>
+                <span
+                  className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
+                    orientationForm.urgencyLevel === "immediate"
+                      ? "bg-rose-600 text-white"
+                      : orientationForm.urgencyLevel === "priority"
+                        ? "bg-amber-500 text-white"
+                        : "bg-blue-600 text-white"
+                  }`}
+                >
                   {orientationForm.urgencyLevel === "immediate"
                     ? "🚨 Immédiat (< 24h)"
                     : orientationForm.urgencyLevel === "priority"
-                    ? "⚠️ Prioritaire (48h-72h)"
-                    : "ℹ️ Routine"}
+                      ? "⚠️ Prioritaire (48h-72h)"
+                      : "ℹ️ Routine"}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -118,7 +112,8 @@ export function ModaleOrientation() {
               <button
                 type="button"
                 onClick={() => {
-                  const targetCenter = centers.find((c) => c.id === Number(orientationForm.targetCenterId))?.shortName || "CMA Schiphra";
+                  const targetCenter =
+                    centers.find((c) => c.id === Number(orientationForm.targetCenterId))?.shortName || "CMA Schiphra";
                   const msg = `Bonjour Mme ${orientationForm.patientName}, voici votre fiche d'orientation urgente PagLaafi vers le ${targetCenter}. Code d'urgence : ${generatedOrientationCode}. Présentez-vous directement au centre sans attente.`;
                   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
                 }}
@@ -159,7 +154,8 @@ export function ModaleOrientation() {
                 Priorité médicale absolue
               </p>
               <p className="text-[11px] text-rose-900/90 mt-1 leading-relaxed">
-                L'orientation médicale permet de court-circuiter les files d'attente habituelles pour faire passer une mammographie ou une échographie en urgence dans un centre équipé.
+                L'orientation médicale permet de court-circuiter les files d'attente habituelles pour faire passer une
+                mammographie ou une échographie en urgence dans un centre équipé.
               </p>
             </div>
 
@@ -213,9 +209,7 @@ export function ModaleOrientation() {
               </label>
               <select
                 value={orientationForm.targetCenterId}
-                onChange={(e) =>
-                  setOrientationForm({ ...orientationForm, targetCenterId: Number(e.target.value) })
-                }
+                onChange={(e) => setOrientationForm({ ...orientationForm, targetCenterId: Number(e.target.value) })}
                 className="w-full rounded-xl border border-gray-300 bg-white p-2.5 text-xs font-semibold text-[#580e36] focus:border-[#ea2d6d] focus:outline-hidden"
               >
                 {centers.map((c) => (
@@ -229,30 +223,22 @@ export function ModaleOrientation() {
             {/* 3. COORDONNÉES PATIENTE */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
-                  Nom de la patiente :
-                </label>
+                <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">Nom de la patiente :</label>
                 <input
                   type="text"
                   value={orientationForm.patientName}
-                  onChange={(e) =>
-                    setOrientationForm({ ...orientationForm, patientName: e.target.value })
-                  }
+                  onChange={(e) => setOrientationForm({ ...orientationForm, patientName: e.target.value })}
                   placeholder="Ex: K. Fatoumata"
                   className="w-full rounded-xl border border-gray-300 px-3 py-2 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
                   required
                 />
               </div>
               <div>
-                <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
-                  Téléphone :
-                </label>
+                <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">Téléphone :</label>
                 <input
                   type="tel"
                   value={orientationForm.patientPhone}
-                  onChange={(e) =>
-                    setOrientationForm({ ...orientationForm, patientPhone: e.target.value })
-                  }
+                  onChange={(e) => setOrientationForm({ ...orientationForm, patientPhone: e.target.value })}
                   placeholder="Ex: 70 88 99 00"
                   className="w-full rounded-xl border border-gray-300 px-3 py-2 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
                   required
@@ -267,9 +253,7 @@ export function ModaleOrientation() {
               </label>
               <select
                 value={orientationForm.recommendedExam}
-                onChange={(e) =>
-                  setOrientationForm({ ...orientationForm, recommendedExam: e.target.value })
-                }
+                onChange={(e) => setOrientationForm({ ...orientationForm, recommendedExam: e.target.value })}
                 className="w-full rounded-xl border border-gray-300 bg-white p-2.5 text-xs font-semibold text-[#580e36] focus:border-[#ea2d6d] focus:outline-hidden"
               >
                 <option value="Mammographie numérique bilatérale + Échographie mammaire">
@@ -295,9 +279,7 @@ export function ModaleOrientation() {
               <textarea
                 rows={2}
                 value={orientationForm.clinicalObservations}
-                onChange={(e) =>
-                  setOrientationForm({ ...orientationForm, clinicalObservations: e.target.value })
-                }
+                onChange={(e) => setOrientationForm({ ...orientationForm, clinicalObservations: e.target.value })}
                 placeholder="Ex: Masse rétro-aréolaire droite de 2.5 cm, indolore..."
                 className="w-full rounded-xl border border-gray-300 p-2.5 text-xs focus:border-[#ea2d6d] focus:outline-hidden"
                 required

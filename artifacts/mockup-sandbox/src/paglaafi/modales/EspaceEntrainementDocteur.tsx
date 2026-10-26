@@ -1,14 +1,4 @@
-import {
-  Check,
-  CheckCheck,
-  CheckCircle2,
-  GraduationCap,
-  Lock,
-  Sparkles,
-  Stethoscope,
-  Volume2,
-  X,
-} from "lucide-react";
+import { Check, CheckCheck, CheckCircle2, GraduationCap, Lock, Sparkles, Stethoscope, Volume2, X } from "lucide-react";
 import { useAudio, useDocteur } from "../etat/contextes";
 
 /**
@@ -16,9 +6,30 @@ import { useAudio, useDocteur } from "../etat/contextes";
  */
 export function EspaceEntrainementDocteur() {
   const { handlePlayAudio } = useAudio();
-  const { doctorEmpathicReformulation, doctorSignName, doctorSignRole, doctorTeachContent, doctorTeachTopic, doctorTestAnswer, doctorTestQuestion, doctorTrainStep, handleFinalizeDoctorTraining, handleRunDoctorTestSimulation, handleSelectDoctorPresetTopic, setDoctorSignName, setDoctorSignRole, setDoctorTeachContent, setDoctorTeachTopic, setDoctorTestAnswer, setDoctorTestQuestion, setDoctorTrainStep, setShowDoctorTrainModal, showDoctorTrainModal } = useDocteur();
+  const {
+    doctorEmpathicReformulation,
+    doctorSignName,
+    doctorSignRole,
+    doctorTeachContent,
+    doctorTeachTopic,
+    doctorTestAnswer,
+    doctorTestQuestion,
+    doctorTrainStep,
+    handleFinalizeDoctorTraining,
+    handleRunDoctorTestSimulation,
+    handleSelectDoctorPresetTopic,
+    setDoctorSignName,
+    setDoctorSignRole,
+    setDoctorTeachContent,
+    setDoctorTeachTopic,
+    setDoctorTestAnswer,
+    setDoctorTestQuestion,
+    setDoctorTrainStep,
+    setShowDoctorTrainModal,
+    showDoctorTrainModal,
+  } = useDocteur();
 
-  if (!(showDoctorTrainModal)) return null;
+  if (!showDoctorTrainModal) return null;
 
   return (
     <div
@@ -36,12 +47,8 @@ export function EspaceEntrainementDocteur() {
               <GraduationCap size={20} />
             </div>
             <div>
-              <h3 className="ph-display text-sm font-bold text-[#580e36]">
-                Entraînement Clinique Rose IA
-              </h3>
-              <p className="text-[10px] text-amber-800 font-bold">
-                Parcours Soignant · Étape {doctorTrainStep}/4
-              </p>
+              <h3 className="ph-display text-sm font-bold text-[#580e36]">Entraînement Clinique Rose IA</h3>
+              <p className="text-[10px] text-amber-800 font-bold">Parcours Soignant · Étape {doctorTrainStep}/4</p>
             </div>
           </div>
           <button
@@ -66,8 +73,8 @@ export function EspaceEntrainementDocteur() {
                   doctorTrainStep === item.step
                     ? "bg-amber-500 text-white shadow-md ring-2 ring-amber-300"
                     : doctorTrainStep > item.step
-                    ? "bg-emerald-500 text-white"
-                    : "bg-gray-100 text-gray-400"
+                      ? "bg-emerald-500 text-white"
+                      : "bg-gray-100 text-gray-400"
                 }`}
               >
                 {doctorTrainStep > item.step ? <Check size={13} /> : item.step}
@@ -91,7 +98,8 @@ export function EspaceEntrainementDocteur() {
                 <Stethoscope size={14} /> Objectif de la simulation
               </p>
               <p className="text-[11px] text-amber-900/90 mt-1 leading-relaxed">
-                En tant que docteur, sage-femme ou agent de santé, vous enrichissez la base de connaissances de Rose IA avec vos protocoles cliniques locaux. Choisissez un cas concret :
+                En tant que docteur, sage-femme ou agent de santé, vous enrichissez la base de connaissances de Rose IA
+                avec vos protocoles cliniques locaux. Choisissez un cas concret :
               </p>
             </div>
 
@@ -110,14 +118,16 @@ export function EspaceEntrainementDocteur() {
                     "Ma sœur, rassure-toi : un nodule n'est pas forcément grave, mais ton corps mérite toute notre attention. Viens directement sans rendez-vous au CMA Schiphra ou CHU Bogodogo dès demain matin à 08h. Une sage-femme et un radiologue vont t'examiner avec douceur.",
                     "M maaso, da zoe rabeem ye: bõn-kʋdga pa bãag fãa ye, la yaa tɩlae tɩ d ges-a tao-tao. Wa-y zĩigẽ zaabre n mik dɔgɔtɔrã tɩ b ges yãmba ne laafi.",
                     "N ma muso, kana siran : fɛn o fɛn bɛ sin na, a bɛɛ tɛ bana juguman ye. Nka taga kɛnɛyaso la jona sɔgɔma fɛ walasa dɔgɔtɔrɔmuso ka lajɛ saniya kɛ.",
-                    "J'ai senti une boule un peu dure dans mon sein droit qui ne me fait pas mal, est-ce que je dois m'inquiéter ?"
+                    "J'ai senti une boule un peu dure dans mon sein droit qui ne me fait pas mal, est-ce que je dois m'inquiéter ?",
                   )
                 }
                 className="w-full text-left p-3 rounded-2xl border border-pink-200 bg-[#fffbfc] hover:bg-pink-50 transition space-y-1 shadow-xs"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-[#8a2d4f] text-xs">🩺 Nodule suspect & Urgences mammaires</span>
-                  <span className="text-[9px] bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded-full">Priorité 48h</span>
+                  <span className="text-[9px] bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded-full">
+                    Priorité 48h
+                  </span>
                 </div>
                 <p className="text-[10.5px] text-[#6b4c5b]">
                   Accueil direct sans rendez-vous au CMA Schiphra ou CHU Bogodogo + protocole rassurant.
@@ -133,14 +143,16 @@ export function EspaceEntrainementDocteur() {
                     "Chère sœur, souffrir pendant ses règles n'est pas une fatalité. Si la douleur t'empêche de travailler ou dormir, ce n'est pas une faiblesse. Consulte un gynécologue pour rechercher une endométriose. En attendant, privilégie une bouillotte tiède et l'infusion de gingembre doux.",
                     "M yaanga, rog-n-mik bãag sã n namsd foo wakat fãa, pa yel-bãanega ye. Taga dɔgɔtɔr n bãng a võore.",
                     "N ba den muso, dimi min bɛ kɛ muso kɔnɔ fɛ kalo o kalo, ni a ka bon kosɛbɛ, a tɛ foyi ye fo ka dɔgɔtɔrɔ sɔrɔ.",
-                    "Mes règles me font tellement mal que je ne peux pas me lever du lit, ma mère me dit que c'est normal pour une femme ?"
+                    "Mes règles me font tellement mal que je ne peux pas me lever du lit, ma mère me dit que c'est normal pour une femme ?",
                   )
                 }
                 className="w-full text-left p-3 rounded-2xl border border-pink-200 bg-[#fffbfc] hover:bg-pink-50 transition space-y-1 shadow-xs"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-[#8a2d4f] text-xs">🌸 Règles douloureuses & Endométriose</span>
-                  <span className="text-[9px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">Santé globale</span>
+                  <span className="text-[9px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">
+                    Santé globale
+                  </span>
                 </div>
                 <p className="text-[10.5px] text-[#6b4c5b]">
                   Démystification de la souffrance des règles + orientation gynécologique pelvienne.
@@ -156,14 +168,16 @@ export function EspaceEntrainementDocteur() {
                     "Pour prendre soin de ta santé et de ta vitalité au Burkina Faso, nos plantes sont des trésors : une cuillère de moringa dans ton repas et du jus de baobab naturel renforcent tes défenses sans aucun produit chimique nocif.",
                     "D tɩɩsã ne d rɩɩbã yaa arzɛka : arzɛk-tɩɩga (moringa) la toedga n kõt yĩns-laafi wʋsgo.",
                     "An ka siriw ni jiriw bɛ fanga di : arjanayiri (moringa) ni zira ji bɛ muso fanga gɛlɛya kosɛbɛ.",
-                    "Quels aliments locaux du pays puis-je consommer pour renforcer mon corps et mes seins ?"
+                    "Quels aliments locaux du pays puis-je consommer pour renforcer mon corps et mes seins ?",
                   )
                 }
                 className="w-full text-left p-3 rounded-2xl border border-pink-200 bg-[#fffbfc] hover:bg-pink-50 transition space-y-1 shadow-xs"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-[#8a2d4f] text-xs">🌿 Nutrition locale (Moringa & Baobab)</span>
-                  <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Prévention</span>
+                  <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                    Prévention
+                  </span>
                 </div>
                 <p className="text-[10.5px] text-[#6b4c5b]">
                   Conseils nutritionnels sahéliens bienveillants intégrés naturellement par Rose IA.
@@ -199,9 +213,7 @@ export function EspaceEntrainementDocteur() {
         {doctorTrainStep === 2 && (
           <div className="mt-4 space-y-3.5 text-xs">
             <div>
-              <label className="block text-[11px] font-bold text-[#580e36] mb-1">
-                Thème clinique sélectionné :
-              </label>
+              <label className="block text-[11px] font-bold text-[#580e36] mb-1">Thème clinique sélectionné :</label>
               <input
                 type="text"
                 value={doctorTeachTopic}
@@ -235,7 +247,8 @@ export function EspaceEntrainementDocteur() {
               </div>
 
               <p className="text-[10px] text-[#785968] leading-tight">
-                Rose IA convertit le jargon médical en parole douce, sans tabou et respectueuse des pudeurs sahéliennes :
+                Rose IA convertit le jargon médical en parole douce, sans tabou et respectueuse des pudeurs sahéliennes
+                :
               </p>
 
               {/* Français */}
@@ -343,7 +356,7 @@ export function EspaceEntrainementDocteur() {
                 onClick={() =>
                   setDoctorTestAnswer(
                     doctorEmpathicReformulation.fr ||
-                      "Ma sœur, rassure-toi. Suite aux recommandations de nos docteurs référents..."
+                      "Ma sœur, rassure-toi. Suite aux recommandations de nos docteurs référents...",
                   )
                 }
                 className="w-full rounded-2xl bg-gradient-to-r from-[#ea2d6d] to-[#734059] py-2.5 font-bold text-white shadow hover:opacity-95 transition flex items-center justify-center gap-2"
@@ -368,9 +381,7 @@ export function EspaceEntrainementDocteur() {
                   </button>
                 </div>
 
-                <p className="text-xs text-[#580e36] leading-relaxed">
-                  {doctorTestAnswer}
-                </p>
+                <p className="text-xs text-[#580e36] leading-relaxed">{doctorTestAnswer}</p>
 
                 <div className="flex items-center gap-1.5 text-[9.5px] text-emerald-800 font-bold bg-emerald-50 p-2 rounded-xl border border-emerald-200">
                   <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
@@ -462,7 +473,8 @@ export function EspaceEntrainementDocteur() {
                 <Lock size={12} className="text-slate-500" /> Engagement déontologique :
               </p>
               <p className="leading-tight">
-                En signant, vous attestez que ces instructions médicales et leurs vulgarisations ont été vérifiées et ne violent aucun secret médical. Aucune donnée privée de patiente n'est ingérée.
+                En signant, vous attestez que ces instructions médicales et leurs vulgarisations ont été vérifiées et ne
+                violent aucun secret médical. Aucune donnée privée de patiente n'est ingérée.
               </p>
             </div>
 

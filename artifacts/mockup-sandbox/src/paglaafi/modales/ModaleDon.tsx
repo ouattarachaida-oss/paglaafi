@@ -1,9 +1,4 @@
-import {
-  CheckCircle2,
-  Phone,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import { CheckCircle2, Phone, ShieldCheck, X } from "lucide-react";
 import { partnerAssociations } from "../donnees/associations";
 import { useAuth, useDons } from "../etat/contextes";
 
@@ -12,9 +7,30 @@ import { useAuth, useDons } from "../etat/contextes";
  */
 export function ModaleDon() {
   const { currentUser } = useAuth();
-  const { customDonationAmount, donationAmount, donationStep, handleConfirmOrangeMoney, handleStartDonationProcess, handleValidateOrangeMoneyOTP, isAnonymousDonation, lastDonationId, orangeMoneyPhone, otpCode, selectedAssociation, setCustomDonationAmount, setDonationAmount, setDonationStep, setIsAnonymousDonation, setOrangeMoneyPhone, setOtpCode, setSelectedAssociation, setShowDonationModal, showDonationModal } = useDons();
+  const {
+    customDonationAmount,
+    donationAmount,
+    donationStep,
+    handleConfirmOrangeMoney,
+    handleStartDonationProcess,
+    handleValidateOrangeMoneyOTP,
+    isAnonymousDonation,
+    lastDonationId,
+    orangeMoneyPhone,
+    otpCode,
+    selectedAssociation,
+    setCustomDonationAmount,
+    setDonationAmount,
+    setDonationStep,
+    setIsAnonymousDonation,
+    setOrangeMoneyPhone,
+    setOtpCode,
+    setSelectedAssociation,
+    setShowDonationModal,
+    showDonationModal,
+  } = useDons();
 
-  if (!(showDonationModal)) return null;
+  if (!showDonationModal) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
@@ -30,7 +46,10 @@ export function ModaleDon() {
             </div>
           </div>
           <button
-            onClick={() => { setShowDonationModal(false); setDonationStep("form"); }}
+            onClick={() => {
+              setShowDonationModal(false);
+              setDonationStep("form");
+            }}
             className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
           >
             <X size={18} />
@@ -65,7 +84,10 @@ export function ModaleDon() {
                   <button
                     key={amt}
                     type="button"
-                    onClick={() => { setDonationAmount(amt); setCustomDonationAmount(""); }}
+                    onClick={() => {
+                      setDonationAmount(amt);
+                      setCustomDonationAmount("");
+                    }}
                     className={`rounded-xl py-2 font-bold transition text-xs ${donationAmount === amt && !customDonationAmount ? "bg-[#f16e00] text-white shadow-sm" : "border border-[#e7d5dc] bg-[#fffaf8] text-[#563746]"}`}
                   >
                     {amt.toLocaleString("fr-FR")} F
@@ -109,7 +131,8 @@ export function ModaleDon() {
                     <ShieldCheck size={14} className="text-emerald-700" /> Don 100% Anonyme & Chiffré
                   </span>
                   <p className="text-[10px] text-[#476a56] leading-tight mt-0.5">
-                    Vos coordonnées (nom, prénom et numéro) sont chiffrées et masquées pour l'association. Seul un reçu officiel anonymisé est émis.
+                    Vos coordonnées (nom, prénom et numéro) sont chiffrées et masquées pour l'association. Seul un reçu
+                    officiel anonymisé est émis.
                   </p>
                 </div>
               </label>
@@ -119,7 +142,11 @@ export function ModaleDon() {
               onClick={handleStartDonationProcess}
               className="mt-2 w-full rounded-2xl bg-[#f16e00] py-3 text-xs font-bold text-white shadow-md hover:bg-orange-600 transition"
             >
-              Valider le don de {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA →
+              Valider le don de{" "}
+              {customDonationAmount
+                ? Number(customDonationAmount).toLocaleString("fr-FR")
+                : donationAmount.toLocaleString("fr-FR")}{" "}
+              FCFA →
             </button>
           </div>
         )}
@@ -135,13 +162,18 @@ export function ModaleDon() {
               <div className="flex justify-between">
                 <span className="text-[#7c5b6b]">Montant :</span>
                 <span className="font-extrabold text-[#f16e00] text-sm">
-                  {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA
+                  {customDonationAmount
+                    ? Number(customDonationAmount).toLocaleString("fr-FR")
+                    : donationAmount.toLocaleString("fr-FR")}{" "}
+                  FCFA
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#7c5b6b]">Donateur :</span>
                 <span className="font-bold text-[#580e36]">
-                  {isAnonymousDonation ? "Donatrice anonyme (Chiffré AES-256)" : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
+                  {isAnonymousDonation
+                    ? "Donatrice anonyme (Chiffré AES-256)"
+                    : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -212,7 +244,8 @@ export function ModaleDon() {
             <div>
               <h4 className="ph-display text-lg font-bold text-[#580e36]">Merci pour votre générosité !</h4>
               <p className="text-[11px] text-[#7c5b6b] mt-0.5">
-                Votre don est intégralement alloué à <strong>{selectedAssociation.acronym}</strong> pour soutenir le dépistage au Burkina Faso.
+                Votre don est intégralement alloué à <strong>{selectedAssociation.acronym}</strong> pour soutenir le
+                dépistage au Burkina Faso.
               </p>
             </div>
 
@@ -224,13 +257,18 @@ export function ModaleDon() {
               <div className="flex justify-between">
                 <span className="text-gray-500">Donateur :</span>
                 <span className="font-semibold text-gray-700">
-                  {isAnonymousDonation ? "Donatrice Anonyme (Chiffrement AES)" : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
+                  {isAnonymousDonation
+                    ? "Donatrice Anonyme (Chiffrement AES)"
+                    : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Montant :</span>
                 <span className="font-bold text-[#f16e00]">
-                  {customDonationAmount ? Number(customDonationAmount).toLocaleString("fr-FR") : donationAmount.toLocaleString("fr-FR")} FCFA
+                  {customDonationAmount
+                    ? Number(customDonationAmount).toLocaleString("fr-FR")
+                    : donationAmount.toLocaleString("fr-FR")}{" "}
+                  FCFA
                 </span>
               </div>
               <div className="flex justify-between">
@@ -240,7 +278,10 @@ export function ModaleDon() {
             </div>
 
             <button
-              onClick={() => { setShowDonationModal(false); setDonationStep("form"); }}
+              onClick={() => {
+                setShowDonationModal(false);
+                setDonationStep("form");
+              }}
               className="w-full rounded-2xl bg-[#ea2d6d] py-2.5 font-bold text-white shadow"
             >
               Fermer le reçu

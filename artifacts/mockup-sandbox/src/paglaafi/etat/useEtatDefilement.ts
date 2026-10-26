@@ -16,4 +16,3 @@ export function useEtatDefilement({ ui, centres }: { ui: EtatUi; centres: EtatCe
     }
   }, [section, selectedCenter]);
 }
-

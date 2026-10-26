@@ -1,9 +1,4 @@
-import {
-  Pause,
-  Play,
-  Volume2,
-  X,
-} from "lucide-react";
+import { Pause, Play, Volume2, X } from "lucide-react";
 import { useAudio, useEducation } from "../etat/contextes";
 
 /**
@@ -11,9 +6,23 @@ import { useAudio, useEducation } from "../etat/contextes";
  */
 export function ModaleVideoAutopalpation() {
   const { handlePlayAudio } = useAudio();
-  const { formatVideoTime, selectedVideoStep, setSelectedVideoStep, setShowAutopalpationVideoModal, setVideoIsPlaying, setVideoLang, setVideoProgressSeconds, setVideoSpeed, showAutopalpationVideoModal, videoIsPlaying, videoLang, videoProgressSeconds, videoSpeed } = useEducation();
+  const {
+    formatVideoTime,
+    selectedVideoStep,
+    setSelectedVideoStep,
+    setShowAutopalpationVideoModal,
+    setVideoIsPlaying,
+    setVideoLang,
+    setVideoProgressSeconds,
+    setVideoSpeed,
+    showAutopalpationVideoModal,
+    videoIsPlaying,
+    videoLang,
+    videoProgressSeconds,
+    videoSpeed,
+  } = useEducation();
 
-  if (!(showAutopalpationVideoModal)) return null;
+  if (!showAutopalpationVideoModal) return null;
 
   return (
     <div
@@ -31,9 +40,7 @@ export function ModaleVideoAutopalpation() {
               <Play size={16} className="fill-[#ea2d6d] translate-x-0.5" />
             </div>
             <div>
-              <h3 className="ph-display text-sm font-bold text-[#580e36]">
-                Vidéo Guidée d'Autopalpation
-              </h3>
+              <h3 className="ph-display text-sm font-bold text-[#580e36]">Vidéo Guidée d'Autopalpation</h3>
               <p className="text-[10px] text-emerald-700 font-bold">
                 Démonstration Pédagogique & Pudique · Sage-femme Africaine
               </p>
@@ -137,9 +144,7 @@ export function ModaleVideoAutopalpation() {
                       setVideoIsPlaying(true);
                     }}
                     className={`rounded px-1.5 py-0.5 transition ${
-                      videoSpeed === spd
-                        ? "bg-[#ea2d6d] text-white font-extrabold"
-                        : "text-white/75 hover:text-white"
+                      videoSpeed === spd ? "bg-[#ea2d6d] text-white font-extrabold" : "text-white/75 hover:text-white"
                     }`}
                     title={`Vitesse de lecture x${spd}`}
                   >
@@ -210,7 +215,8 @@ export function ModaleVideoAutopalpation() {
                   <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">LOOK</span>
                 </div>
                 <p className="text-[11px] text-[#6d4f5e] leading-relaxed">
-                  Debout devant votre miroir, bras le long du corps puis levés au-dessus de la tête. Observez l'aspect général des deux seins : peau d'orange, rougeur, fossette ou mamelon qui se rétracte vers l'intérieur.
+                  Debout devant votre miroir, bras le long du corps puis levés au-dessus de la tête. Observez l'aspect
+                  général des deux seins : peau d'orange, rougeur, fossette ou mamelon qui se rétracte vers l'intérieur.
                 </p>
               </>
             )}
@@ -221,7 +227,9 @@ export function ModaleVideoAutopalpation() {
                   <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">FEEL</span>
                 </div>
                 <p className="text-[11px] text-[#6d4f5e] leading-relaxed">
-                  Allongée confortablement ou sous la douche (avec du savon doux). Utilisez la pulpe des 3 doigts du milieu (index, majeur, annulaire) à plat. Décrivez de petits cercles réguliers du pourtour extérieur vers le mamelon.
+                  Allongée confortablement ou sous la douche (avec du savon doux). Utilisez la pulpe des 3 doigts du
+                  milieu (index, majeur, annulaire) à plat. Décrivez de petits cercles réguliers du pourtour extérieur
+                  vers le mamelon.
                 </p>
               </>
             )}
@@ -232,7 +240,8 @@ export function ModaleVideoAutopalpation() {
                   <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">COVER ALL</span>
                 </div>
                 <p className="text-[11px] text-[#6d4f5e] leading-relaxed">
-                  Le tissu mammaire s'étend jusqu'au creux de l'aisselle et sous la clavicule. Palpez soigneusement cette zone pour vérifier l'absence de ganglion dur ou de nodule profond.
+                  Le tissu mammaire s'étend jusqu'au creux de l'aisselle et sous la clavicule. Palpez soigneusement
+                  cette zone pour vérifier l'absence de ganglion dur ou de nodule profond.
                 </p>
               </>
             )}
@@ -243,7 +252,8 @@ export function ModaleVideoAutopalpation() {
                   <span className="text-[9px] bg-pink-100 px-2 py-0.5 rounded-full font-bold">NIPPLE CHECK</span>
                 </div>
                 <p className="text-[11px] text-[#6d4f5e] leading-relaxed">
-                  Pincez très délicatement le mamelon entre le pouce et l'index. Vérifiez qu'aucun liquide (clair, jaunâtre ou sanglant) ne s'écoule spontanément.
+                  Pincez très délicatement le mamelon entre le pouce et l'index. Vérifiez qu'aucun liquide (clair,
+                  jaunâtre ou sanglant) ne s'écoule spontanément.
                 </p>
               </>
             )}

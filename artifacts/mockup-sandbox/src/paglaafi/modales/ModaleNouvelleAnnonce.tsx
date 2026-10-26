@@ -1,16 +1,19 @@
-import {
-  Megaphone,
-  X,
-} from "lucide-react";
+import { Megaphone, X } from "lucide-react";
 import { useAnnonces } from "../etat/contextes";
 
 /**
  * Publication d'une annonce par un partenaire (en attente de validation).
  */
 export function ModaleNouvelleAnnonce() {
-  const { handlePublishAnnouncementSubmit, newAnnouncement, setNewAnnouncement, setShowNewAnnouncementModal, showNewAnnouncementModal } = useAnnonces();
+  const {
+    handlePublishAnnouncementSubmit,
+    newAnnouncement,
+    setNewAnnouncement,
+    setShowNewAnnouncementModal,
+    showNewAnnouncementModal,
+  } = useAnnonces();
 
-  if (!(showNewAnnouncementModal)) return null;
+  if (!showNewAnnouncementModal) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
@@ -187,7 +190,8 @@ export function ModaleNouvelleAnnonce() {
           </div>
 
           <div className="rounded-xl bg-amber-50 border border-amber-200 p-2 text-[10.5px] text-amber-900 leading-tight">
-            ℹ️ <strong>Règle de publication :</strong> Pour garantir la véracité des informations médicales, votre annonce sera examinée et validée par le Superadmin National avant diffusion.
+            ℹ️ <strong>Règle de publication :</strong> Pour garantir la véracité des informations médicales, votre
+            annonce sera examinée et validée par le Superadmin National avant diffusion.
           </div>
 
           <button

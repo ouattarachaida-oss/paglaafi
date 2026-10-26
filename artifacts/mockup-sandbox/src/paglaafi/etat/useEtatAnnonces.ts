@@ -44,7 +44,11 @@ export function useEtatAnnonces({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   // Modération Superadmin : annonces standard
   const handleApproveAnnouncement = (id: number) => {
     setAnnouncements((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: "approved", badge: "Validée ✓", badgeColor: "bg-emerald-100 text-emerald-800" } : a)),
+      prev.map((a) =>
+        a.id === id
+          ? { ...a, status: "approved", badge: "Validée ✓", badgeColor: "bg-emerald-100 text-emerald-800" }
+          : a,
+      ),
     );
     notify("Annonce validée par le Superadmin ! Elle est désormais visible publiquement.");
   };
@@ -71,8 +75,7 @@ export function useEtatAnnonces({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     );
 
     const pushText =
-      target.pushMessageFr ||
-      `🌸 Rose IA vous informe : [Opportunité Validée] ${target.title} à ${target.city} !`;
+      target.pushMessageFr || `🌸 Rose IA vous informe : [Opportunité Validée] ${target.title} à ${target.city} !`;
 
     // Tentative d'envoi Web Push API
     if ("Notification" in window) {
@@ -93,7 +96,9 @@ export function useEtatAnnonces({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
 
   const handleRejectAnnouncement = (id: number) => {
     setAnnouncements((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: "rejected", badge: "Refusée", badgeColor: "bg-rose-100 text-rose-800" } : a)),
+      prev.map((a) =>
+        a.id === id ? { ...a, status: "rejected", badge: "Refusée", badgeColor: "bg-rose-100 text-rose-800" } : a,
+      ),
     );
     notify("Annonce refusée.");
   };

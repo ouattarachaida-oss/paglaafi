@@ -1,14 +1,4 @@
-import {
-  Bell,
-  CalendarDays,
-  ChevronRight,
-  Heart,
-  MapPin,
-  Megaphone,
-  Sparkles,
-  UserPlus,
-  Volume2,
-} from "lucide-react";
+import { Bell, CalendarDays, ChevronRight, Heart, MapPin, Megaphone, Sparkles, UserPlus, Volume2 } from "lucide-react";
 import { roseDailyTips } from "../donnees/conseilsRose";
 import { useUi, useAuth, useAudio, useCentres, useSante, useRose, useAnnonces, useDons } from "../etat/contextes";
 
@@ -21,7 +11,14 @@ export function Accueil() {
   const { handlePlayAudio } = useAudio();
   const { setViewMode } = useCentres();
   const { cycleInfo } = useSante();
-  const { dailyTipIndex, dailyTipLang, handleRequestNotification, notificationEnabled, setDailyTipIndex, setDailyTipLang } = useRose();
+  const {
+    dailyTipIndex,
+    dailyTipLang,
+    handleRequestNotification,
+    notificationEnabled,
+    setDailyTipIndex,
+    setDailyTipLang,
+  } = useRose();
   const { announcements } = useAnnonces();
   const { setShowDonationModal } = useDons();
 
@@ -47,12 +44,16 @@ export function Accueil() {
         </h1>
 
         <p className="relative mt-2 text-[13px] leading-[1.6] text-[#745866]">
-          Voyez quel centre peut vous accueillir aujourd’hui, repérez le bon moment pour votre autopalpation et trouvez de l’aide près de chez vous.
+          Voyez quel centre peut vous accueillir aujourd’hui, repérez le bon moment pour votre autopalpation et trouvez
+          de l’aide près de chez vous.
         </p>
 
         <div className="relative mt-4 flex flex-wrap items-center gap-2">
           <button
-            onClick={() => { setSection("Centres"); setViewMode("map"); }}
+            onClick={() => {
+              setSection("Centres");
+              setViewMode("map");
+            }}
             className="inline-flex items-center gap-1.5 rounded-full bg-[#ea2d6d] px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-[#d81f5c]"
           >
             <MapPin size={15} /> Voir la carte en direct
@@ -78,9 +79,7 @@ export function Accueil() {
                 <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#ea2d6d]">
                   Rose IA · Conseil Bienveillant du Jour
                 </span>
-                <h3 className="ph-display text-xs font-bold text-[#580e36]">
-                  {roseDailyTips[dailyTipIndex].titleFr}
-                </h3>
+                <h3 className="ph-display text-xs font-bold text-[#580e36]">{roseDailyTips[dailyTipIndex].titleFr}</h3>
               </div>
             </div>
 
@@ -136,8 +135,8 @@ export function Accueil() {
                 ? roseDailyTips[dailyTipIndex].dioula
                 : dailyTipLang === "en"
                   ? roseDailyTips[dailyTipIndex].en
-                  : roseDailyTips[dailyTipIndex].fr}
-            {" "}»
+                  : roseDailyTips[dailyTipIndex].fr}{" "}
+            »
           </div>
 
           {/* Actions rapides : Écouter l'audio, changer de conseil, discuter avec Rose IA */}
@@ -163,9 +162,7 @@ export function Accueil() {
               </button>
 
               <button
-                onClick={() =>
-                  setDailyTipIndex((prev) => (prev + 1) % roseDailyTips.length)
-                }
+                onClick={() => setDailyTipIndex((prev) => (prev + 1) % roseDailyTips.length)}
                 className="inline-flex items-center gap-1 rounded-xl bg-white border border-[#edd1dc] px-2 py-1 text-[11px] font-bold text-[#7a485c] hover:bg-[#fdf4f7] transition"
                 title="Voir une autre pensée bienveillante"
               >
@@ -199,9 +196,7 @@ export function Accueil() {
                 <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#ea2d6d]">
                   Suivi du cycle & Seins
                 </span>
-                <h3 className="ph-display text-sm font-bold text-[#580e36]">
-                  Mon Calendrier & Autopalpation
-                </h3>
+                <h3 className="ph-display text-sm font-bold text-[#580e36]">Mon Calendrier & Autopalpation</h3>
               </div>
             </div>
             <ChevronRight size={18} className="text-[#ea2d6d]" />
@@ -223,7 +218,10 @@ export function Accueil() {
       {/* 2. RACCOURCI CARTE VIVANTE DES SOINS */}
       <div className="px-5 pt-3">
         <div
-          onClick={() => { setSection("Centres"); setViewMode("map"); }}
+          onClick={() => {
+            setSection("Centres");
+            setViewMode("map");
+          }}
           className="cursor-pointer rounded-2xl border border-[#eedde2] bg-white p-3.5 shadow-sm hover:border-[#dfb4c2]"
         >
           <div className="flex items-center justify-between">
@@ -235,9 +233,7 @@ export function Accueil() {
                 <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-800">
                   Disponibilités en direct
                 </span>
-                <h4 className="ph-display text-sm font-bold text-[#580e36]">
-                  Carte Vivante des Centres
-                </h4>
+                <h4 className="ph-display text-sm font-bold text-[#580e36]">Carte Vivante des Centres</h4>
               </div>
             </div>
             <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-bold text-emerald-800">
@@ -257,7 +253,9 @@ export function Accueil() {
             <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-purple-900">
               <Megaphone size={13} /> {announcements[0]?.badge}
             </span>
-            <span className="text-[10px] font-semibold text-purple-700">Annonces ({announcements.filter((a) => a.month === "Octobre 2026").length}) →</span>
+            <span className="text-[10px] font-semibold text-purple-700">
+              Annonces ({announcements.filter((a) => a.month === "Octobre 2026").length}) →
+            </span>
           </div>
           <h4 className="mt-1 text-xs font-bold text-purple-950">{announcements[0]?.title}</h4>
         </div>
@@ -299,12 +297,8 @@ export function Accueil() {
                 <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#ea2d6d]">
                   Solidarité 100% Burkina Faso
                 </span>
-                <h4 className="ph-display text-base font-bold text-[#580e36]">
-                  Faire un don
-                </h4>
-                <p className="text-[10.5px] text-[#7a5867]">
-                  Offrir une mammographie avec option anonyme chiffrée
-                </p>
+                <h4 className="ph-display text-base font-bold text-[#580e36]">Faire un don</h4>
+                <p className="text-[10.5px] text-[#7a5867]">Offrir une mammographie avec option anonyme chiffrée</p>
               </div>
             </div>
             <button

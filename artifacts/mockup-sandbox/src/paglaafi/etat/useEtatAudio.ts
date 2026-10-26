@@ -42,10 +42,7 @@ export function useEtatAudio({ ui }: { ui: EtatUi }) {
   /**
    * Moteur Audio Multi-langues (Français, English, Mooré, Dioula)
    */
-  const handlePlayAudio = (
-    textToSpeak: string,
-    language: "fr" | "en" | "moore" | "dioula" = "fr",
-  ) => {
+  const handlePlayAudio = (textToSpeak: string, language: "fr" | "en" | "moore" | "dioula" = "fr") => {
     if (!("speechSynthesis" in window)) {
       notify("La synthèse vocale n'est pas supportée sur ce navigateur.");
       return;
@@ -82,9 +79,9 @@ export function useEtatAudio({ ui }: { ui: EtatUi }) {
     try {
       const allVoices = window.speechSynthesis.getVoices();
       if (allVoices && allVoices.length > 0) {
-        const matchedVoice = allVoices.find((v) =>
-          language === "en" ? v.lang.startsWith("en") : v.lang.startsWith("fr")
-        ) || allVoices[0];
+        const matchedVoice =
+          allVoices.find((v) => (language === "en" ? v.lang.startsWith("en") : v.lang.startsWith("fr"))) ||
+          allVoices[0];
         if (matchedVoice) {
           utterance.voice = matchedVoice;
         }

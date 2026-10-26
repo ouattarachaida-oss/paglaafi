@@ -38,9 +38,7 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
    * Ouvre l'itinéraire GPS vers le centre de soins dans Google Maps (Android/Web) ou Apple Maps (iOS)
    */
   const openNavigation = (lat: number, lng: number, name: string) => {
-    const isApple =
-      typeof navigator !== "undefined" &&
-      /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
+    const isApple = typeof navigator !== "undefined" && /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
     const encodedName = encodeURIComponent(name);
     let url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=&travelmode=driving`;
     if (isApple) {
@@ -80,9 +78,15 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
       }).addTo(map);
 
       // Invalidation progressive pour garantir le rendu complet même après transition CSS
-      setTimeout(() => { if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize(); }, 120);
-      setTimeout(() => { if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize(); }, 350);
-      setTimeout(() => { if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize(); }, 700);
+      setTimeout(() => {
+        if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      }, 120);
+      setTimeout(() => {
+        if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      }, 350);
+      setTimeout(() => {
+        if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      }, 700);
 
       centers.forEach((center) => {
         const markerColor =
@@ -194,7 +198,9 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     if (!centerUpdateData) return;
 
     setCenters((prev) =>
-      prev.map((c) => (c.id === centerUpdateData.id ? { ...centerUpdateData, lastUpdate: "À l'instant par l'administrateur" } : c)),
+      prev.map((c) =>
+        c.id === centerUpdateData.id ? { ...centerUpdateData, lastUpdate: "À l'instant par l'administrateur" } : c,
+      ),
     );
     notify(`Les données de ${centerUpdateData.shortName} sont actualisées en direct sur la carte.`);
     setShowCenterUpdateModal(false);
@@ -207,9 +213,7 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     return centers.filter((center) => {
       const matchesSearch =
         searchQuery.trim() === "" ||
-        `${center.name} ${center.place} ${center.city}`
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
+        `${center.name} ${center.place} ${center.city}`.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "available" && center.status === "available") ||

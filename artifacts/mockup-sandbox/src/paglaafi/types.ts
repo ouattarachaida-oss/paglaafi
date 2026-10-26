@@ -25,14 +25,7 @@ export interface ContenuMultilingue extends AudiosLanguesLocales {
 
 // Sections de navigation principale
 export type Section =
-  | "Accueil"
-  | "Centres"
-  | "Comprendre"
-  | "RoseIA"
-  | "FaireUnDon"
-  | "Accompagnant"
-  | "Annonces"
-  | "Calendrier";
+  "Accueil" | "Centres" | "Comprendre" | "RoseIA" | "FaireUnDon" | "Accompagnant" | "Annonces" | "Calendrier";
 
 // Rôles utilisateurs & spécialisation administrative
 export type UserRole = "user" | "admin" | "superadmin";

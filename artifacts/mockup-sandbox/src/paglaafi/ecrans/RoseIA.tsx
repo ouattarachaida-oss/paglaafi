@@ -1,12 +1,4 @@
-import {
-  Mic,
-  Play,
-  Send,
-  ShieldCheck,
-  Sparkles,
-  Stethoscope,
-  Volume2,
-} from "lucide-react";
+import { Mic, Play, Send, ShieldCheck, Sparkles, Stethoscope, Volume2 } from "lucide-react";
 import { hapticFeedback } from "../lib/haptique";
 import { useUi, useAuth, useAudio, useSante, useRose, useDocteur, useEducation } from "../etat/contextes";
 
@@ -18,7 +10,15 @@ export function RoseIA() {
   const { currentUser } = useAuth();
   const { handlePlayAudio } = useAudio();
   const { setShowPrivacyModal } = useSante();
-  const { handleSendRoseMessage, handleToggleVoiceRecognition, isRecordingVoice, roseChatBottomRef, roseInput, roseMessages, setRoseInput } = useRose();
+  const {
+    handleSendRoseMessage,
+    handleToggleVoiceRecognition,
+    isRecordingVoice,
+    roseChatBottomRef,
+    roseInput,
+    roseMessages,
+    setRoseInput,
+  } = useRose();
   const { setShowDoctorTrainModal } = useDocteur();
   const { setShowAutopalpationVideoModal } = useEducation();
 
@@ -62,9 +62,7 @@ export function RoseIA() {
             </div>
             <div>
               <h4 className="font-bold text-xs">Vidéo d'Autopalpation Mammaire</h4>
-              <p className="text-[9.5px] text-white/85">
-                Démonstration guidée pas-à-pas par notre sage-femme
-              </p>
+              <p className="text-[9.5px] text-white/85">Démonstration guidée pas-à-pas par notre sage-femme</p>
             </div>
           </div>
           <button
@@ -138,12 +136,12 @@ export function RoseIA() {
           const displayedText = isUser
             ? msg.text
             : appLanguage === "moore" && msg.mooreText
-            ? msg.mooreText
-            : appLanguage === "dioula" && msg.dioulaText
-            ? msg.dioulaText
-            : appLanguage === "en" && msg.englishText
-            ? msg.englishText
-            : msg.text;
+              ? msg.mooreText
+              : appLanguage === "dioula" && msg.dioulaText
+                ? msg.dioulaText
+                : appLanguage === "en" && msg.englishText
+                  ? msg.englishText
+                  : msg.text;
 
           const hasVideoRecommendation =
             !isUser &&
@@ -154,10 +152,7 @@ export function RoseIA() {
               msg.text.toLowerCase().includes("nodule"));
 
           return (
-            <div
-              key={i}
-              className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
-            >
+            <div key={i} className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
               <div
                 className={`max-w-[88%] rounded-[20px] p-3 text-xs leading-relaxed shadow-xs ${
                   isUser
@@ -190,7 +185,15 @@ export function RoseIA() {
                     title={`Écouter à voix haute en ${appLanguage.toUpperCase()}`}
                   >
                     <Volume2 size={12} />
-                    <span>Écouter ({appLanguage === "moore" ? "Mooré" : appLanguage === "dioula" ? "Dioula" : appLanguage.toUpperCase()})</span>
+                    <span>
+                      Écouter (
+                      {appLanguage === "moore"
+                        ? "Mooré"
+                        : appLanguage === "dioula"
+                          ? "Dioula"
+                          : appLanguage.toUpperCase()}
+                      )
+                    </span>
                   </button>
                 </div>
               )}
@@ -203,7 +206,8 @@ export function RoseIA() {
 
       {/* RAPPEL ÉTHIQUE MÉDICAL */}
       <div className="mt-1.5 text-center text-[9px] text-[#936b7c] px-2 italic">
-        🛡️ Rose IA est une conseillère préventive bienveillante. Elle ne remplace pas l'avis d'une sage-femme ou d'un médecin.
+        🛡️ Rose IA est une conseillère préventive bienveillante. Elle ne remplace pas l'avis d'une sage-femme ou d'un
+        médecin.
       </div>
 
       {/* BARRE DE SAISIE MODERNE & RÉACTIVE (<FORM> TOUCHE ENTRÉE + MICRO) */}

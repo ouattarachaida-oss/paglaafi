@@ -20,13 +20,25 @@ import {
   X,
 } from "lucide-react";
 import { getProfileIdentity } from "../lib/identiteProfil";
-import { useUi, useAuth, useCentres, useOrientations, useSante, useDocteur, useAnnonces, useDons, useAdministration, useLangue } from "../etat/contextes";
+import {
+  useUi,
+  useAuth,
+  useCentres,
+  useOrientations,
+  useSante,
+  useDocteur,
+  useAnnonces,
+  useDons,
+  useAdministration,
+  useLangue,
+} from "../etat/contextes";
 
 /**
  * Menu latéral : profil, raccourcis par rôle, navigation, langue et numéro d'urgence.
  */
 export function MenuLateral() {
-  const { appLanguage, handleTriggerInstall, isStandaloneApp, section, setSection, setSidebarOpen, sidebarOpen } = useUi();
+  const { appLanguage, handleTriggerInstall, isStandaloneApp, section, setSection, setSidebarOpen, sidebarOpen } =
+    useUi();
   const { currentUser, handleLogout, pendingRegistrations, setAuthMode } = useAuth();
   const { centers, setCenterUpdateData, setSelectedCenter, setShowCenterUpdateModal } = useCentres();
   const { setShowOrientationModal } = useOrientations();
@@ -37,7 +49,7 @@ export function MenuLateral() {
   const { setShowAdminDashboardModal, setShowSuperadminModal } = useAdministration();
   const { handleSelectAppLanguage } = useLangue();
 
-  if (!(sidebarOpen)) return null;
+  if (!sidebarOpen) return null;
 
   return (
     <div
@@ -75,20 +87,29 @@ export function MenuLateral() {
             <div className="mt-3 rounded-2xl bg-[#f9edf1] p-3 text-xs border border-[#f0d8e1]">
               {currentUser ? (
                 <div className="flex items-center gap-3">
-                  <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${drawerIdentity.bg} ${drawerIdentity.text} border ${drawerIdentity.border} shadow-xs`}>
+                  <div
+                    className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${drawerIdentity.bg} ${drawerIdentity.text} border ${drawerIdentity.border} shadow-xs`}
+                  >
                     {drawerIdentity.icon}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${drawerIdentity.badgeBg}`}>
+                    <span
+                      className={`inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${drawerIdentity.badgeBg}`}
+                    >
                       {currentUser.roleLabel}
                     </span>
-                    <p className="mt-0.5 font-bold text-[#580e36] truncate">{currentUser.prenom} {currentUser.nom}</p>
+                    <p className="mt-0.5 font-bold text-[#580e36] truncate">
+                      {currentUser.prenom} {currentUser.nom}
+                    </p>
                     <p className="text-[10px] text-[#7d5d6c] truncate">{currentUser.telephone}</p>
                   </div>
                 </div>
               ) : (
                 <button
-                  onClick={() => { setSidebarOpen(false); setAuthMode("login"); }}
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    setAuthMode("login");
+                  }}
                   className="flex w-full items-center justify-between font-bold text-[#913b5b]"
                 >
                   <span className="flex items-center gap-2">
@@ -115,7 +136,8 @@ export function MenuLateral() {
                 <ShieldAlert size={15} className="text-amber-300" /> Panneau Superadmin
               </span>
               <span className="rounded-full bg-amber-400 px-1.5 py-0.2 text-[9px] font-extrabold text-purple-950">
-                {announcements.filter((a) => a.status === "pending_validation").length + pendingRegistrations.filter((r) => r.status === "pending").length}
+                {announcements.filter((a) => a.status === "pending_validation").length +
+                  pendingRegistrations.filter((r) => r.status === "pending").length}
               </span>
             </button>
           </div>
@@ -158,93 +180,133 @@ export function MenuLateral() {
         )}
 
         {/* Orientation patiente */}
-        {currentUser?.role === "admin" && (currentUser?.adminType === "doctor" || currentUser?.adminType === "center") && (
-          <div className="mt-2">
-            <button
-              onClick={() => {
-                setSidebarOpen(false);
-                setShowOrientationModal(true);
-              }}
-              className="flex w-full items-center justify-between rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white shadow"
-            >
-              <span className="flex items-center gap-2">
-                <FileText size={15} className="text-amber-300" /> Orienter une Patiente
-              </span>
-              <span className="text-[9px] font-semibold text-emerald-200">Urgence</span>
-            </button>
-          </div>
-        )}
+        {currentUser?.role === "admin" &&
+          (currentUser?.adminType === "doctor" || currentUser?.adminType === "center") && (
+            <div className="mt-2">
+              <button
+                onClick={() => {
+                  setSidebarOpen(false);
+                  setShowOrientationModal(true);
+                }}
+                className="flex w-full items-center justify-between rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white shadow"
+              >
+                <span className="flex items-center gap-2">
+                  <FileText size={15} className="text-amber-300" /> Orienter une Patiente
+                </span>
+                <span className="text-[9px] font-semibold text-emerald-200">Urgence</span>
+              </button>
+            </div>
+          )}
 
         {/* Navigation de la barre latérale */}
         <nav className="mt-3 space-y-1 flex-1 overflow-y-auto text-xs">
           <button
-            onClick={() => { setSection("Accueil"); setSelectedCenter(null); setSidebarOpen(false); }}
+            onClick={() => {
+              setSection("Accueil");
+              setSelectedCenter(null);
+              setSidebarOpen(false);
+            }}
             className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Accueil" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
           >
             <Heart size={17} /> <span>Accueil</span>
           </button>
 
           <button
-            onClick={() => { setSection("Centres"); setSelectedCenter(null); setSidebarOpen(false); }}
+            onClick={() => {
+              setSection("Centres");
+              setSelectedCenter(null);
+              setSidebarOpen(false);
+            }}
             className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Centres" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
           >
-            <span className="flex items-center gap-3"><MapPin size={17} /> Carte des Soins (OpenStreetMap)</span>
-            <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-800">En direct</span>
+            <span className="flex items-center gap-3">
+              <MapPin size={17} /> Carte des Soins (OpenStreetMap)
+            </span>
+            <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-800">
+              En direct
+            </span>
           </button>
 
           <button
-            onClick={() => { setSection("Calendrier"); setSelectedCenter(null); setSidebarOpen(false); }}
+            onClick={() => {
+              setSection("Calendrier");
+              setSelectedCenter(null);
+              setSidebarOpen(false);
+            }}
             className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Calendrier" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
           >
-            <span className="flex items-center gap-3"><CalendarDays size={17} /> Règles & Autopalpation</span>
+            <span className="flex items-center gap-3">
+              <CalendarDays size={17} /> Règles & Autopalpation
+            </span>
             <span className="rounded-full bg-pink-100 px-1.5 py-0.5 text-[9px] font-bold text-[#ea2d6d]">Cycle</span>
           </button>
 
           <button
-            onClick={() => { setSection("Comprendre"); setSelectedCenter(null); setSidebarOpen(false); }}
+            onClick={() => {
+              setSection("Comprendre");
+              setSelectedCenter(null);
+              setSidebarOpen(false);
+            }}
             className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Comprendre" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
           >
-            <span className="flex items-center gap-3"><BookOpen size={17} /> Comprendre (Français · Anglais · Mooré · Dioula)</span>
+            <span className="flex items-center gap-3">
+              <BookOpen size={17} /> Comprendre (Français · Anglais · Mooré · Dioula)
+            </span>
             <span className="rounded-full bg-pink-100 px-1.5 py-0.5 text-[9px] font-bold text-[#ea2d6d]">Audio</span>
           </button>
 
           <button
-            onClick={() => { setSection("RoseIA"); setSelectedCenter(null); setSidebarOpen(false); }}
+            onClick={() => {
+              setSection("RoseIA");
+              setSelectedCenter(null);
+              setSidebarOpen(false);
+            }}
             className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 font-semibold ${section === "RoseIA" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
           >
-            <span className="flex items-center gap-3"><Sparkles size={17} /> Rose IA (Assistance Vocale)</span>
+            <span className="flex items-center gap-3">
+              <Sparkles size={17} /> Rose IA (Assistance Vocale)
+            </span>
             <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900">IA</span>
           </button>
 
           <button
-            onClick={() => { setSection("Annonces"); setSelectedCenter(null); setSidebarOpen(false); }}
+            onClick={() => {
+              setSection("Annonces");
+              setSelectedCenter(null);
+              setSidebarOpen(false);
+            }}
             className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Annonces" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
           >
             <Megaphone size={17} /> <span>Annonces & Événements</span>
           </button>
 
           <button
-            onClick={() => { setSection("Accompagnant"); setSelectedCenter(null); setSidebarOpen(false); }}
+            onClick={() => {
+              setSection("Accompagnant");
+              setSelectedCenter(null);
+              setSidebarOpen(false);
+            }}
             className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 font-semibold ${section === "Accompagnant" ? "bg-[#f5e3e8] text-[#ea2d6d]" : "text-[#62404f] hover:bg-[#faeff2]"}`}
           >
             <UserPlus size={17} /> <span>L'Accompagnant (À deux)</span>
           </button>
 
           {/* Mise à jour centre : réservé aux Admins Centre & Médecins */}
-          {currentUser?.role === "admin" && (currentUser?.adminType === "center" || currentUser?.adminType === "doctor") && (
-            <div className="pt-2 border-t border-[#f2e1e6]">
-              <button
-                onClick={() => {
-                  setSidebarOpen(false);
-                  setCenterUpdateData(centers[0]);
-                  setShowCenterUpdateModal(true);
-                }}
-                className="flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#dfb3c1] bg-[#fcf5f7] px-3 py-2 text-left text-xs font-bold text-[#863853]"
-              >
-                <Edit3 size={15} /> Mettre à jour mon centre sur la carte
-              </button>
-            </div>
-          )}
+          {currentUser?.role === "admin" &&
+            (currentUser?.adminType === "center" || currentUser?.adminType === "doctor") && (
+              <div className="pt-2 border-t border-[#f2e1e6]">
+                <button
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    setCenterUpdateData(centers[0]);
+                    setShowCenterUpdateModal(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#dfb3c1] bg-[#fcf5f7] px-3 py-2 text-left text-xs font-bold text-[#863853]"
+                >
+                  <Edit3 size={15} /> Mettre à jour mon centre sur la carte
+                </button>
+              </div>
+            )}
 
           {/* Faire un don solidaire : en bas avec Cœur */}
           <div className="pt-2 border-t border-[#f2e1e6]">
@@ -274,24 +336,30 @@ export function MenuLateral() {
               <span className="flex items-center gap-2.5 text-xs">
                 <ShieldCheck size={16} className="text-emerald-700" /> Confidentialité & Données
               </span>
-              <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Local</span>
+              <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                Local
+              </span>
             </button>
 
             {/* Simulation d'entraînement réservée exclusivement aux soignants et superadmin */}
-            {currentUser && (currentUser.role === "superadmin" || (currentUser.role === "admin" && currentUser.adminType === "doctor")) && (
-              <button
-                onClick={() => {
-                  setSidebarOpen(false);
-                  setShowDoctorTrainModal(true);
-                }}
-                className="flex w-full items-center justify-between rounded-2xl bg-amber-50 border border-amber-200 px-3.5 py-2 font-semibold text-amber-950 hover:bg-amber-100"
-              >
-                <span className="flex items-center gap-2.5 text-xs">
-                  <GraduationCap size={16} className="text-amber-700" /> Simuler Entraînement Docteur
-                </span>
-                <span className="text-[9.5px] font-bold text-amber-800 bg-amber-200 px-1.5 py-0.5 rounded">4 étapes</span>
-              </button>
-            )}
+            {currentUser &&
+              (currentUser.role === "superadmin" ||
+                (currentUser.role === "admin" && currentUser.adminType === "doctor")) && (
+                <button
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    setShowDoctorTrainModal(true);
+                  }}
+                  className="flex w-full items-center justify-between rounded-2xl bg-amber-50 border border-amber-200 px-3.5 py-2 font-semibold text-amber-950 hover:bg-amber-100"
+                >
+                  <span className="flex items-center gap-2.5 text-xs">
+                    <GraduationCap size={16} className="text-amber-700" /> Simuler Entraînement Docteur
+                  </span>
+                  <span className="text-[9.5px] font-bold text-amber-800 bg-amber-200 px-1.5 py-0.5 rounded">
+                    4 étapes
+                  </span>
+                </button>
+              )}
           </div>
 
           {/* BOUTON SE DÉCONNECTER DU MENU DÉROULANT GAUCHE EXIGÉ */}
@@ -321,9 +389,7 @@ export function MenuLateral() {
               <Smartphone size={15} className="text-amber-300" />
               <span>{isStandaloneApp ? "Application installée ✓" : "Installer l'App Mobile"}</span>
             </span>
-            <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-black text-white">
-              PWA
-            </span>
+            <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-black text-white">PWA</span>
           </button>
         </div>
 

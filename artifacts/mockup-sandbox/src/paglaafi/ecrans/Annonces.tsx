@@ -1,7 +1,4 @@
-import {
-  Eye,
-  Sparkles,
-} from "lucide-react";
+import { Eye, Sparkles } from "lucide-react";
 import { useUi, useAuth, useAnnonces } from "../etat/contextes";
 
 /**
@@ -10,7 +7,14 @@ import { useUi, useAuth, useAnnonces } from "../etat/contextes";
 export function Annonces() {
   const { section } = useUi();
   const { currentUser } = useAuth();
-  const { announcements, announcementsFilter, displayedAnnouncements, setAnnouncementsFilter, setSelectedPosterModal, setShowNewAnnouncementModal } = useAnnonces();
+  const {
+    announcements,
+    announcementsFilter,
+    displayedAnnouncements,
+    setAnnouncementsFilter,
+    setSelectedPosterModal,
+    setShowNewAnnouncementModal,
+  } = useAnnonces();
 
   return (
     <section className="ph-enter px-5 pt-4">
@@ -19,9 +23,7 @@ export function Annonces() {
           <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
             Actualités & Partenaires
           </span>
-          <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">
-            Annonces
-          </h1>
+          <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">Annonces</h1>
         </div>
         {/* Bouton de publication pour les partenaires et soignants */}
         {(currentUser?.role === "admin" || currentUser?.role === "superadmin") && (
@@ -47,7 +49,9 @@ export function Annonces() {
           className={`rounded-full px-3 py-1 font-bold transition inline-flex items-center gap-1 ${announcementsFilter === "rose_ai" ? "bg-purple-900 text-white shadow-xs" : "border border-purple-200 bg-purple-50 text-purple-900"}`}
         >
           <Sparkles size={12} className="text-amber-400" />
-          <span>Veille Rose IA ({announcements.filter((a) => a.isRoseAIDetected && a.status === "approved").length})</span>
+          <span>
+            Veille Rose IA ({announcements.filter((a) => a.isRoseAIDetected && a.status === "approved").length})
+          </span>
         </button>
         <button
           onClick={() => setAnnouncementsFilter("all")}
@@ -60,7 +64,15 @@ export function Annonces() {
             onClick={() => setAnnouncementsFilter("my")}
             className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "my" ? "bg-[#ea2d6d] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
           >
-            Mes soumissions ({announcements.filter((a) => a.submittedBy === currentUser?.structureName || a.submittedBy === `${currentUser?.prenom} ${currentUser?.nom}`).length})
+            Mes soumissions (
+            {
+              announcements.filter(
+                (a) =>
+                  a.submittedBy === currentUser?.structureName ||
+                  a.submittedBy === `${currentUser?.prenom} ${currentUser?.nom}`,
+              ).length
+            }
+            )
           </button>
         )}
       </div>
@@ -81,9 +93,7 @@ export function Annonces() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${a.badgeColor}`}>
-                  {a.badge}
-                </span>
+                <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${a.badgeColor}`}>{a.badge}</span>
                 <span className="text-[10px] text-[#8e6878] font-semibold">{a.month}</span>
               </div>
 
