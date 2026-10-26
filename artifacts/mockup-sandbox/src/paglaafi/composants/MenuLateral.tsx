@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { getProfileIdentity } from "../lib/identiteProfil";
+import { MODE_DEMO } from "../config";
 import {
   useUi,
   useAuth,
@@ -40,7 +41,7 @@ export function MenuLateral() {
   const { appLanguage, handleTriggerInstall, isStandaloneApp, section, setSection, setSidebarOpen, sidebarOpen } =
     useUi();
   const { currentUser, handleLogout, pendingRegistrations, setAuthMode } = useAuth();
-  const { centers, setCenterUpdateData, setSelectedCenter, setShowCenterUpdateModal } = useCentres();
+  const { centers, ouvrirMiseAJourCentre, setCenterUpdateData, setSelectedCenter, setShowCenterUpdateModal } = useCentres();
   const { setShowOrientationModal } = useOrientations();
   const { setShowPrivacyModal } = useSante();
   const { setShowDoctorTrainModal } = useDocteur();
@@ -298,8 +299,7 @@ export function MenuLateral() {
                 <button
                   onClick={() => {
                     setSidebarOpen(false);
-                    setCenterUpdateData(centers[0]);
-                    setShowCenterUpdateModal(true);
+                    ouvrirMiseAJourCentre();
                   }}
                   className="flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#dfb3c1] bg-[#fcf5f7] px-3 py-2 text-left text-xs font-bold text-[#863853]"
                 >
@@ -427,11 +427,18 @@ export function MenuLateral() {
           </div>
         </div>
 
-        {/* Ligne d'urgence */}
-        <div className="mt-2 rounded-2xl bg-[#734059] p-3 text-white">
-          <p className="text-[11px] font-bold">Numéro vert national gratuit</p>
-          <p className="text-base font-extrabold tracking-wide">80 00 11 22</p>
-        </div>
+        {/* Ligne d'urgence : numéro NON CONFIRMÉ, affiché « à vérifier » en démo et masqué en mode réel */}
+        {MODE_DEMO && (
+          <div className="mt-2 rounded-2xl bg-[#734059] p-3 text-white">
+            <p className="text-[11px] font-bold">Numéro vert national gratuit</p>
+            <p className="text-base font-extrabold tracking-wide">
+              80 00 11 22{" "}
+              <span className="ml-1 rounded bg-amber-300 px-1.5 py-0.5 align-middle text-[9px] font-bold tracking-normal text-amber-950">
+                à vérifier
+              </span>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { Route, Switch } from "wouter";
 import { useAuth, useCentres, useUi } from "../etat/contextes";
 import { CHEMINS } from "../routes";
+import { BandeauDemo } from "./BandeauDemo";
 import { BandeauHorsLigne } from "./BandeauHorsLigne";
 import { BarreNavigation } from "./BarreNavigation";
 import { EcranDemarrage } from "./EcranDemarrage";
@@ -65,6 +66,7 @@ export function Coquille() {
         <EcranDemarrage />
         <MenuLateral />
         <EnTete />
+        <BandeauDemo />
         <BandeauHorsLigne />
 
         {/* Contenu principal : connexion si aucun profil, sinon l'onglet courant */}
