@@ -4,22 +4,13 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(<App />);
 
-// Service Worker PagLaafi (fonctionnement hors ligne)
-// - En production : enregistrement de /sw.js après le chargement de la page.
-// - En développement : aucun Service Worker, et désinscription de ceux déjà
-//   installés lors d'anciennes sessions pour éviter de servir du code périmé.
+// Service worker PagLaafi (vite-plugin-pwa, voir serveur/pwa.ts)
+// - En production : enregistrement du service worker généré (précache, mise à jour automatique).
+// - En développement : aucun service worker, et désinscription de ceux installés lors
+//   d'anciennes sessions pour éviter de servir du code périmé.
 if ("serviceWorker" in navigator) {
   if (import.meta.env.PROD) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((reg) => {
-          console.log("[PagLaafi] Service Worker actif (hors-ligne prêt):", reg.scope);
-        })
-        .catch((err) => {
-          console.warn("[PagLaafi] Enregistrement Service Worker reporté:", err);
-        });
-    });
+    void import("virtual:pwa-register").then(({ registerSW }) => registerSW({ immediate: true }));
   } else {
     navigator.serviceWorker.getRegistrations().then((registrations) => {
       registrations.forEach((registration) => registration.unregister());
