@@ -23,7 +23,8 @@ let cache: FicheFaq[] | null = null;
 async function chargerFaq(): Promise<FicheFaq[]> {
   if (cache && cache.length) return cache;
   try {
-    const r = await fetch("/faq-rose.json", { cache: "force-cache" });
+    // Revalidation à chaque chargement en ligne : les nouvelles fiches validées sont prises en compte
+    const r = await fetch("/faq-rose.json", { cache: "no-cache" });
     cache = r.ok ? ((await r.json()).fiches as FicheFaq[]) : [];
   } catch {
     cache = [];
