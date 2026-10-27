@@ -7,7 +7,7 @@ import { reglesReponsesRose, reponseFicheClinique, reponseParDefaut } from "../d
  */
 
 /** Minuscules sans accents, pour une recherche insensible à la casse et aux accents. */
-export const normaliser = (texte: string) => texte.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+export const normaliser = (texte: string) => texte.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 /** Fiche clinique de docteur correspondant à la question, s'il y en a une. */
 export function trouverFicheClinique(clean: string, fiches: MedicalKnowledge[]) {

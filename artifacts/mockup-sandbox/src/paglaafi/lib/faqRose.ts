@@ -43,7 +43,7 @@ const mots = (t: string) =>
   t
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .split(/[^a-z0-9]+/)
     .filter((m) => m.length > 2 && !MOTS_VIDES.has(m));
 

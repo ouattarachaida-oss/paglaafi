@@ -11,7 +11,7 @@ const normaliser = (t: string) =>
   t
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[’']/g, " ");
 
 // Chaque règle : tous les fragments d'un des groupes doivent être présents
