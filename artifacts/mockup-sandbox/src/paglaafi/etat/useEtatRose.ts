@@ -3,6 +3,8 @@ import type { MedicalKnowledge, MessageRose } from "../types";
 import { initialDefaultRoseMessages } from "../donnees/rose";
 import { roseDailyTips } from "../donnees/conseilsRose";
 import { genererReponseRose } from "../lib/moteurRose";
+import { demanderARose } from "../lib/roseIA";
+import { MODE_DEMO, MODE_REEL } from "../config";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatAudio } from "./useEtatAudio";
 
@@ -22,7 +24,8 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
   const [notificationEnabled, setNotificationEnabled] = useState(false);
 
   const [roseMessages, setRoseMessages] = useState<MessageRose[]>(() => {
-    if (typeof window === "undefined") return initialDefaultRoseMessages;
+    // Mode réel : la discussion (questions de santé) n'est pas conservée sur l'appareil
+    if (typeof window === "undefined" || MODE_REEL) return initialDefaultRoseMessages;
     try {
       const s = localStorage.getItem("paglaafi_rose_messages");
       return s ? JSON.parse(s) : initialDefaultRoseMessages;
@@ -33,7 +36,7 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
 
   // Sauvegarde continue de la discussion Rose IA
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !MODE_DEMO) return;
     try {
       localStorage.setItem("paglaafi_rose_messages", JSON.stringify(roseMessages));
     } catch {
@@ -236,6 +239,32 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
     };
     setRoseMessages((prev) => [...prev, userMsg]);
     setRoseInput("");
+
+    // Mode réel : Rose IA fondée sur les fiches validées (serveur), repli FAQ locale
+    if (MODE_REEL) {
+      const parler = speakAloud || isRecordingVoice;
+      void demanderARose(textToSend, appLanguage).then((r) => {
+        setRoseMessages((prev) => [
+          ...prev,
+          {
+            sender: "rose",
+            text: r.texte,
+            mooreText: r.textesLocaux.moore,
+            dioulaText: r.textesLocaux.dioula,
+            sources: r.sources,
+            origine: r.origine,
+            alerte: r.alerte,
+            time: "Maintenant",
+          },
+        ]);
+        window.setTimeout(() => roseChatBottomRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
+        if (parler) {
+          const local = appLanguage === "moore" ? r.textesLocaux.moore : appLanguage === "dioula" ? r.textesLocaux.dioula : undefined;
+          handlePlayAudio(local ?? r.texte, local ? appLanguage : appLanguage === "en" ? "en" : "fr");
+        }
+      });
+      return;
+    }
 
     // Réponse dans les 4 langues : fiche clinique, règle par mots-clés ou réponse générique (voir lib/moteurRose.ts)
     const {

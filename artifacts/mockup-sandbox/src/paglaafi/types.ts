@@ -184,4 +184,15 @@ export interface MessageRose extends AudiosLanguesLocales {
   englishText?: string;
   mooreText?: string;
   dioulaText?: string;
+  // Mode réel : sources citées, origine de la réponse et signe d'alerte détecté
+  sources?: SourceRose[];
+  origine?: "ia" | "sans_source" | "faq";
+  alerte?: boolean;
+}
+
+/** Source citée sous une réponse de Rose IA (fiche validée). */
+export interface SourceRose {
+  titre: string;
+  source: string | null;
+  url: string | null;
 }

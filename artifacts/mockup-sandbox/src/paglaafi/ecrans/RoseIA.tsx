@@ -162,6 +162,48 @@ export function RoseIA() {
               >
                 <p className="whitespace-pre-wrap">{displayedText}</p>
 
+                {/* Mode réel : origine de la réponse et sources (fiches validées) */}
+                {!isUser && msg.origine && (
+                  <div className="mt-2 border-t border-[#f3e3e8] pt-2 text-[10px] text-[#7d5668]">
+                    <span
+                      className={`inline-block rounded-full px-2 py-0.5 font-bold ${
+                        msg.origine === "ia"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : msg.origine === "faq"
+                            ? "bg-amber-100 text-amber-900"
+                            : "bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      {msg.origine === "ia"
+                        ? "Fondée sur des fiches validées"
+                        : msg.origine === "faq"
+                          ? "Hors ligne · FAQ validée"
+                          : "Aucune fiche validée sur ce sujet"}
+                    </span>
+                    {msg.sources && msg.sources.length > 0 && (
+                      <ol className="mt-1.5 list-decimal space-y-0.5 pl-4">
+                        {msg.sources.map((src, k) => (
+                          <li key={k}>
+                            <span className="font-semibold text-[#580e36]">{src.titre}</span>
+                            {src.source && (
+                              <>
+                                {" — "}
+                                {src.url ? (
+                                  <a href={src.url} target="_blank" rel="noopener noreferrer" className="underline">
+                                    {src.source}
+                                  </a>
+                                ) : (
+                                  src.source
+                                )}
+                              </>
+                            )}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                )}
+
                 {/* Bouton cliquable pour voir la vidéo si suggéré par Rose IA */}
                 {hasVideoRecommendation && (
                   <button
