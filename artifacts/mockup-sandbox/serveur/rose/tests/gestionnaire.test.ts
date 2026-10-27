@@ -43,6 +43,11 @@ interface Options {
   fiches?: typeof FICHES;
   reponseModele?: object | string;
   geminiEnPanne?: boolean;
+  /** Statut renvoyé par le modèle principal (ex. 503 : saturé). */
+  principalStatut?: number;
+  finTronquee?: boolean;
+  /** Le modèle principal ne répond pas à temps. */
+  principalLent?: boolean;
   fichesLocales?: object[];
 }
 
@@ -61,6 +66,9 @@ function simuler(opts: Options = {}) {
     }
     if (url.includes("rechercher_fiches")) return rep(200, opts.fiches ?? FICHES);
     if (url.includes(":generateContent")) {
+      if (opts.principalStatut && url.includes("/models/gemini-3.5-flash:")) return rep(opts.principalStatut, {});
+      if (opts.principalLent && url.includes("/models/gemini-3.5-flash:"))
+        throw new DOMException("This operation was aborted", "AbortError");
       const r = opts.reponseModele ?? {
         reponse: "Fais l'autopalpation chaque mois après tes règles.",
         sources_utilisees: [1],
@@ -68,7 +76,17 @@ function simuler(opts: Options = {}) {
         hors_sujet: false,
       };
       return rep(200, {
-        candidates: [{ content: { parts: [{ text: typeof r === "string" ? r : JSON.stringify(r) }] } }],
+        candidates: [
+          {
+            finishReason: opts.finTronquee ? "MAX_TOKENS" : "STOP",
+            content: {
+              parts: [
+                { text: "réflexion interne", thought: true },
+                { text: typeof r === "string" ? r : JSON.stringify(r) },
+              ],
+            },
+          },
+        ],
       });
     }
     if (url.includes("/rest/v1/fiches_connaissance")) return rep(200, opts.fichesLocales ?? []);
@@ -85,6 +103,48 @@ const requete = (corps: object, jeton: string | null = "jeton-valide") =>
   });
 
 describe("gestionnaire /api/rose-chat", () => {
+  it("règle la réflexion du modèle au minimum et ignore les parties « réflexion »", async () => {
+    const { f, appels } = simuler();
+    const corps = await (
+      await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?" }), ENV, f)
+    ).json();
+    const gen = JSON.parse(appels.find((a) => a.url.includes(":generateContent"))!.corps);
+    assert.deepEqual(gen.generationConfig.thinkingConfig, { thinkingLevel: "minimal" });
+    assert.equal(corps.mode, "ia");
+    assert.ok(!corps.reponse.includes("réflexion interne"));
+  });
+
+  it("essaie une fois le modèle de secours si le principal est saturé (503)", async () => {
+    const { f, appels } = simuler({ principalStatut: 503 });
+    const r = await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?" }), ENV, f);
+    assert.equal(r.status, 200);
+    const modeles = appels
+      .filter((a) => a.url.includes(":generateContent"))
+      .map((a) => a.url.split("/models/")[1].split(":")[0]);
+    assert.deepEqual(modeles, ["gemini-3.5-flash", "gemini-3.5-flash-lite"]);
+  });
+
+  it("essaie aussi le secours si le principal ne répond pas à temps", async () => {
+    const { f, appels } = simuler({ principalLent: true });
+    const r = await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?" }), ENV, f);
+    assert.equal(r.status, 200);
+    assert.equal(appels.filter((a) => a.url.includes(":generateContent")).length, 2);
+  });
+
+  it("n'essaie pas le secours pour une autre erreur, et refuse une réponse tronquée (503)", async () => {
+    const a = simuler({ principalStatut: 400 });
+    assert.equal(
+      (await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?" }), ENV, a.f)).status,
+      503,
+    );
+    assert.equal(a.appels.filter((x) => x.url.includes(":generateContent")).length, 1);
+    const b = simuler({ finTronquee: true });
+    assert.equal(
+      (await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?" }), ENV, b.f)).status,
+      503,
+    );
+  });
+
   it("refuse sans connexion (401) et n'appelle ni Gemini ni la base", async () => {
     const { f, appels } = simuler();
     const r = await traiterQuestion(requete({ question: "Comment faire ?" }, null), ENV, f);

@@ -13,7 +13,7 @@ import { detecterSignesAlerte, messageAlerte } from "./alertes";
 import { consommerQuota, fichesEnLangue, rechercherFiches, verifierUtilisateur, type LigneRecherche } from "./base";
 import { lireConfig, LONGUEUR_MAX_QUESTION, type Env } from "./config";
 import { masquerDonneesPersonnelles } from "./confidentialite";
-import { calculerEmbeddings, genererReponse, type Fetch } from "./gemini";
+import { ErreurGemini, calculerEmbeddings, genererReponse, type Fetch } from "./gemini";
 import { construireMessageUtilisateur, type LangueReponse, type SourceFiche } from "./prompt";
 import { messagePrudent, validerReponse } from "./validation";
 
@@ -128,12 +128,19 @@ export async function traiterQuestion(requete: Request, env: Env, f: Fetch = fet
     const sources: SourceFiche[] = lignes.map((l, i) => ({ numero: i + 1, titre: l.titre, extrait: l.morceau }));
 
     // 6. Génération contrainte puis contrôle
-    const brut = await genererReponse(
-      f,
-      config.geminiCle,
-      config.modele,
-      construireMessageUtilisateur(questionMasquee, sources, langue),
-    );
+    const message = construireMessageUtilisateur(questionMasquee, sources, langue);
+    // Délais choisis pour tenir dans les 15 s accordées par l'application (repli FAQ au-delà)
+    const generer = (modele: string, delaiMs: number) =>
+      genererReponse(f, config.geminiCle, modele, message, config.reflexion, delaiMs);
+    let brut: unknown;
+    try {
+      brut = await generer(config.modele, 8000);
+    } catch (e) {
+      // Modèle principal saturé, limité ou trop lent : un seul essai avec le modèle de secours
+      const saturation = e instanceof ErreurGemini && [429, 503, 504].includes(e.statut);
+      if (!saturation || !config.modeleSecours || config.modeleSecours === config.modele) throw e;
+      brut = await generer(config.modeleSecours, 5000);
+    }
     const v = validerReponse(brut, sources.length, langue);
     const alerte = detection.alerte || v.alerte;
     if (!v.ok) {

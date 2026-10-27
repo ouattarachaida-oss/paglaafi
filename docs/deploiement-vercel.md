@@ -52,10 +52,12 @@ uniquement dans Vercel, pour les environnements **Production** et **Preview**.
 
 | Nom | Rôle | Défaut |
 |---|---|---|
-| `GEMINI_MODEL` | Modèle de génération (vérifier le nom en vigueur dans Google AI Studio). | `gemini-2.5-flash` |
+| `GEMINI_MODEL` | Modèle de génération (vérifier le nom en vigueur dans Google AI Studio). | `gemini-3.5-flash` |
+| `GEMINI_MODEL_SECOURS` | Modèle essayé une fois si le principal est saturé ou trop lent. | `gemini-3.5-flash-lite` |
+| `GEMINI_REFLEXION` | Niveau de réflexion du modèle (`minimal` recommandé). | `minimal` |
 | `GEMINI_EMBEDDING_MODEL` | Modèle d'embeddings. **Doit rester celui utilisé pour l'indexation** (sinon ré-indexer avec `pnpm run rag:indexer -- --tout`). | `gemini-embedding-001` |
 | `ROSE_QUOTA_JOUR` | Nombre maximal de questions par compte et par jour. | `30` |
-| `ROSE_SEUIL_SIMILARITE` | Proximité minimale (0 à 1) entre la question et une fiche pour que Rose IA réponde. | `0.65` |
+| `ROSE_SEUIL_SIMILARITE` | Proximité minimale (0 à 1) entre la question et une fiche pour que Rose IA réponde (à recalibrer avec `pnpm run rag:calibrer`). | `0.67` |
 | `ROSE_NOMBRE_SOURCES` | Nombre de passages de fiches transmis au modèle. | `4` |
 
 ## 3. Ce qu'il ne faut JAMAIS mettre en `VITE_`
