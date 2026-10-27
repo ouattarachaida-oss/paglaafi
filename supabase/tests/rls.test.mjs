@@ -111,11 +111,13 @@ async function preparer() {
     }),
     // Tentative d'élévation à l'inscription : le rôle dans les métadonnées doit être ignoré
     pirate: await creerCompte("pirate", { role: "superadmin" }),
+    validateur: await creerCompte("validateur"),
   };
   await definirRole(comptes.adminCentre, { role: "admin_centre", centre_id: centreA.id });
   await definirRole(comptes.docteur, { role: "docteur", centre_id: centreA.id });
   await definirRole(comptes.adminAsso, { role: "admin_association", association_id: asso.id });
   await definirRole(comptes.superadmin, { role: "superadmin" });
+  await definirRole(comptes.validateur, { role: "docteur", centre_id: centreB.id });
   return { comptes, centreA, centreB, asso };
 }
 
@@ -246,6 +248,54 @@ async function tester({ comptes, centreA, centreB, asso }) {
   verifier("utilisatrice", "refusé", "obtenir un rôle après le refus de sa demande", profilU?.role === "utilisatrice");
   const { error: eDouble } = await sa.rpc("approuver_demande", { p_demande: demandeInit[0].id });
   verifier("superadmin", "refusé", "valider deux fois la même demande", Boolean(eDouble));
+
+  // --- Fiches de connaissance de Rose IA (phase 3) ---------------------------
+  const val = await connecter(comptes.validateur);
+  const fiche = (titre, extra = {}) => ({ titre: `${PREFIXE} ${titre}`, contenu: "Contenu de fiche de test, suffisamment long pour être accepté.", langue: "fr", ...extra });
+  const ficheDoc = await autorise("docteur", "proposer une fiche (en attente)", doc.from("fiches_connaissance").insert(fiche("Fiche docteur")).select());
+  const idDoc = ficheDoc?.[0]?.id ?? -1;
+  verifier("docteur", "autorisé", "fiche enregistrée « en attente » avec son nom d'auteur", ficheDoc?.[0]?.statut === "en_attente" && Boolean(ficheDoc?.[0]?.auteur_nom));
+  await refuse("docteur", "proposer une fiche directement validée", doc.from("fiches_connaissance").insert(fiche("Directement validée", { statut: "validee", source_titre: "OMS" })).select());
+  await refuse("utilisatrice", "proposer une fiche", u.from("fiches_connaissance").insert(fiche("Fiche utilisatrice")).select());
+  await refuse("admin centre", "proposer une fiche", ac.from("fiches_connaissance").insert(fiche("Fiche admin centre")).select());
+  await refuse("anonyme", "proposer une fiche", anon.from("fiches_connaissance").insert(fiche("Fiche anonyme")).select());
+  await refuse("docteur", "valider sa propre fiche (non désigné)", doc.from("fiches_connaissance").update({ statut: "validee", source_titre: "OMS" }).eq("id", idDoc).select());
+  await refuse("docteur", "se désigner validateur (update profils.peut_valider)", doc.from("profils").update({ peut_valider: true }).eq("id", comptes.docteur.id).select());
+  await refuse("validateur", "valider une fiche avant d'être désigné", val.from("fiches_connaissance").update({ statut: "validee", source_titre: "OMS" }).eq("id", idDoc).select());
+  await refuse("utilisatrice", "désigner un validateur (rpc designer_validateur)", u.rpc("designer_validateur", { p_profil: comptes.utilisatrice.id, p_valeur: true }));
+  await refuse("docteur", "lister les docteurs (rpc lister_docteurs)", doc.rpc("lister_docteurs"));
+  await autorise("superadmin", "lister les docteurs", sa.rpc("lister_docteurs"));
+  const { error: eDesign } = await sa.rpc("designer_validateur", { p_profil: comptes.validateur.id, p_valeur: true });
+  verifier("superadmin", "autorisé", "désigner un docteur validateur", !eDesign, eDesign?.message);
+  const { error: eDesignU } = await sa.rpc("designer_validateur", { p_profil: comptes.utilisatrice2.id, p_valeur: true });
+  verifier("superadmin", "refusé", "désigner validatrice un compte qui n'est pas docteur", Boolean(eDesignU));
+  await autorise("validateur", "voir les fiches en attente des autres", val.from("fiches_connaissance").select("id").eq("id", idDoc));
+  await refuse("utilisatrice", "voir une fiche en attente", u.from("fiches_connaissance").select("id").eq("id", idDoc));
+  await refuse("anonyme", "voir une fiche en attente", anon.from("fiches_connaissance").select("id").eq("id", idDoc));
+  await refuse("validateur", "valider une fiche sans source", val.from("fiches_connaissance").update({ statut: "validee" }).eq("id", idDoc).select());
+  const ficheVal = await autorise("validateur", "proposer sa propre fiche", val.from("fiches_connaissance").insert(fiche("Fiche du validateur")).select());
+  await refuse("validateur", "valider sa propre fiche (quatre yeux)", val.from("fiches_connaissance").update({ statut: "validee", source_titre: "OMS" }).eq("id", ficheVal?.[0]?.id ?? -1).select());
+  const validee = await autorise("validateur", "valider la fiche d'un autre docteur, avec source", val.from("fiches_connaissance").update({ statut: "validee", source_titre: "OMS, aide-mémoire (test)" }).eq("id", idDoc).select());
+  verifier("validateur", "autorisé", "validation tracée (validateur et date)", validee?.[0]?.valide_par === comptes.validateur.id && Boolean(validee?.[0]?.valide_le));
+  await autorise("anonyme", "voir une fiche validée", anon.from("fiches_connaissance").select("id").eq("id", idDoc));
+  await autorise("utilisatrice", "voir une fiche validée", u.from("fiches_connaissance").select("id").eq("id", idDoc));
+  await refuse("utilisatrice", "lire les morceaux indexés (embeddings)", u.from("fiches_morceaux").select("id"));
+  await refuse("docteur", "insérer un morceau indexé", doc.from("fiches_morceaux").insert({ fiche_id: idDoc, ordre: 0, contenu: "x", embedding: `[${Array(768).fill(0).join(",")}]`, modele: "x" }).select());
+  await refuse("utilisatrice", "appeler la recherche sémantique (rpc rechercher_fiches)", u.rpc("rechercher_fiches", { p_embedding: `[${Array(768).fill(0.1).join(",")}]`, p_nombre: 3 }));
+  await refuse("utilisatrice", "consommer le quota d'une autre (rpc consommer_quota_rose)", u.rpc("consommer_quota_rose", { p_utilisateur: comptes.utilisatrice2.id, p_maximum: 99 }));
+  await refuse("utilisatrice", "lire les quotas", u.from("rose_quota").select("utilisateur_id"));
+  await doc.from("fiches_connaissance").update({ indexe_le: new Date().toISOString() }).eq("id", idDoc);
+  const { data: apresIndex } = await admin.from("fiches_connaissance").select("indexe_le").eq("id", idDoc).single();
+  verifier("docteur", "refusé", "marquer une fiche comme indexée depuis le client", apresIndex?.indexe_le === null);
+  await autorise("docteur", "modifier sa fiche validée", doc.from("fiches_connaissance").update({ contenu: "Contenu modifié après validation, toujours assez long." }).eq("id", idDoc).select());
+  const { data: apresModif } = await admin.from("fiches_connaissance").select("statut, valide_par").eq("id", idDoc).single();
+  verifier("docteur", "autorisé", "fiche modifiée renvoyée automatiquement en relecture", apresModif?.statut === "en_attente" && apresModif?.valide_par === null, JSON.stringify(apresModif));
+  await refuse("docteur", "modifier la fiche d'un autre docteur", doc.from("fiches_connaissance").update({ contenu: "Tentative de modification par un tiers, assez longue." }).eq("id", ficheVal?.[0]?.id ?? -1).select());
+  await autorise("superadmin", "refuser une fiche avec motif", sa.from("fiches_connaissance").update({ statut: "refusee", motif_refus: "Source insuffisante" }).eq("id", ficheVal?.[0]?.id ?? -1).select());
+  const { error: eRevoq } = await sa.rpc("designer_validateur", { p_profil: comptes.validateur.id, p_valeur: false });
+  verifier("superadmin", "autorisé", "retirer la désignation d'un validateur", !eRevoq, eRevoq?.message);
+  await refuse("validateur", "valider après retrait de sa désignation", val.from("fiches_connaissance").update({ statut: "validee", source_titre: "OMS" }).eq("id", idDoc).select());
+  await autorise("docteur", "supprimer sa fiche non validée", doc.from("fiches_connaissance").delete().eq("id", idDoc).select());
 }
 
 // ---------------------------------------------------------------------------
@@ -255,11 +305,13 @@ async function nettoyer() {
   for (const id of creeIds.users) await admin.auth.admin.deleteUser(id);
   await admin.from("centres").delete().like("nom", `${PREFIXE}%`);
   await admin.from("associations").delete().like("nom", `${PREFIXE}%`);
+  await admin.from("fiches_connaissance").delete().like("titre", `${PREFIXE}%`);
   const restes = await Promise.all([
     admin.from("profils").select("id", { count: "exact", head: true }).in("id", creeIds.users.length ? creeIds.users : ["00000000-0000-0000-0000-000000000000"]),
     admin.from("centres").select("id", { count: "exact", head: true }).like("nom", `${PREFIXE}%`),
     admin.from("associations").select("id", { count: "exact", head: true }).like("nom", `${PREFIXE}%`),
     admin.from("annonces").select("id", { count: "exact", head: true }).like("titre", `${PREFIXE}%`),
+    admin.from("fiches_connaissance").select("id", { count: "exact", head: true }).like("titre", `${PREFIXE}%`),
   ]);
   const total = restes.reduce((s, r) => s + (r.count ?? 0), 0);
   console.log(total === 0 ? "\nNettoyage : aucune donnée de test restante." : `\n⚠️ Nettoyage incomplet : ${total} élément(s) restant(s).`);
