@@ -1,8 +1,11 @@
 import { Activity, GraduationCap, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useAuth, useDocteur, useAnnonces, useAdministration } from "../etat/contextes";
+import { MODE_REEL } from "../config";
+import type { StructureAVerifier } from "../depot/verifications";
 
 /**
- * Panneau Superadmin : statistiques, modération des annonces et adhésions.
+ * Panneau Superadmin : statistiques, modération des annonces et adhésions,
+ * et (mode réel) vérification des centres et associations.
  */
 export function EspaceSuperadmin() {
   const { pendingRegistrations } = useAuth();
@@ -10,6 +13,8 @@ export function EspaceSuperadmin() {
   const { announcements, handleApproveAndPushAnnouncement, handleApproveAnnouncement, handleRejectAnnouncement } =
     useAnnonces();
   const {
+    basculerVerification,
+    structuresAVerifier,
     handleApproveRegistration,
     handleRejectRegistration,
     setShowSuperadminModal,
@@ -66,6 +71,16 @@ export function EspaceSuperadmin() {
           >
             🏥 Inscriptions ({pendingRegistrations.filter((r) => r.status === "pending").length})
           </button>
+          {/* Vérification des structures : uniquement en mode réel (base Supabase) */}
+          {MODE_REEL && (
+            <button
+              onClick={() => setSuperadminActiveTab("verifications")}
+              className={`flex-1 rounded-lg py-1.5 transition ${superadminActiveTab === "verifications" ? "bg-purple-950 text-white shadow-xs" : "text-purple-900"}`}
+            >
+              ✅ Vérifs (
+              {[...structuresAVerifier.centres, ...structuresAVerifier.associations].filter((s) => !s.verifiee).length})
+            </button>
+          )}
         </div>
 
         {/* Raccourci Audit & Simulation Entraînement Docteur pour Superadmin */}
@@ -402,6 +417,51 @@ export function EspaceSuperadmin() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* ONGLET 4 (mode réel) : VÉRIFICATION DES CENTRES ET ASSOCIATIONS */}
+        {MODE_REEL && superadminActiveTab === "verifications" && (
+          <div className="mt-3.5 space-y-3 text-xs ph-enter">
+            <p className="rounded-xl border border-amber-200 bg-amber-50 p-2 text-[10.5px] text-amber-900">
+              Ne marquez une structure comme vérifiée qu'après avoir confirmé ses informations (contacts, tarifs,
+              horaires) auprès d'elle. Seuls les centres vérifiés apparaissent sur la carte.
+            </p>
+            {(
+              [
+                ["centre", "Centres de santé", structuresAVerifier.centres],
+                ["association", "Associations", structuresAVerifier.associations],
+              ] as const
+            ).map(([type, titre, liste]) => (
+              <div key={type}>
+                <p className="mb-1.5 font-bold text-[#580e36]">
+                  {titre} ({liste.filter((s: StructureAVerifier) => s.verifiee).length}/{liste.length} vérifiés)
+                </p>
+                <div className="space-y-1.5">
+                  {liste.length === 0 && <p className="text-[11px] text-[#916b7c]">Aucune structure enregistrée.</p>}
+                  {liste.map((s: StructureAVerifier) => (
+                    <div
+                      key={s.id}
+                      className="flex items-center justify-between gap-2 rounded-xl border border-[#ebd6dc] bg-[#fffafc] p-2.5"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-bold text-[#580e36]">{s.nom}</p>
+                        <p className="text-[10px] text-[#916b7c]">
+                          {s.ville || "Ville non précisée"} · maj {s.majLe}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => void basculerVerification(type, s.id, !s.verifiee)}
+                        aria-label={`${s.verifiee ? "Retirer la vérification de" : "Marquer comme vérifié :"} ${s.nom}`}
+                        className={`shrink-0 rounded-lg px-2.5 py-1 text-[10.5px] font-bold ${s.verifiee ? "border border-rose-300 bg-rose-50 text-rose-700" : "bg-emerald-600 text-white shadow-xs"}`}
+                      >
+                        {s.verifiee ? "Retirer la vérification" : "Marquer vérifié ✓"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
