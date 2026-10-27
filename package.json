@@ -14,7 +14,9 @@
     "db:migrer": "node supabase/scripts/migrer.mjs",
     "db:superadmin": "node supabase/scripts/promouvoir-superadmin.mjs",
     "db:test-rls": "node supabase/tests/rls.test.mjs",
-    "test:rose": "node --import tsx --test \"artifacts/mockup-sandbox/serveur/rose/tests/*.test.ts\""
+    "test:rose": "node --import tsx --test \"artifacts/mockup-sandbox/serveur/rose/tests/*.test.ts\"",
+    "rag:indexer": "node --import tsx supabase/scripts/indexer-fiches.mjs",
+    "rag:faq": "node --import tsx supabase/scripts/indexer-fiches.mjs --faq"
   },
   "private": true,
   "dependencies": {
