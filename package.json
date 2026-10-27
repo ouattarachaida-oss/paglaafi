@@ -20,9 +20,6 @@
     "test:rose-pieges": "node --import tsx supabase/tests/rose-pieges.test.mjs"
   },
   "private": true,
-  "dependencies": {
-    "@replit/connectors-sdk": "^0.4.3"
-  },
   "devDependencies": {
     "@supabase/supabase-js": "^2.118.0",
     "pg": "^8.23.0",
