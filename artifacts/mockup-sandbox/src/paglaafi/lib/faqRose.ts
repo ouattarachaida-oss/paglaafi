@@ -21,7 +21,7 @@ export interface FicheFaq {
 let cache: FicheFaq[] | null = null;
 
 async function chargerFaq(): Promise<FicheFaq[]> {
-  if (cache) return cache;
+  if (cache && cache.length) return cache;
   try {
     const r = await fetch("/faq-rose.json", { cache: "force-cache" });
     cache = r.ok ? ((await r.json()).fiches as FicheFaq[]) : [];
@@ -29,6 +29,11 @@ async function chargerFaq(): Promise<FicheFaq[]> {
     cache = [];
   }
   return cache;
+}
+
+/** Précharge la FAQ tant que le réseau est disponible (repli utilisable ensuite hors connexion). */
+export function prechargerFaq(): void {
+  void chargerFaq();
 }
 
 const MOTS_VIDES = new Set(

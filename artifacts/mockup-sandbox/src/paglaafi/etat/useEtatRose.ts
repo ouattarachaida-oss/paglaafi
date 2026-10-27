@@ -4,6 +4,7 @@ import { initialDefaultRoseMessages } from "../donnees/rose";
 import { roseDailyTips } from "../donnees/conseilsRose";
 import { genererReponseRose } from "../lib/moteurRose";
 import { demanderARose } from "../lib/roseIA";
+import { prechargerFaq } from "../lib/faqRose";
 import { MODE_DEMO, MODE_REEL } from "../config";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatAudio } from "./useEtatAudio";
@@ -43,6 +44,11 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
       // Ignorer
     }
   }, [roseMessages]);
+
+  // Mode réel : FAQ hors-ligne préchargée dès l'ouverture (repli si le réseau tombe ensuite)
+  useEffect(() => {
+    if (MODE_REEL) prechargerFaq();
+  }, []);
 
   const [roseInput, setRoseInput] = useState("");
 
