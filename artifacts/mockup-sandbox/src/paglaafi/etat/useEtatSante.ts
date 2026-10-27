@@ -3,14 +3,35 @@ import { MODE_REEL } from "../config";
 import { messageErreur } from "../lib/supabase";
 import { chargerRappels, creerRappel, type Rappel } from "../depot/rappels";
 import { useDerniereRequete } from "../lib/derniereRequete";
+import { effacerCompte, enregistrer, lire } from "../lib/stockageSecurise";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatAuth } from "./useEtatAuth";
 
 /**
  * Données de santé de l'utilisatrice : cycle, autopalpation, rappels, confidentialité.
- * ⚠️ Cycle et autopalpation stockés en clair dans le localStorage (voir phase 4).
- * Mode réel : les rappels sont synchronisés avec Supabase (visibles par leur seule propriétaire).
+ * - Mode démo : données fictives conservées dans le localStorage de l'appareil.
+ * - Mode réel : cycle, autopalpation et historique rattachés au compte connecté,
+ *   chiffrés sur l'appareil (voir lib/stockageSecurise.ts : ce que la protection
+ *   fait et ne fait pas) ; rappels synchronisés avec Supabase.
  */
+/** Données de cycle d'un compte, enregistrées chiffrées sur l'appareil (mode réel). */
+interface DonneesCycle {
+  lastPeriodDate: string;
+  cycleLengthDays: number;
+  autopalpationDoneThisMonth: boolean;
+  lastAutopalpationDate: string;
+  cycleHistory: Array<{ id: number; date: string; duration: number; diff: number; note: string }>;
+}
+
+/** Valeurs neutres d'un nouveau compte (aucune date fictive). */
+const VALEURS_REELLES = () => {
+  const d = new Date();
+  return {
+    lastPeriodDate: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+    lastAutopalpationDate: "Pas encore enregistrée",
+  };
+};
+
 export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   const { notify } = ui;
   const { sessionReelle } = auth;
@@ -28,23 +49,26 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
 
   // 12. Calendrier Féminin : Règles, Autopalpation, Prédiction & Recalibration (avec persistance locale)
   const [lastPeriodDate, setLastPeriodDate] = useState(() => {
+    if (MODE_REEL) return VALEURS_REELLES().lastPeriodDate;
     if (typeof window === "undefined") return "2026-10-06";
     return localStorage.getItem("paglaafi_last_period") || "2026-10-06";
   });
 
   const [cycleLengthDays, setCycleLengthDays] = useState(() => {
-    if (typeof window === "undefined") return 28;
+    if (MODE_REEL || typeof window === "undefined") return 28;
     const s = localStorage.getItem("paglaafi_cycle_len");
     return s ? Number(s) : 28;
   });
 
   const [autopalpationDoneThisMonth, setAutopalpationDoneThisMonth] = useState(() => {
+    if (MODE_REEL) return false;
     if (typeof window === "undefined") return true;
     const s = localStorage.getItem("paglaafi_autopalpation_done");
     return s !== null ? JSON.parse(s) : true;
   });
 
   const [lastAutopalpationDate, setLastAutopalpationDate] = useState(() => {
+    if (MODE_REEL) return VALEURS_REELLES().lastAutopalpationDate;
     if (typeof window === "undefined") return "12/10/2026";
     return localStorage.getItem("paglaafi_last_autopalpation") || "12/10/2026";
   });
@@ -82,6 +106,7 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
         note: "Cycle initial de référence (28 jours)",
       },
     ];
+    if (MODE_REEL) return [];
     if (typeof window === "undefined") return initialHist;
     try {
       const s = localStorage.getItem("paglaafi_cycle_history");
@@ -125,9 +150,56 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     }
   });
 
-  // Synchronisation continue des données du cycle dans la mémoire locale
+  // Mode réel : compte dont les données ont été chargées (évite d'écraser ses données par des valeurs par défaut)
+  const [compteCharge, setCompteCharge] = useState<string | null>(null);
+
+  // Mode réel : à chaque changement de compte, valeurs neutres puis données chiffrées du compte
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!MODE_REEL) return;
+    const neutre = VALEURS_REELLES();
+    setCompteCharge(null);
+    setLastPeriodDate(neutre.lastPeriodDate);
+    setCycleLengthDays(28);
+    setAutopalpationDoneThisMonth(false);
+    setLastAutopalpationDate(neutre.lastAutopalpationDate);
+    setCycleHistory([]);
+    setRecalibrationFeedback(null);
+    const utilisateur = sessionReelle?.userId;
+    if (!utilisateur) return;
+    let actif = true;
+    void lire<DonneesCycle>(utilisateur, "cycle").then((d) => {
+      if (!actif) return;
+      if (d) {
+        setLastPeriodDate(d.lastPeriodDate);
+        setCycleLengthDays(d.cycleLengthDays);
+        setAutopalpationDoneThisMonth(d.autopalpationDoneThisMonth);
+        setLastAutopalpationDate(d.lastAutopalpationDate);
+        setCycleHistory(d.cycleHistory);
+      }
+      setCompteCharge(utilisateur);
+    });
+    return () => {
+      actif = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionReelle?.userId]);
+
+  // Mode réel : enregistrement chiffré, rattaché au compte (jamais sans compte connecté)
+  useEffect(() => {
+    if (!MODE_REEL || !sessionReelle || compteCharge !== sessionReelle.userId) return;
+    void enregistrer(sessionReelle.userId, "cycle", {
+      lastPeriodDate,
+      cycleLengthDays,
+      autopalpationDoneThisMonth,
+      lastAutopalpationDate,
+      cycleHistory,
+    } satisfies DonneesCycle).catch(() => notify("Impossible d'enregistrer vos données sur cet appareil."));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compteCharge, lastPeriodDate, cycleLengthDays, autopalpationDoneThisMonth, lastAutopalpationDate, cycleHistory]);
+
+  // Mode démo : synchronisation dans la mémoire locale (données fictives)
+  useEffect(() => {
+    if (typeof window === "undefined" || MODE_REEL) return;
     try {
       localStorage.setItem("paglaafi_last_period", lastPeriodDate);
       localStorage.setItem("paglaafi_cycle_len", String(cycleLengthDays));
@@ -317,6 +389,15 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   /**
    * Purge complète des données locales (Droit à l'oubli immédiat)
    */
+  /** Mode réel : efface les données de santé du compte sur cet appareil (et sa clé). */
+  const effacerDonneesLocalesDuCompte = async (utilisateur: string) => {
+    await effacerCompte(utilisateur);
+    setCompteCharge(null);
+    setReminders([]);
+    setCycleHistory([]);
+    setAutopalpationDoneThisMonth(false);
+  };
+
   const handleClearAllLocalData = () => {
     if (typeof window !== "undefined") {
       try {
@@ -335,6 +416,7 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   return {
     showPrivacyModal,
     setShowPrivacyModal,
+    effacerDonneesLocalesDuCompte,
     privacySettings,
     setPrivacySettings,
     lastPeriodDate,

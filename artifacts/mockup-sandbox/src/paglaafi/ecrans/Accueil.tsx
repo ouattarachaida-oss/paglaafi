@@ -298,7 +298,7 @@ export function Accueil() {
                   Solidarité 100% Burkina Faso
                 </span>
                 <h4 className="ph-display text-base font-bold text-[#580e36]">Faire un don</h4>
-                <p className="text-[10.5px] text-[#7a5867]">Offrir une mammographie avec option anonyme chiffrée</p>
+                <p className="text-[10.5px] text-[#7a5867]">Offrir une mammographie, en don anonyme si vous le souhaitez</p>
               </div>
             </div>
             <button

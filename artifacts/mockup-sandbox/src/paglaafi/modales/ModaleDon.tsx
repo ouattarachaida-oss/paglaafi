@@ -117,7 +117,7 @@ export function ModaleDon() {
               </div>
             </div>
 
-            {/* OPTION DON ANONYME & CHIFFRÉ (EXIGÉE) */}
+            {/* OPTION DON ANONYME : nom et numéro masqués à l'affichage (aucun chiffrement n'est revendiqué) */}
             <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50/60 p-3">
               <label className="flex items-start gap-2.5 cursor-pointer">
                 <input
@@ -128,11 +128,10 @@ export function ModaleDon() {
                 />
                 <div>
                   <span className="font-bold text-[#20432f] text-xs flex items-center gap-1.5">
-                    <ShieldCheck size={14} className="text-emerald-700" /> Don 100% Anonyme & Chiffré
+                    <ShieldCheck size={14} className="text-emerald-700" /> Don anonyme
                   </span>
                   <p className="text-[10px] text-[#476a56] leading-tight mt-0.5">
-                    Vos coordonnées (nom, prénom et numéro) sont chiffrées et masquées pour l'association. Seul un reçu
-                    officiel anonymisé est émis.
+                    Votre nom et votre numéro sont masqués à l'affichage : le reçu et l'association voient « Donatrice anonyme ».
                   </p>
                 </div>
               </label>
@@ -172,7 +171,7 @@ export function ModaleDon() {
                 <span className="text-[#7c5b6b]">Donateur :</span>
                 <span className="font-bold text-[#580e36]">
                   {isAnonymousDonation
-                    ? "Donatrice anonyme (Chiffré AES-256)"
+                    ? "Donatrice anonyme"
                     : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
                 </span>
               </div>
@@ -258,7 +257,7 @@ export function ModaleDon() {
                 <span className="text-gray-500">Donateur :</span>
                 <span className="font-semibold text-gray-700">
                   {isAnonymousDonation
-                    ? "Donatrice Anonyme (Chiffrement AES)"
+                    ? "Donatrice anonyme"
                     : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
                 </span>
               </div>

@@ -270,8 +270,8 @@ export const reglesReponsesRose: RegleReponseRose[] = [
     theme: "don & solidarité",
     motsCles: ["don", "aider", "financer", "solidarite", "orange money", "association"],
     reponse: {
-      fr: "Ton cœur est généreux ! L'onglet 'Faire un don' de PagLaafi permet de soutenir directement les femmes vulnérables du Burkina Faso via Orange Money (dès 500 FCFA). Tu peux choisir de faire un don nominatif ou un Don Anonyme Chiffré pour préserver ta discrétion. Chaque contribution finance des dépistages et des mammographies gratuits.",
-      en: "Your generosity warms my heart! PagLaafi's 'Faire un don' tab lets you support vulnerable women across Burkina Faso through Orange Money (from 500 FCFA). You can donate publicly or via an Anonymous Encrypted gift. Every contribution funds free screenings and mammograms.",
+      fr: "Ton cœur est généreux ! L'onglet 'Faire un don' de PagLaafi permet de soutenir directement les femmes vulnérables du Burkina Faso via Orange Money (dès 500 FCFA). Tu peux choisir de faire un don à ton nom ou un don anonyme (ton nom et ton numéro sont alors masqués à l'affichage). Chaque contribution finance des dépistages et des mammographies gratuits.",
+      en: "Your generosity warms my heart! PagLaafi's 'Faire un don' tab lets you support vulnerable women across Burkina Faso through Orange Money (from 500 FCFA). You can donate under your name or anonymously (your name and number are then hidden on display). Every contribution funds free screenings and mammograms.",
       moore:
         "Fo sũur yaa sõma wʋsg ! 'Faire un don' pʋgẽ, fo tõe n dɩka Orange Money (sẽn sɩng ne 500 FCFA) n sõng pagb nins sẽn ka tar ligdi tɩ b bãng b laafi zaalem. Barka wʋsg !",
       dioula:

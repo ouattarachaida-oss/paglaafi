@@ -9,7 +9,7 @@ import type { EtatUi } from "./useEtatUi";
 export function useEtatDons({ ui }: { ui: EtatUi }) {
   const { notify } = ui;
 
-  // 14. Faire un Don (Orange Money avec Option Don Anonyme Chiffré)
+  // 14. Faire un Don (Orange Money simulé, avec option de don anonyme : nom et numéro masqués à l'affichage)
   const [showDonationModal, setShowDonationModal] = useState(false);
 
   const [isAnonymousDonation, setIsAnonymousDonation] = useState(false);
@@ -29,7 +29,7 @@ export function useEtatDons({ ui }: { ui: EtatUi }) {
   const [lastDonationId, setLastDonationId] = useState<string>("");
 
   /**
-   * Processus Don Orange Money (avec support Don Anonyme Chiffré)
+   * Processus Don Orange Money (simulé) avec option de don anonyme
    */
   const handleStartDonationProcess = () => {
     const effectiveAmount = customDonationAmount ? Number(customDonationAmount) : donationAmount;

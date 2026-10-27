@@ -93,9 +93,14 @@ export function useEtatAuth({ ui }: { ui: EtatUi }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sauvegarde persistante de la session utilisateur
+  // Sauvegarde persistante de la session utilisateur (mode démo uniquement : profils fictifs).
+  // En mode réel, la session est gérée par Supabase ; le profil (nom, téléphone) n'est pas recopié en clair.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (MODE_REEL) {
+      localStorage.removeItem("paglaafi_current_user");
+      return;
+    }
     try {
       if (currentUser) {
         localStorage.setItem("paglaafi_current_user", JSON.stringify(currentUser));

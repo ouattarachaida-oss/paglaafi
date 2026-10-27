@@ -53,7 +53,7 @@ export function TableauDeBordAdmin() {
             {[
               {
                 id: "OM-ANON-904123",
-                donor: "Donatrice anonyme (Chiffré AES)",
+                donor: "Donatrice anonyme",
                 amount: 10000,
                 date: "Aujourd'hui 17h42",
                 assoc: "ABAC",
@@ -61,7 +61,7 @@ export function TableauDeBordAdmin() {
               { id: "OM-BF-893102", donor: "Ouedraogo A.", amount: 5000, date: "Aujourd'hui 15h18", assoc: "ABAC" },
               {
                 id: "OM-ANON-872291",
-                donor: "Donatrice anonyme (Chiffré AES)",
+                donor: "Donatrice anonyme",
                 amount: 25000,
                 date: "Hier 19h10",
                 assoc: "Beneere For A Cause",
