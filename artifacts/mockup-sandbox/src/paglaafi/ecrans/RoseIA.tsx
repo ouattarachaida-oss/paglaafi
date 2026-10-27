@@ -1,6 +1,7 @@
 import { Mic, Play, Send, ShieldCheck, Sparkles, Stethoscope, Volume2 } from "lucide-react";
 import { hapticFeedback } from "../lib/haptique";
 import { useUi, useAuth, useAudio, useSante, useRose, useDocteur, useEducation } from "../etat/contextes";
+import { MODE_REEL } from "../config";
 
 /**
  * Onglet Rose IA : discussion écrite ou orale.
@@ -41,7 +42,7 @@ export function RoseIA() {
             className="flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-800 p-2.5 text-white font-bold text-xs shadow-xs hover:opacity-95 transition cursor-pointer"
           >
             <Stethoscope size={15} className="text-cyan-300" />
-            <span>Entraîner Rose IA 🩺</span>
+            <span>{MODE_REEL ? "Fiches Rose IA 🩺" : "Entraîner Rose IA 🩺"}</span>
           </button>
           <button
             type="button"

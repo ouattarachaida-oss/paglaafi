@@ -1,6 +1,6 @@
 import { GraduationCap, LogOut, MapPin, Menu, Phone, ShieldCheck, Smartphone, Sparkles } from "lucide-react";
 import { getProfileIdentity } from "../lib/identiteProfil";
-import { MODE_DEMO } from "../config";
+import { MODE_DEMO, MODE_REEL } from "../config";
 import { useUi, useAuth, useSante, useDocteur } from "../etat/contextes";
 
 /**
@@ -211,7 +211,7 @@ export function EnTete() {
                             >
                               <span className="flex items-center gap-1.5">
                                 <GraduationCap size={13} className="text-amber-600" />
-                                <span>Simuler Entraînement Docteur</span>
+                                <span>{MODE_REEL ? "Fiches Rose IA" : "Simuler Entraînement Docteur"}</span>
                               </span>
                               <span className="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">
                                 4 étapes

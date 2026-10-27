@@ -20,7 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { getProfileIdentity } from "../lib/identiteProfil";
-import { MODE_DEMO } from "../config";
+import { MODE_DEMO, MODE_REEL } from "../config";
 import {
   useUi,
   useAuth,
@@ -173,7 +173,7 @@ export function MenuLateral() {
               className="flex w-full items-center justify-between rounded-xl bg-blue-900 px-3 py-2 text-xs font-bold text-white shadow"
             >
               <span className="flex items-center gap-2">
-                <GraduationCap size={15} className="text-amber-300" /> Entraîner Rose IA (Docteur)
+                <GraduationCap size={15} className="text-amber-300" /> {MODE_REEL ? "Fiches Rose IA (Docteur)" : "Entraîner Rose IA (Docteur)"}
               </span>
               <span className="rounded-full bg-blue-700 px-1.5 py-0.5 text-[9px]">IA</span>
             </button>
@@ -353,7 +353,7 @@ export function MenuLateral() {
                   className="flex w-full items-center justify-between rounded-2xl bg-amber-50 border border-amber-200 px-3.5 py-2 font-semibold text-amber-950 hover:bg-amber-100"
                 >
                   <span className="flex items-center gap-2.5 text-xs">
-                    <GraduationCap size={16} className="text-amber-700" /> Simuler Entraînement Docteur
+                    <GraduationCap size={16} className="text-amber-700" /> {MODE_REEL ? "Fiches Rose IA" : "Simuler Entraînement Docteur"}
                   </span>
                   <span className="text-[9.5px] font-bold text-amber-800 bg-amber-200 px-1.5 py-0.5 rounded">
                     4 étapes

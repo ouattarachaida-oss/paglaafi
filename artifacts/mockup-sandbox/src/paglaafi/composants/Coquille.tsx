@@ -19,6 +19,7 @@ import { EcranConnexion } from "../ecrans/EcranConnexion";
 import { FicheCentre } from "../ecrans/FicheCentre";
 import { RoseIA } from "../ecrans/RoseIA";
 import { EspaceEntrainementDocteur } from "../modales/EspaceEntrainementDocteur";
+import { EspaceFichesDocteur } from "../modales/EspaceFichesDocteur";
 import { EspaceSuperadmin } from "../modales/EspaceSuperadmin";
 import { ModaleAffiche } from "../modales/ModaleAffiche";
 import { ModaleConfidentialite } from "../modales/ModaleConfidentialite";
@@ -29,6 +30,7 @@ import { ModaleNouvelleAnnonce } from "../modales/ModaleNouvelleAnnonce";
 import { ModaleOrientation } from "../modales/ModaleOrientation";
 import { ModaleVideoAutopalpation } from "../modales/ModaleVideoAutopalpation";
 import { TableauDeBordAdmin } from "../modales/TableauDeBordAdmin";
+import { MODE_REEL } from "../config";
 
 // Polices et animations communes à toute l'application
 const STYLES_GLOBAUX = `
@@ -102,7 +104,8 @@ export function Coquille() {
         <ModaleOrientation />
         <ModaleInstallationPwa />
         <ModaleConfidentialite />
-        <EspaceEntrainementDocteur />
+        {/* Mode réel : fiches de connaissance réelles ; démo : parcours d'entraînement simulé */}
+        {MODE_REEL ? <EspaceFichesDocteur /> : <EspaceEntrainementDocteur />}
         <ModaleVideoAutopalpation />
         <ModaleAffiche />
 

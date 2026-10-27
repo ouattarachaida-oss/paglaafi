@@ -8,6 +8,7 @@ import { useEtatOrientations, type EtatOrientations } from "./useEtatOrientation
 import { useEtatSante, type EtatSante } from "./useEtatSante";
 import { useEtatRose, type EtatRose } from "./useEtatRose";
 import { useEtatDocteur, type EtatDocteur } from "./useEtatDocteur";
+import { useEtatFiches, type EtatFiches } from "./useEtatFiches";
 import { useEtatEducation, type EtatEducation } from "./useEtatEducation";
 import { useEtatAnnonces, type EtatAnnonces } from "./useEtatAnnonces";
 import { useEtatDons, type EtatDons } from "./useEtatDons";
@@ -30,6 +31,7 @@ const ContexteOrientations = createContext<EtatOrientations | null>(null);
 const ContexteSante = createContext<EtatSante | null>(null);
 const ContexteRose = createContext<EtatRose | null>(null);
 const ContexteDocteur = createContext<EtatDocteur | null>(null);
+const ContexteFiches = createContext<EtatFiches | null>(null);
 const ContexteEducation = createContext<EtatEducation | null>(null);
 const ContexteAnnonces = createContext<EtatAnnonces | null>(null);
 const ContexteDons = createContext<EtatDons | null>(null);
@@ -51,6 +53,7 @@ export const useOrientations = () => lireContexte(ContexteOrientations, "useOrie
 export const useSante = () => lireContexte(ContexteSante, "useSante");
 export const useRose = () => lireContexte(ContexteRose, "useRose");
 export const useDocteur = () => lireContexte(ContexteDocteur, "useDocteur");
+export const useFiches = () => lireContexte(ContexteFiches, "useFiches");
 export const useEducation = () => lireContexte(ContexteEducation, "useEducation");
 export const useAnnonces = () => lireContexte(ContexteAnnonces, "useAnnonces");
 export const useDons = () => lireContexte(ContexteDons, "useDons");
@@ -68,6 +71,7 @@ export function FournisseurEtat({ children }: { children: ReactNode }) {
   const sante = useEtatSante({ ui, auth });
   const rose = useEtatRose({ ui, audio });
   const docteur = useEtatDocteur({ ui, auth, rose });
+  const fiches = useEtatFiches({ ui, auth, docteur });
   const education = useEtatEducation();
   const annonces = useEtatAnnonces({ ui, auth });
   const dons = useEtatDons({ ui });
@@ -85,15 +89,17 @@ export function FournisseurEtat({ children }: { children: ReactNode }) {
                 <ContexteSante.Provider value={sante}>
                   <ContexteRose.Provider value={rose}>
                     <ContexteDocteur.Provider value={docteur}>
-                      <ContexteEducation.Provider value={education}>
-                        <ContexteAnnonces.Provider value={annonces}>
-                          <ContexteDons.Provider value={dons}>
-                            <ContexteAdministration.Provider value={admin}>
-                              <ContexteLangue.Provider value={langue}>{children}</ContexteLangue.Provider>
-                            </ContexteAdministration.Provider>
-                          </ContexteDons.Provider>
-                        </ContexteAnnonces.Provider>
-                      </ContexteEducation.Provider>
+                      <ContexteFiches.Provider value={fiches}>
+                        <ContexteEducation.Provider value={education}>
+                          <ContexteAnnonces.Provider value={annonces}>
+                            <ContexteDons.Provider value={dons}>
+                              <ContexteAdministration.Provider value={admin}>
+                                <ContexteLangue.Provider value={langue}>{children}</ContexteLangue.Provider>
+                              </ContexteAdministration.Provider>
+                            </ContexteDons.Provider>
+                          </ContexteAnnonces.Provider>
+                        </ContexteEducation.Provider>
+                      </ContexteFiches.Provider>
                     </ContexteDocteur.Provider>
                   </ContexteRose.Provider>
                 </ContexteSante.Provider>

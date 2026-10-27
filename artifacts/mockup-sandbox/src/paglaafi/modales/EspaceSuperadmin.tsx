@@ -94,7 +94,7 @@ export function EspaceSuperadmin() {
         >
           <span className="flex items-center gap-1.5">
             <GraduationCap size={15} className="text-amber-700" />
-            <span>Audit : Simuler l'Entraînement Docteur</span>
+            <span>{MODE_REEL ? "Fiches Rose IA : relecture et validateurs" : "Audit : Simuler l'Entraînement Docteur"}</span>
           </span>
           <span className="bg-amber-200 text-amber-900 text-[10px] px-2 py-0.5 rounded-full font-bold">4 étapes →</span>
         </button>

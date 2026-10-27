@@ -12,6 +12,8 @@ export interface SessionReelle {
   role: RoleServeur;
   centreId: number | null;
   associationId: number | null;
+  /** Docteur désigné validateur des fiches de Rose IA (ou superadmin). */
+  peutValider: boolean;
 }
 
 interface LigneProfil {
@@ -23,6 +25,7 @@ interface LigneProfil {
   centre_id: number | null;
   association_id: number | null;
   specialite: string | null;
+  peut_valider: boolean;
 }
 
 /** Convertit un profil serveur vers le format utilisé par l'interface. */
@@ -60,7 +63,7 @@ export async function chargerProfilConnecte(
   const sb = client();
   const { data: p, error } = await sb
     .from("profils")
-    .select("id, nom, prenom, telephone, role, centre_id, association_id, specialite")
+    .select("id, nom, prenom, telephone, role, centre_id, association_id, specialite, peut_valider")
     .eq("id", user.id)
     .single<LigneProfil>();
   if (error || !p) return { erreur: error?.message ?? "Profil introuvable" };
@@ -81,6 +84,7 @@ export async function chargerProfilConnecte(
       role: p.role,
       centreId: p.centre_id,
       associationId: p.association_id,
+      peutValider: p.role === "superadmin" || (p.role === "docteur" && p.peut_valider),
     },
     utilisateur: versProfilInterface(p, structure),
   };
