@@ -13,7 +13,8 @@
     "typecheck": "tsc -b tsconfig.json && pnpm --filter @workspace/mockup-sandbox run typecheck",
     "db:migrer": "node supabase/scripts/migrer.mjs",
     "db:superadmin": "node supabase/scripts/promouvoir-superadmin.mjs",
-    "db:test-rls": "node supabase/tests/rls.test.mjs"
+    "db:test-rls": "node supabase/tests/rls.test.mjs",
+    "test:rose": "node --import tsx --test \"artifacts/mockup-sandbox/serveur/rose/tests/*.test.ts\""
   },
   "private": true,
   "dependencies": {
@@ -23,6 +24,7 @@
     "@supabase/supabase-js": "^2.118.0",
     "pg": "^8.23.0",
     "prettier": "^3.9.6",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "tsx": "catalog:"
   }
 }
