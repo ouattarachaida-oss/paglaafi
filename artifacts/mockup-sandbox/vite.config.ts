@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { mockupPreviewPlugin } from "./mockupPreviewPlugin";
+import { apiRoseLocale } from "./serveur/devApi";
 
 // Port d'écoute du serveur de développement (par défaut 5173 en local si non spécifié)
 const port = process.env.PORT ? Number(process.env.PORT) : 5173;
@@ -21,6 +22,8 @@ export default defineConfig({
   base: basePath,
   plugins: [
     mockupPreviewPlugin(),
+    // Rose IA : /api/rose-chat en développement local (en production : fonction Vercel api/rose-chat.ts)
+    apiRoseLocale(import.meta.dirname),
     react(),
     tailwindcss(),
     runtimeErrorOverlay(),
