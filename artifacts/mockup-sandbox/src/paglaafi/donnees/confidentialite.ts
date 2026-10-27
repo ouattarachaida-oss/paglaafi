@@ -40,6 +40,7 @@ export const POLITIQUE: SectionPolitique[] = [
     titre: "Données gardées uniquement sur votre téléphone",
     paragraphes: [
       "Votre cycle, vos autopalpations et leur historique restent sur votre appareil. En mode réel, ils sont rattachés à votre compte et chiffrés avec une clé créée sur votre appareil : une autre personne qui se connecte sur le même téléphone ne les voit pas.",
+      "Une copie de votre profil (nom, prénom, rôle) est gardée de la même façon, chiffrée sur l'appareil, pour que l'application reste utilisable hors connexion.",
       "Limite de cette protection : elle ne protège pas contre quelqu'un qui utilise votre téléphone déverrouillé avec votre session ouverte. Effacer les données du navigateur ou désinstaller l'application efface aussi la clé : ces données sont alors perdues.",
       "La discussion avec Rose IA n'est pas conservée sur l'appareil en mode réel. Votre langue préférée et votre consentement sont aussi enregistrés sur l'appareil.",
     ],

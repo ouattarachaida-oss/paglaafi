@@ -6,7 +6,12 @@ import { MODE_DEMO, MODE_REEL } from "../config";
 import { client, messageErreur, supabase } from "../lib/supabase";
 import { chargerProfilConnecte, type SessionReelle } from "../depot/profils";
 import { useDerniereRequete } from "../lib/derniereRequete";
+import { enregistrer, lire } from "../lib/stockageSecurise";
 import type { EtatUi } from "./useEtatUi";
+
+/** Erreur due à l'absence de réseau (et non à un refus de la base). */
+const horsConnexion = (erreur: string) =>
+  (typeof navigator !== "undefined" && !navigator.onLine) || /failed to fetch|network|load failed/i.test(erreur);
 
 // Type de structure demandé à l'inscription (adhésion validée par le superadmin)
 const TYPE_STRUCTURE: Record<AdminType, "centre" | "association" | "professionnel"> = {
@@ -76,8 +81,17 @@ export function useEtatAuth({ ui }: { ui: EtatUi }) {
           setCurrentUser(null);
           return;
         }
-        const resultat = await chargerProfilConnecte(session.user);
+        let resultat = await chargerProfilConnecte(session.user);
         if (!actif || !estActuelle()) return; // un événement plus récent a pris le relais
+        if (!("erreur" in resultat)) {
+          // Copie chiffrée sur l'appareil (rattachée au compte) pour l'usage hors connexion
+          void enregistrer(session.user.id, "profil", resultat).catch(() => {});
+        } else if (horsConnexion(resultat.erreur)) {
+          // Hors connexion : dernier profil connu de ce compte (la base reste seule juge des droits)
+          const enCache = await lire<Exclude<typeof resultat, { erreur: string }>>(session.user.id, "profil");
+          if (!actif || !estActuelle()) return;
+          if (enCache) resultat = enCache;
+        }
         if ("erreur" in resultat) {
           notify(`Profil indisponible : ${resultat.erreur}`);
           return;

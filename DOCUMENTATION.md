@@ -111,7 +111,8 @@ Sans `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`, l'application repass
 ## 7. Confidentialité
 
 - **Consentement** à la première utilisation (résumé clair + politique complète, `/confidentialite`).
-- **Sur l'appareil (mode réel)** : cycle, autopalpation et historique rattachés au compte et
+- **Sur l'appareil (mode réel)** : cycle, autopalpation, historique et copie du profil (pour l'usage
+  hors connexion) rattachés au compte et
   **chiffrés** (AES-GCM, clé par compte non exportable, conservée par le navigateur).
   Limites assumées : aucune protection contre l'usage du téléphone déverrouillé avec la session
   ouverte ; effacer les données du navigateur efface la clé (données perdues).
