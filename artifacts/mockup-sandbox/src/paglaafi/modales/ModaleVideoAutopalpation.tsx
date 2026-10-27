@@ -1,5 +1,6 @@
 import { Pause, Play, Volume2, X } from "lucide-react";
 import { useAudio, useEducation } from "../etat/contextes";
+import { BadgeSimulation } from "../composants/BadgeSimulation";
 
 /**
  * Démonstration guidée d'autopalpation.
@@ -41,6 +42,10 @@ export function ModaleVideoAutopalpation() {
             </div>
             <div>
               <h3 className="ph-display text-sm font-bold text-[#580e36]">Vidéo Guidée d'Autopalpation</h3>
+              <BadgeSimulation
+                bloc
+                detail="Démonstration par images animées : la vidéo réelle reste à produire et à valider."
+              />
               <p className="text-[10px] text-emerald-700 font-bold">
                 Démonstration Pédagogique & Pudique · Sage-femme Africaine
               </p>

@@ -17,7 +17,13 @@ interface LigneRappel {
   actif: boolean;
 }
 
-const versRappel = (r: LigneRappel): Rappel => ({ id: r.id, title: r.titre, date: r.date_texte, type: r.type, active: r.actif });
+const versRappel = (r: LigneRappel): Rappel => ({
+  id: r.id,
+  title: r.titre,
+  date: r.date_texte,
+  type: r.type,
+  active: r.actif,
+});
 
 /** Rappels de l'utilisatrice connectée (la base ne renvoie jamais ceux des autres). */
 export async function chargerRappels(): Promise<Rappel[]> {

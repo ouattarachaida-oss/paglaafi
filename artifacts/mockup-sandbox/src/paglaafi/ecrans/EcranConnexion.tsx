@@ -1,4 +1,15 @@
-import { ArrowRight, AtSign, CheckCircle2, Eye, EyeOff, Lock, Phone, Sparkles, UserPlus, UsersRound } from "lucide-react";
+import {
+  ArrowRight,
+  AtSign,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Lock,
+  Phone,
+  Sparkles,
+  UserPlus,
+  UsersRound,
+} from "lucide-react";
 import { MODE_DEMO } from "../config";
 import type { AdminType } from "../types";
 import { getProfileIdentity } from "../lib/identiteProfil";
@@ -157,107 +168,107 @@ export function EcranConnexion() {
 
           {/* Accès Démo Rapide (1-Clic) : uniquement en mode démo */}
           {MODE_DEMO && (
-          <div className="rounded-3xl bg-[#fdf5f7] border border-[#f0d4de] p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-[#9a4564] mb-3 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <UsersRound size={13} className="text-[#ea2d6d]" />
-                <span>Accès Rapide Démo (1-Clic)</span>
-              </span>
-              <span className="text-[9px] font-normal lowercase bg-pink-100 text-[#ea2d6d] px-2 py-0.5 rounded-full font-bold">
-                5 profils au choix
-              </span>
-            </p>
+            <div className="rounded-3xl bg-[#fdf5f7] border border-[#f0d4de] p-4">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#9a4564] mb-3 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <UsersRound size={13} className="text-[#ea2d6d]" />
+                  <span>Accès Rapide Démo (1-Clic)</span>
+                </span>
+                <span className="text-[9px] font-normal lowercase bg-pink-100 text-[#ea2d6d] px-2 py-0.5 rounded-full font-bold">
+                  5 profils au choix
+                </span>
+              </p>
 
-            {/* Grille 2x2 des 4 rôles opérationnels */}
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              {[
-                {
-                  type: "user" as const,
-                  title: "Aminata O.",
-                  roleName: "Utilisatrice",
-                  desc: "Autopalpation & Cycle",
-                  profile: { role: "user" as const, roleLabel: "Utilisatrice" },
-                },
-                {
-                  type: "center" as const,
-                  title: "Mme Sawadogo",
-                  roleName: "Centre de Santé",
-                  desc: "CMA Schiphra",
-                  profile: { role: "admin" as const, adminType: "center" as const, roleLabel: "Centre Médical" },
-                },
-                {
-                  type: "doctor" as const,
-                  title: "Dr. Sanou",
-                  roleName: "Docteur / Praticien",
-                  desc: "CHU Bogodogo",
-                  profile: { role: "admin" as const, adminType: "doctor" as const, roleLabel: "Praticien" },
-                },
-                {
-                  type: "association" as const,
-                  title: "Dr. Sawadogo",
-                  roleName: "Association ONG",
-                  desc: "ABAC Solidarité",
-                  profile: { role: "admin" as const, adminType: "association" as const, roleLabel: "ONG / Asso" },
-                },
-              ].map((p) => {
-                const ident = getProfileIdentity(p.profile as any);
+              {/* Grille 2x2 des 4 rôles opérationnels */}
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                {[
+                  {
+                    type: "user" as const,
+                    title: "Aminata O.",
+                    roleName: "Utilisatrice",
+                    desc: "Autopalpation & Cycle",
+                    profile: { role: "user" as const, roleLabel: "Utilisatrice" },
+                  },
+                  {
+                    type: "center" as const,
+                    title: "Mme Sawadogo",
+                    roleName: "Centre de Santé",
+                    desc: "CMA Schiphra",
+                    profile: { role: "admin" as const, adminType: "center" as const, roleLabel: "Centre Médical" },
+                  },
+                  {
+                    type: "doctor" as const,
+                    title: "Dr. Sanou",
+                    roleName: "Docteur / Praticien",
+                    desc: "CHU Bogodogo",
+                    profile: { role: "admin" as const, adminType: "doctor" as const, roleLabel: "Praticien" },
+                  },
+                  {
+                    type: "association" as const,
+                    title: "Dr. Sawadogo",
+                    roleName: "Association ONG",
+                    desc: "ABAC Solidarité",
+                    profile: { role: "admin" as const, adminType: "association" as const, roleLabel: "ONG / Asso" },
+                  },
+                ].map((p) => {
+                  const ident = getProfileIdentity(p.profile as any);
+                  return (
+                    <button
+                      key={p.type}
+                      type="button"
+                      onClick={() => quickLoginAs(p.type)}
+                      className="flex flex-col items-start gap-1.5 rounded-2xl bg-white p-3 text-left border border-[#ecd5de] hover:border-[#ea2d6d] hover:shadow-xs transition group"
+                    >
+                      <div className="flex w-full items-center justify-between">
+                        <div
+                          className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${ident.bg} ${ident.text} border ${ident.border} shadow-2xs group-hover:scale-105 transition`}
+                        >
+                          {ident.icon}
+                        </div>
+                        <span className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded-full ${ident.badgeBg}`}>
+                          {ident.badgeText}
+                        </span>
+                      </div>
+                      <div className="min-w-0 w-full mt-0.5">
+                        <p className="text-[11.5px] font-bold text-[#580e36] truncate">{p.title}</p>
+                        <p className="text-[10px] text-[#7d5668] truncate">{p.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* 5e rôle : Superadmin National en carte pleine largeur */}
+              {(() => {
+                const superadminIdentity = getProfileIdentity({ role: "superadmin", roleLabel: "Superadmin" } as any);
                 return (
                   <button
-                    key={p.type}
                     type="button"
-                    onClick={() => quickLoginAs(p.type)}
-                    className="flex flex-col items-start gap-1.5 rounded-2xl bg-white p-3 text-left border border-[#ecd5de] hover:border-[#ea2d6d] hover:shadow-xs transition group"
+                    onClick={() => quickLoginAs("superadmin")}
+                    className="w-full flex items-center gap-3 rounded-2xl bg-gradient-to-r from-purple-950/5 via-purple-900/10 to-indigo-950/5 p-3 text-left border border-purple-200/80 hover:border-purple-400 hover:shadow-xs transition group"
                   >
-                    <div className="flex w-full items-center justify-between">
-                      <div
-                        className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${ident.bg} ${ident.text} border ${ident.border} shadow-2xs group-hover:scale-105 transition`}
-                      >
-                        {ident.icon}
-                      </div>
-                      <span className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded-full ${ident.badgeBg}`}>
-                        {ident.badgeText}
-                      </span>
+                    <div
+                      className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${superadminIdentity.bg} ${superadminIdentity.text} border ${superadminIdentity.border} shadow-xs group-hover:scale-105 transition`}
+                    >
+                      {superadminIdentity.icon}
                     </div>
-                    <div className="min-w-0 w-full mt-0.5">
-                      <p className="text-[11.5px] font-bold text-[#580e36] truncate">{p.title}</p>
-                      <p className="text-[10px] text-[#7d5668] truncate">{p.desc}</p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold text-[#351a42]">Alimata Kaboré</p>
+                        <span
+                          className={`text-[8.5px] font-black px-2 py-0.5 rounded-full ${superadminIdentity.badgeBg}`}
+                        >
+                          Superadmin National
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-purple-900/80">
+                        Supervision nationale, modération des annonces & statistiques
+                      </p>
                     </div>
                   </button>
                 );
-              })}
+              })()}
             </div>
-
-            {/* 5e rôle : Superadmin National en carte pleine largeur */}
-            {(() => {
-              const superadminIdentity = getProfileIdentity({ role: "superadmin", roleLabel: "Superadmin" } as any);
-              return (
-                <button
-                  type="button"
-                  onClick={() => quickLoginAs("superadmin")}
-                  className="w-full flex items-center gap-3 rounded-2xl bg-gradient-to-r from-purple-950/5 via-purple-900/10 to-indigo-950/5 p-3 text-left border border-purple-200/80 hover:border-purple-400 hover:shadow-xs transition group"
-                >
-                  <div
-                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${superadminIdentity.bg} ${superadminIdentity.text} border ${superadminIdentity.border} shadow-xs group-hover:scale-105 transition`}
-                  >
-                    {superadminIdentity.icon}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold text-[#351a42]">Alimata Kaboré</p>
-                      <span
-                        className={`text-[8.5px] font-black px-2 py-0.5 rounded-full ${superadminIdentity.badgeBg}`}
-                      >
-                        Superadmin National
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-purple-900/80">
-                      Supervision nationale, modération des annonces & statistiques
-                    </p>
-                  </div>
-                </button>
-              );
-            })()}
-          </div>
           )}
 
           {/* Bouton pour tester sans compte */}

@@ -2,6 +2,7 @@ import { Activity, GraduationCap, ShieldCheck, Sparkles, X } from "lucide-react"
 import { useAuth, useDocteur, useAnnonces, useAdministration } from "../etat/contextes";
 import { MODE_REEL } from "../config";
 import type { StructureAVerifier } from "../depot/verifications";
+import { BadgeSimulation } from "../composants/BadgeSimulation";
 
 /**
  * Panneau Superadmin : statistiques, modération des annonces et adhésions,
@@ -94,7 +95,9 @@ export function EspaceSuperadmin() {
         >
           <span className="flex items-center gap-1.5">
             <GraduationCap size={15} className="text-amber-700" />
-            <span>{MODE_REEL ? "Fiches Rose IA : relecture et validateurs" : "Audit : Simuler l'Entraînement Docteur"}</span>
+            <span>
+              {MODE_REEL ? "Fiches Rose IA : relecture et validateurs" : "Audit : Simuler l'Entraînement Docteur"}
+            </span>
           </span>
           <span className="bg-amber-200 text-amber-900 text-[10px] px-2 py-0.5 rounded-full font-bold">4 étapes →</span>
         </button>
@@ -102,6 +105,7 @@ export function EspaceSuperadmin() {
         {/* ONGLET 1 : STATISTIQUES DE VISITES DU SITE & RECENSEMENT DES CENTRES PAR VILLE/RÉGION */}
         {superadminActiveTab === "stats" && (
           <div className="mt-3.5 space-y-3 text-xs ph-enter">
+            <BadgeSimulation bloc detail="Statistiques fictives : la mesure d'audience n'est pas encore en place." />
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-2xl bg-purple-50 border border-purple-200 p-3">
                 <span className="text-[9.5px] font-bold text-purple-800 uppercase">Visites totales</span>

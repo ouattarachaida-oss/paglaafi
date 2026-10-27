@@ -1,5 +1,6 @@
 import { AlertTriangle, Check, Copy, FileText, Share2, Stethoscope, X } from "lucide-react";
 import { useUi, useCentres, useOrientations } from "../etat/contextes";
+import { BadgeSimulation } from "../composants/BadgeSimulation";
 
 /**
  * Orientation d'urgence d'une patiente vers un centre (docteur).
@@ -39,6 +40,7 @@ export function ModaleOrientation() {
             </div>
             <div>
               <h3 className="ph-display text-sm font-bold text-[#580e36]">Orientation Médicale d'Urgence</h3>
+              <BadgeSimulation bloc detail="Orientation simulée : rien n'est transmis au centre ni à la patiente." />
               <p className="text-[10px] text-rose-600 font-bold">Docteur ➔ Centre de Santé Partenaire</p>
             </div>
           </div>

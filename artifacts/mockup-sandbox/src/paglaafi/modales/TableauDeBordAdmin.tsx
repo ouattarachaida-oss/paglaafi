@@ -1,5 +1,6 @@
 import { BarChart3, X } from "lucide-react";
 import { useAdministration } from "../etat/contextes";
+import { BadgeSimulation } from "../composants/BadgeSimulation";
 
 /**
  * Tableau de bord des administrateurs (dons et fréquentation, données de démo).
@@ -19,6 +20,7 @@ export function TableauDeBordAdmin() {
             </div>
             <div>
               <h3 className="ph-display text-sm font-bold text-[#351c2a]">Tableau de Bord Admin</h3>
+              <BadgeSimulation bloc detail="Dons et statistiques fictifs : aucune collecte réelle n'est affichée." />
               <p className="text-[10px] text-[#834f66] font-bold">Dons Orange Money & Statistiques</p>
             </div>
           </div>

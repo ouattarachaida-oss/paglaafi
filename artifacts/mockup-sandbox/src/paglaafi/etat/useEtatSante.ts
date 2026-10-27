@@ -414,7 +414,9 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
         return false;
       }
       await effacerDonneesLocalesDuCompte(utilisateur);
-      await client().auth.signOut().catch(() => {});
+      await client()
+        .auth.signOut()
+        .catch(() => {});
       for (const k of Object.keys(localStorage)) if (/^sb-.*-auth-token$/.test(k)) localStorage.removeItem(k);
     }
     setShowPrivacyModal(false);

@@ -128,56 +128,56 @@ export function EnTete() {
                     <div className="mt-3 pt-2 border-t border-[#f7e6ec] space-y-2">
                       {/* Changement de profil en 1 clic : mode démo uniquement */}
                       {MODE_DEMO && (
-                      <div>
-                        <p className="text-[10px] font-bold text-[#8c4d66] mb-1.5">Changer de profil (1-clic) :</p>
-                        <div className="grid grid-cols-2 gap-1 text-[10px]">
+                        <div>
+                          <p className="text-[10px] font-bold text-[#8c4d66] mb-1.5">Changer de profil (1-clic) :</p>
+                          <div className="grid grid-cols-2 gap-1 text-[10px]">
+                            <button
+                              onClick={() => {
+                                quickLoginAs("user");
+                                setShowProfileMenu(false);
+                              }}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.role === "user" ? "bg-[#ea2d6d] text-white" : "bg-pink-50 text-[#6f334a] hover:bg-pink-100"}`}
+                            >
+                              👩 Utilisatrice
+                            </button>
+                            <button
+                              onClick={() => {
+                                quickLoginAs("center");
+                                setShowProfileMenu(false);
+                              }}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === "center" ? "bg-[#ea2d6d] text-white" : "bg-pink-50 text-[#6f334a] hover:bg-pink-100"}`}
+                            >
+                              🏥 Centre Santé
+                            </button>
+                            <button
+                              onClick={() => {
+                                quickLoginAs("doctor");
+                                setShowProfileMenu(false);
+                              }}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === "doctor" ? "bg-[#ea2d6d] text-white" : "bg-pink-50 text-[#6f334a] hover:bg-pink-100"}`}
+                            >
+                              🩺 Docteur
+                            </button>
+                            <button
+                              onClick={() => {
+                                quickLoginAs("association");
+                                setShowProfileMenu(false);
+                              }}
+                              className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === "association" ? "bg-[#ea2d6d] text-white" : "bg-pink-50 text-[#6f334a] hover:bg-pink-100"}`}
+                            >
+                              🎗️ Association
+                            </button>
+                          </div>
                           <button
                             onClick={() => {
-                              quickLoginAs("user");
+                              quickLoginAs("superadmin");
                               setShowProfileMenu(false);
                             }}
-                            className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.role === "user" ? "bg-[#ea2d6d] text-white" : "bg-pink-50 text-[#6f334a] hover:bg-pink-100"}`}
+                            className={`w-full mt-1 rounded-lg px-2 py-1 font-semibold text-left text-[10px] transition ${currentUser.role === "superadmin" ? "bg-purple-900 text-white" : "bg-purple-50 text-purple-900 hover:bg-purple-100"}`}
                           >
-                            👩 Utilisatrice
-                          </button>
-                          <button
-                            onClick={() => {
-                              quickLoginAs("center");
-                              setShowProfileMenu(false);
-                            }}
-                            className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === "center" ? "bg-[#ea2d6d] text-white" : "bg-pink-50 text-[#6f334a] hover:bg-pink-100"}`}
-                          >
-                            🏥 Centre Santé
-                          </button>
-                          <button
-                            onClick={() => {
-                              quickLoginAs("doctor");
-                              setShowProfileMenu(false);
-                            }}
-                            className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === "doctor" ? "bg-[#ea2d6d] text-white" : "bg-pink-50 text-[#6f334a] hover:bg-pink-100"}`}
-                          >
-                            🩺 Docteur
-                          </button>
-                          <button
-                            onClick={() => {
-                              quickLoginAs("association");
-                              setShowProfileMenu(false);
-                            }}
-                            className={`rounded-lg px-2 py-1 font-semibold text-left transition ${currentUser.adminType === "association" ? "bg-[#ea2d6d] text-white" : "bg-pink-50 text-[#6f334a] hover:bg-pink-100"}`}
-                          >
-                            🎗️ Association
+                            🛡️ Superadmin National
                           </button>
                         </div>
-                        <button
-                          onClick={() => {
-                            quickLoginAs("superadmin");
-                            setShowProfileMenu(false);
-                          }}
-                          className={`w-full mt-1 rounded-lg px-2 py-1 font-semibold text-left text-[10px] transition ${currentUser.role === "superadmin" ? "bg-purple-900 text-white" : "bg-purple-50 text-purple-900 hover:bg-purple-100"}`}
-                        >
-                          🛡️ Superadmin National
-                        </button>
-                      </div>
                       )}
 
                       {/* Raccourcis Confidentialité & Simulation Docteur */}

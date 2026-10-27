@@ -38,7 +38,9 @@ export function prechargerFaq(): void {
 }
 
 const MOTS_VIDES = new Set(
-  "le la les un une des de du d l et ou a au aux en est je tu il elle on nous vous ils elles mon ma mes ton ta tes son sa ses ce cet cette que qui quoi comment pourquoi quand est-ce estce pour par sur avec dans pas plus ne se si y the a an of to is i my you what how".split(" "),
+  "le la les un une des de du d l et ou a au aux en est je tu il elle on nous vous ils elles mon ma mes ton ta tes son sa ses ce cet cette que qui quoi comment pourquoi quand est-ce estce pour par sur avec dans pas plus ne se si y the a an of to is i my you what how".split(
+    " ",
+  ),
 );
 const mots = (t: string) =>
   t
@@ -57,7 +59,11 @@ export interface ReponseFaq {
 }
 
 /** Cherche la fiche validée la plus proche de la question (ou un message prudent). */
-export async function repondreDepuisFaq(question: string, langue: "fr" | "en" | "moore" | "dioula", note?: string): Promise<ReponseFaq> {
+export async function repondreDepuisFaq(
+  question: string,
+  langue: "fr" | "en" | "moore" | "dioula",
+  note?: string,
+): Promise<ReponseFaq> {
   const fiches = await chargerFaq();
   const detection = detecterSignesAlerte(question);
   const langueTexte = langue === "en" ? "en" : "fr";
@@ -90,7 +96,8 @@ export async function repondreDepuisFaq(question: string, langue: "fr" | "en" | 
     (langue === "moore" || langue === "dioula") && meilleure.groupe
       ? fiches.find((f) => f.langue === langue && f.groupe === meilleure!.groupe)
       : undefined;
-  const intro = langueTexte === "en" ? "Here is a validated sheet that may help:" : "Voici une fiche validée qui peut t'aider :";
+  const intro =
+    langueTexte === "en" ? "Here is a validated sheet that may help:" : "Voici une fiche validée qui peut t'aider :";
   return {
     texte: `${entete}${alerte}${intro}\n« ${meilleure.titre} »\n${meilleure.contenu}\n\n${rappel}`,
     sources: [{ titre: meilleure.titre, source: meilleure.source, url: meilleure.url }],

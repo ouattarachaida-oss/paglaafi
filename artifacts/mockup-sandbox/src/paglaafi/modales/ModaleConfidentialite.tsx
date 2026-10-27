@@ -62,17 +62,30 @@ function ConfidentialiteReelle() {
           <div className="mt-3 space-y-3 text-[11.5px] leading-relaxed text-[#4d2d3e]">
             <div className="rounded-2xl border border-[#f0d4de] bg-[#fffafc] p-3">
               <p className="font-bold text-[#580e36]">Sur ce téléphone</p>
-              <p>Cycle, autopalpations et historique, rattachés à votre compte et chiffrés sur l'appareil. Ils ne protègent pas contre quelqu'un qui utilise votre téléphone avec votre session ouverte.</p>
+              <p>
+                Cycle, autopalpations et historique, rattachés à votre compte et chiffrés sur l'appareil. Ils ne
+                protègent pas contre quelqu'un qui utilise votre téléphone avec votre session ouverte.
+              </p>
             </div>
             <div className="rounded-2xl border border-[#f0d4de] bg-[#fffafc] p-3">
               <p className="font-bold text-[#580e36]">En ligne (Supabase)</p>
-              <p>Compte, profil (nom, prénom, téléphone), rappels et, pour les professionnels, demandes, annonces et fiches.</p>
+              <p>
+                Compte, profil (nom, prénom, téléphone), rappels et, pour les professionnels, demandes, annonces et
+                fiches.
+              </p>
             </div>
             <div className="rounded-2xl border border-[#f0d4de] bg-[#fffafc] p-3">
               <p className="font-bold text-[#580e36]">Rose IA (Gemini, Google)</p>
-              <p>Seule votre question, anonymisée automatiquement, est envoyée. Avec l'offre gratuite, Google peut l'utiliser pour améliorer ses services : n'y écrivez rien de personnel.</p>
+              <p>
+                Seule votre question, anonymisée automatiquement, est envoyée. Avec l'offre gratuite, Google peut
+                l'utiliser pour améliorer ses services : n'y écrivez rien de personnel.
+              </p>
             </div>
-            <button type="button" onClick={() => setShowPolitique(true)} className="text-xs font-bold text-[#ea2d6d] underline">
+            <button
+              type="button"
+              onClick={() => setShowPolitique(true)}
+              className="text-xs font-bold text-[#ea2d6d] underline"
+            >
               Lire la politique de confidentialité
             </button>
             <div className="space-y-2 rounded-2xl border border-rose-200 bg-rose-50/60 p-3">
@@ -96,7 +109,10 @@ function ConfidentialiteReelle() {
         ) : (
           <div className="mt-3 space-y-3 text-xs text-[#4d2d3e]">
             <p className="rounded-2xl border border-rose-300 bg-rose-50 p-3 font-semibold text-rose-900">
-              Cette action est définitive. {sessionReelle ? "Votre compte, votre profil, vos rappels et vos demandes seront supprimés, ainsi que vos données de santé sur ce téléphone." : ""}
+              Cette action est définitive.{" "}
+              {sessionReelle
+                ? "Votre compte, votre profil, vos rappels et vos demandes seront supprimés, ainsi que vos données de santé sur ce téléphone."
+                : ""}
             </p>
             <label htmlFor="confirmation-suppression" className="block font-bold text-[#580e36]">
               Pour confirmer, tapez {MOT} :
@@ -109,7 +125,11 @@ function ConfidentialiteReelle() {
               className="w-full rounded-xl border border-rose-300 p-2 text-sm font-bold tracking-wider"
             />
             <div className="flex gap-2">
-              <button type="button" onClick={() => setEtape("resume")} className="flex-1 rounded-2xl border border-[#debcc8] py-2.5 font-bold text-[#6d4d5d]">
+              <button
+                type="button"
+                onClick={() => setEtape("resume")}
+                className="flex-1 rounded-2xl border border-[#debcc8] py-2.5 font-bold text-[#6d4d5d]"
+              >
                 Annuler
               </button>
               <button

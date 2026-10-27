@@ -67,7 +67,11 @@ export function PolitiqueConfidentialite() {
         </section>
       </div>
       <div className="border-t border-[#f2e1e6] p-4">
-        <button type="button" onClick={fermer} className="w-full rounded-2xl bg-[#ea2d6d] py-2.5 text-sm font-bold text-white">
+        <button
+          type="button"
+          onClick={fermer}
+          className="w-full rounded-2xl bg-[#ea2d6d] py-2.5 text-sm font-bold text-white"
+        >
           J'ai compris
         </button>
       </div>

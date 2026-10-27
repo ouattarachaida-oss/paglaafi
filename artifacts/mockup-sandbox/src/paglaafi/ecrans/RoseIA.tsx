@@ -76,6 +76,15 @@ export function RoseIA() {
         </div>
       )}
 
+      {/* Rappel permanent, visible à chaque ouverture de Rose IA */}
+
+      <p
+        role="note"
+        className="mt-2 rounded-xl border border-[#f3d7e0] bg-[#fff5f8] px-3 py-1.5 text-center text-[10.5px] font-semibold text-[#82445e]"
+      >
+        ℹ️ Rose IA informe et oriente : elle ne remplace pas un soignant.
+      </p>
+
       {/* MINI-BANDEAU D'ÉTAT DISCRET DE ROSE IA */}
       <div className="mt-2 flex items-center justify-between rounded-xl bg-white border border-[#f0dee3] px-3 py-1.5 text-xs shadow-2xs">
         <div className="flex items-center gap-2">

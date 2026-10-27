@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { MODE_REEL } from "../config";
 import { useUi, useAuth, useAudio, useCentres, useOrientations } from "../etat/contextes";
+import { BadgeSimulation } from "../composants/BadgeSimulation";
 
 /**
  * Onglet Centres : carte OpenStreetMap, liste, filtres et orientations d'urgence.
@@ -181,6 +182,7 @@ export function Centres() {
                       {currentUser.adminType === "center"
                         ? "🚨 Orientations d'Urgence Reçues"
                         : "🩺 Vos Orientations Patientes en Cours"}
+                      <BadgeSimulation detail="Orientations fictives : aucune donnée de patiente réelle." />
                     </h4>
                     <p className="text-[10px] text-rose-700 font-semibold">
                       {currentUser.adminType === "center"

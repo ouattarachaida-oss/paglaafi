@@ -32,7 +32,10 @@ export function EcranConsentement() {
 
       <ul className="mt-4 space-y-2.5">
         {POINTS_CONSENTEMENT.map((point) => (
-          <li key={point} className="rounded-2xl border border-[#f0d4de] bg-white p-3 text-[12px] leading-relaxed text-[#4d2d3e]">
+          <li
+            key={point}
+            className="rounded-2xl border border-[#f0d4de] bg-white p-3 text-[12px] leading-relaxed text-[#4d2d3e]"
+          >
             {point}
           </li>
         ))}

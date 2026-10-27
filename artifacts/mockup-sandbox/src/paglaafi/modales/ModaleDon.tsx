@@ -1,6 +1,7 @@
 import { CheckCircle2, Phone, ShieldCheck, X } from "lucide-react";
 import { partnerAssociations } from "../donnees/associations";
 import { useAuth, useDons } from "../etat/contextes";
+import { BadgeSimulation } from "../composants/BadgeSimulation";
 
 /**
  * Parcours de don Orange Money (simulé) en 4 étapes.
@@ -42,6 +43,10 @@ export function ModaleDon() {
             </span>
             <div>
               <h3 className="ph-display text-sm font-bold text-[#3d2430]">Faire un don solidaire</h3>
+              <BadgeSimulation
+                bloc
+                detail="Paiement simulé : aucun paiement Orange Money n'est effectué, aucun argent n'est prélevé."
+              />
               <p className="text-[10px] text-orange-950 font-semibold">Orange Money Burkina Faso (#144#)</p>
             </div>
           </div>
@@ -131,7 +136,8 @@ export function ModaleDon() {
                     <ShieldCheck size={14} className="text-emerald-700" /> Don anonyme
                   </span>
                   <p className="text-[10px] text-[#476a56] leading-tight mt-0.5">
-                    Votre nom et votre numéro sont masqués à l'affichage : le reçu et l'association voient « Donatrice anonyme ».
+                    Votre nom et votre numéro sont masqués à l'affichage : le reçu et l'association voient « Donatrice
+                    anonyme ».
                   </p>
                 </div>
               </label>

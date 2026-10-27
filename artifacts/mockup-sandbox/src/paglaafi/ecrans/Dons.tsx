@@ -1,6 +1,7 @@
 import { Heart } from "lucide-react";
 import { partnerAssociations } from "../donnees/associations";
 import { useUi, useDons } from "../etat/contextes";
+import { BadgeSimulation } from "../composants/BadgeSimulation";
 
 /**
  * Onglet Faire un don : associations partenaires.
@@ -13,6 +14,7 @@ export function Dons() {
     <section className="ph-enter px-5 pt-4">
       <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">Solidarité · Burkina Faso</span>
       <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">Faire un don</h1>
+      <BadgeSimulation bloc detail="Paiement Orange Money simulé : aucun argent n'est prélevé." />
       <p className="mt-1 text-xs text-[#795f6d]">
         Votre contribution finance directement le dépistage et les soins de femmes sans revenus au Burkina Faso.
       </p>

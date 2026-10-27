@@ -39,7 +39,9 @@ export function useEtatAdministration({
 
   const [showSuperadminModal, setShowSuperadminModal] = useState(false);
 
-  const [superadminActiveTab, setSuperadminActiveTab] = useState<"stats" | "announcements" | "registrations" | "verifications">("stats");
+  const [superadminActiveTab, setSuperadminActiveTab] = useState<
+    "stats" | "announcements" | "registrations" | "verifications"
+  >("stats");
 
   const [superadminRegionFilter, setSuperadminRegionFilter] = useState<string>("all");
 
@@ -98,7 +100,9 @@ export function useEtatAdministration({
   const basculerVerification = async (type: "centre" | "association", id: number, verifiee: boolean) => {
     try {
       const accepte =
-        type === "centre" ? await definirVerificationCentre(id, verifiee) : await definirVerificationAssociation(id, verifiee);
+        type === "centre"
+          ? await definirVerificationCentre(id, verifiee)
+          : await definirVerificationAssociation(id, verifiee);
       if (!accepte) {
         notify("Action refusée : réservée à la ou au Superadmin.");
         return;
@@ -121,7 +125,11 @@ export function useEtatAdministration({
       if (decision === "approuver") await approuverDemande(id);
       else await refuserDemande(id);
       await rechargerDemandes();
-      notify(decision === "approuver" ? "Structure validée : le rôle du compte a été mis à jour." : "Demande d'inscription refusée.");
+      notify(
+        decision === "approuver"
+          ? "Structure validée : le rôle du compte a été mis à jour."
+          : "Demande d'inscription refusée.",
+      );
     } catch (erreur) {
       notify(messageErreur(erreur as Error));
     }

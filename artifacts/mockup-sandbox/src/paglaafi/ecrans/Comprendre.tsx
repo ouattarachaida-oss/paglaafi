@@ -1,6 +1,7 @@
 import { BookOpen, Headphones, Pause, Play, RotateCcw } from "lucide-react";
 import { lessons } from "../donnees/lecons";
 import { useUi, useAudio, useEducation } from "../etat/contextes";
+import { BadgeSimulation } from "../composants/BadgeSimulation";
 
 /**
  * Onglet Comprendre : leçons en 4 langues et démonstration d'autopalpation.
@@ -155,6 +156,7 @@ export function Comprendre() {
             </span>
             <h3 className="ph-display text-xs font-bold text-[#580e36] leading-tight">
               Vidéo des 4 gestes d'autopalpation
+              <BadgeSimulation detail="Démonstration par images animées : la vidéo réelle reste à produire et à valider." />
             </h3>
             <p className="text-[10px] text-[#745362] line-clamp-1">
               Avec une soignante africaine en Français, Mooré et Dioula.

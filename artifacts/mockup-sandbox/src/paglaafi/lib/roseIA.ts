@@ -34,12 +34,20 @@ async function repli(question: string, langue: LangueRose, note?: string): Promi
 
 export async function demanderARose(question: string, langue: LangueRose): Promise<ResultatRose> {
   if (typeof navigator !== "undefined" && !navigator.onLine) {
-    return repli(question, langue, "Mode hors connexion : réponse tirée des fiches validées enregistrées sur l'appareil.");
+    return repli(
+      question,
+      langue,
+      "Mode hors connexion : réponse tirée des fiches validées enregistrées sur l'appareil.",
+    );
   }
   const { data } = await client().auth.getSession();
   const jeton = data.session?.access_token;
   if (!jeton) {
-    return repli(question, langue, "Connectez-vous pour discuter avec Rose IA. En attendant, voici les fiches validées disponibles.");
+    return repli(
+      question,
+      langue,
+      "Connectez-vous pour discuter avec Rose IA. En attendant, voici les fiches validées disponibles.",
+    );
   }
 
   const ctrl = new AbortController();
@@ -51,8 +59,10 @@ export async function demanderARose(question: string, langue: LangueRose): Promi
       body: JSON.stringify({ question, langue }),
       signal: ctrl.signal,
     });
-    if (r.status === 429) return repli(question, langue, "Vous avez atteint le nombre de questions du jour pour Rose IA.");
-    if (!r.ok) return repli(question, langue, "Rose IA est momentanément indisponible : réponse tirée des fiches validées.");
+    if (r.status === 429)
+      return repli(question, langue, "Vous avez atteint le nombre de questions du jour pour Rose IA.");
+    if (!r.ok)
+      return repli(question, langue, "Rose IA est momentanément indisponible : réponse tirée des fiches validées.");
     const corps = await r.json();
     const locale = corps.ficheLangueLocale?.contenu as string | undefined;
     return {

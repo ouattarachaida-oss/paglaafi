@@ -5,7 +5,12 @@ const FUSEAU = "Africa/Ouagadougou"; // GMT toute l'année
 /** « 26/10/2026 » */
 export function dateCourte(iso: string | null | undefined): string {
   if (!iso) return "";
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: FUSEAU });
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: FUSEAU,
+  });
 }
 
 /** « 26/10/2026 à 09h05 » */

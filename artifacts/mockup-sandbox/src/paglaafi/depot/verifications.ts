@@ -26,7 +26,13 @@ export async function chargerStructuresAVerifier(): Promise<{
   if (c.error) throw c.error;
   if (a.error) throw a.error;
   return {
-    centres: c.data.map((x) => ({ id: x.id, nom: x.nom_court, ville: x.ville, verifiee: x.verifie, majLe: dateCourte(x.maj_le) })),
+    centres: c.data.map((x) => ({
+      id: x.id,
+      nom: x.nom_court,
+      ville: x.ville,
+      verifiee: x.verifie,
+      majLe: dateCourte(x.maj_le),
+    })),
     associations: a.data.map((x) => ({
       id: x.id,
       nom: x.nom,

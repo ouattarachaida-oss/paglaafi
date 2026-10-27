@@ -100,7 +100,9 @@ export function useEtatAnnonces({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   // Modération Superadmin : annonces standard
   const handleApproveAnnouncement = (id: number) => {
     if (MODE_REEL) {
-      void modererReel(id, "publiee").then((ok) => ok && notify("Annonce validée ! Elle est désormais visible publiquement."));
+      void modererReel(id, "publiee").then(
+        (ok) => ok && notify("Annonce validée ! Elle est désormais visible publiquement."),
+      );
       return;
     }
     setAnnouncements((prev) =>

@@ -265,7 +265,12 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
         ]);
         window.setTimeout(() => roseChatBottomRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
         if (parler) {
-          const local = appLanguage === "moore" ? r.textesLocaux.moore : appLanguage === "dioula" ? r.textesLocaux.dioula : undefined;
+          const local =
+            appLanguage === "moore"
+              ? r.textesLocaux.moore
+              : appLanguage === "dioula"
+                ? r.textesLocaux.dioula
+                : undefined;
           handlePlayAudio(local ?? r.texte, local ? appLanguage : appLanguage === "en" ? "en" : "fr");
         }
       });

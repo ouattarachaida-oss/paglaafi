@@ -39,7 +39,11 @@ function versAnnonce(a: LigneAnnonce): PartnerAnnouncement {
     date: a.date_evenement ?? "",
     month: a.mois ?? "",
     badge:
-      status === "pending_validation" ? "En attente validation" : status === "rejected" ? "Refusée" : (a.badge ?? "Validée ✓"),
+      status === "pending_validation"
+        ? "En attente validation"
+        : status === "rejected"
+          ? "Refusée"
+          : (a.badge ?? "Validée ✓"),
     badgeColor:
       status === "pending_validation"
         ? "bg-amber-100 text-amber-900"
@@ -76,17 +80,19 @@ export async function creerAnnonce(a: {
   imageUrl: string;
   imageCaption: string;
 }): Promise<void> {
-  const { error } = await client().from("annonces").insert({
-    titre: a.title,
-    contenu: a.content,
-    ville: a.city,
-    date_evenement: a.date,
-    mois: moisCourant(),
-    badge: a.badge,
-    contact: a.contact || null,
-    image_url: a.imageUrl || null,
-    image_legende: a.imageCaption || null,
-  });
+  const { error } = await client()
+    .from("annonces")
+    .insert({
+      titre: a.title,
+      contenu: a.content,
+      ville: a.city,
+      date_evenement: a.date,
+      mois: moisCourant(),
+      badge: a.badge,
+      contact: a.contact || null,
+      image_url: a.imageUrl || null,
+      image_legende: a.imageCaption || null,
+    });
   if (error) throw error;
 }
 
