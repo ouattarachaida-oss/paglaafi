@@ -532,3 +532,37 @@ Les trois organisations majeures ont été officialisées dans la plateforme ave
 
 ### E. Encore simulé en mode réel
 Rose IA (phase 3), paiement Orange Money et tableau de bord des dons, orientations d'urgence, statistiques du superadmin, cycle et autopalpation (stockés sur l'appareil, phase 4).
+
+---
+
+## 8. Rose IA réelle : RAG sur fiches validées (refonte, phase 3)
+
+### A. Principe
+- En **mode réel**, Rose IA ne répond qu'à partir de **fiches de connaissance validées** par un soignant validateur, et cite ses sources. En **mode démo**, le moteur par mots-clés d'origine reste utilisé.
+- Chaîne : question (≤ 500 caractères, sans historique ni profil) → masquage des données personnelles (téléphone, email, dates, nom annoncé) → détection des signes d'alerte → recherche sémantique (pgvector) dans les fiches validées → génération contrainte par Gemini (JSON) → contrôle de la réponse (sources existantes, aucun diagnostic ni posologie) → citations construites par le serveur.
+- Si aucune fiche validée n'est assez proche de la question, Gemini n'est **pas** appelé : Rose IA dit qu'elle n'a pas d'information validée et oriente vers un soignant.
+- Signe d'alerte (saignement, douleur intense, masse qui évolue, détresse…) : message d'orientation vers un soignant ou les urgences **toujours** ajouté, quelle que soit la réponse du modèle.
+- Mooré et Dioula : aucune génération automatique. Réponse en français, accompagnée de la fiche validée dans la langue demandée si elle existe.
+- Réservé aux comptes connectés (quota quotidien `ROSE_QUOTA_JOUR`) ; visiteurs, absence de réseau ou indisponibilité : **FAQ locale** (`public/faq-rose.json`, fiches validées uniquement).
+- Les questions ne sont pas journalisées ; la discussion n'est pas conservée sur l'appareil en mode réel.
+
+### B. Fichiers
+- `supabase/migrations/20261027000004_rose_rag.sql` : fiches, morceaux indexés (vector 768), validateurs, recherche, quota, RLS.
+- `artifacts/mockup-sandbox/serveur/rose/` : serveur de Rose IA (indépendant de la plateforme) + tests unitaires.
+- `artifacts/mockup-sandbox/api/rose-chat.ts` : fonction serverless Vercel ; en local, la même route est servie par Vite (`serveur/devApi.ts`).
+- `supabase/scripts/indexer-fiches.mjs` : indexation des fiches validées + export de la FAQ.
+- `docs/deploiement-vercel.md` : déploiement et variables d'environnement.
+
+### C. Rôles
+- **Docteur** : propose des fiches (« Fiches Rose IA » dans le menu), suit leur statut.
+- **Validateur** : superadmin, ou docteur désigné par le superadmin. Relit, saisit la source officielle (obligatoire) et valide ou refuse. **Jamais sa propre fiche** (quatre yeux).
+- Toute modification du contenu d'une fiche validée la renvoie en relecture et efface son index.
+- Les 36 fiches initiales (9 thèmes × 4 langues, reprises de `connaissancesRose.ts`) sont **en attente** ; `source_suggeree` n'est qu'une piste à vérifier, jamais une source.
+
+### D. Commandes (racine du dépôt)
+- `pnpm run rag:indexer` : indexe les fiches validées non indexées (Gemini) et exporte la FAQ — **à lancer après chaque série de validations**, puis committer `faq-rose.json`.
+- `pnpm run rag:indexer -- --tout` : ré-indexe tout (changement de modèle d'embeddings).
+- `pnpm run rag:faq` : exporte seulement la FAQ.
+- `pnpm run test:rose` : tests unitaires du serveur (sans Gemini).
+- `pnpm run test:rose-pieges` : questions pièges contre le vrai Gemini (crée puis supprime des fiches et un compte de test).
+- Secrets locaux dans `supabase/.env` : `GEMINI_API_KEY` (jamais en `VITE_`).
