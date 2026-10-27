@@ -1,56 +1,50 @@
 # PagLaafi
 
-Application mobile francophone d’information, d’orientation et de soutien autour du cancer du sein, destinée d’abord au Burkina Faso, puis à d’autres pays africains si le projet réussit.
+Application web mobile (PWA) francophone d'information, d'orientation et de solidarité autour du cancer du sein, destinée d'abord au Burkina Faso. Documentation complète : `DOCUMENTATION.md`.
 
 ## Run & Operate
 
-- `pnpm run dev` — application PagLaafi (mode démo ou réel selon `artifacts/mockup-sandbox/.env`), `pnpm run dev:lan` pour le réseau local
-- `pnpm run db:migrer`, `pnpm run db:superadmin -- <email>`, `pnpm run db:test-rls` — backend Supabase (voir DOCUMENTATION.md §7)
-- `pnpm run rag:indexer`, `pnpm run test:rose`, `pnpm run test:rose-pieges` — Rose IA réelle (voir DOCUMENTATION.md §8 et docs/deploiement-vercel.md)
-- `pnpm --filter @workspace/paglaafi run dev` — lancer l’application Expo
-- `pnpm --filter @workspace/paglaafi run typecheck` — vérifier l’application mobile
-
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm run dev` — application (mode démo ou réel selon `artifacts/mockup-sandbox/.env`) ; `pnpm run dev:lan` pour le Wi-Fi local
+- `pnpm run build` — build de production ; `pnpm run typecheck` — vérification TypeScript
+- `pnpm run db:migrer`, `pnpm run db:superadmin -- <email>`, `pnpm run db:test-rls` — backend Supabase
+- `pnpm run rag:indexer`, `pnpm run test:rose`, `pnpm run test:rose-pieges` — Rose IA
+- Déploiement : `docs/deploiement-vercel.md`
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Application : React 19 + Vite 7, Tailwind, wouter, Leaflet, vite-plugin-pwa
+- Backend : Supabase (Auth, Postgres, RLS, pgvector) ; fonctions serverless Vercel (`api/`)
+- Rose IA : RAG sur fiches validées, API Gemini (clé côté serveur uniquement)
 
 ## Where things live
 
-- `artifacts/mockup-sandbox` — **application réellement utilisée** (React + Vite), code dans `src/paglaafi/` (voir DOCUMENTATION.md)
-- `artifacts/paglaafi` — squelette Expo non utilisé pour l’instant
-- `artifacts/paglaafi/data/content.ts` — articles sourcés et annuaire des structures
+- `artifacts/mockup-sandbox` — **l'application réellement utilisée** (code dans `src/paglaafi/`, serveur dans `serveur/` et `api/`)
+- `supabase/` — migrations, seed (données non vérifiées), scripts, tests RLS
+- Non utilisés (conservés pour l'équipe) : `artifacts/paglaafi` (Expo), `artifacts/api-server`, `artifacts/paglaafi-film`, `lib/*`, `scripts/`
 
 ## Architecture decisions
 
-- Première version sans compte ni serveur spécifique : les favoris sont conservés sur l’appareil pour limiter la collecte de données.
-- Une seule application s’adapte aux téléphones, tablettes et ordinateurs : navigation en bas sur téléphone, en haut sur tablette, latérale sur grand écran.
-- Ne jamais inventer de centres, contacts, tarifs, horaires ou dates de campagne. Les informations locales doivent être validées avec des partenaires de santé avant publication.
-- L’assistant IA médical est différé : il exige des sources fiables, une validation clinique et une gestion explicite des limites et urgences.
+- Deux modes : démo (données fictives, aucun appel réseau) et réel (Supabase), choisis par `VITE_MODE_DEMO`.
+- Rôles attribués uniquement côté serveur ; règles d'accès dans la base (RLS).
+- Données de cycle sur l'appareil, rattachées au compte et chiffrées ; rappels en base.
+- Rose IA ne répond qu'à partir de fiches validées par un soignant (quatre yeux), cite ses sources, ne pose aucun diagnostic ; repli FAQ hors-ligne.
+- Ne jamais inventer de centres, contacts, tarifs, horaires ni dates : les données locales doivent être vérifiées avant publication (centres masqués en mode réel tant qu'ils ne sont pas vérifiés).
 
 ## Product
 
-Quatre espaces dans le MVP : Accueil, Centres, Comprendre et Soutien. Les campagnes sont accessibles depuis l’accueil. Les contenus éducatifs citent l’OMS et ne remplacent pas une consultation. Les recommandations de dépistage locales doivent être validées au Burkina Faso.
+Onglets : Accueil, Centres (carte), Cycle, Comprendre, Rose IA, Dons, Annonces, Accompagnant. Espaces professionnels : centre, docteur (fiches Rose IA), association, superadmin. Ce qui reste simulé porte un badge « Simulation » en mode réel (dons Orange Money, orientations, statistiques, vidéo).
 
 ## User preferences
 
-Identité rose et blanche, expérience responsive sur téléphone, tablette et ordinateur, priorité au public burkinabè.
+Identité rose et blanche, interface en français (contenus aussi en anglais, mooré, dioula), mobile d'abord, priorité au public burkinabè.
 
 ## Gotchas
 
-Les sections Centres et Événements affichent un état vide explicite tant qu’aucune donnée locale vérifiée n’est disponible. Ne pas présenter la démonstration comme un service de soins opérationnel.
+- Ne pas présenter la démonstration comme un service de soins opérationnel.
+- Numéros, centres, traductions et contenu médical restent à valider (liste : DOCUMENTATION.md §11).
+- Aucune clé secrète dans une variable `VITE_` (exposée au navigateur).
 
 ## Pointers
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- `DOCUMENTATION.md`, `docs/deploiement-vercel.md`, `AGENTS.md`
