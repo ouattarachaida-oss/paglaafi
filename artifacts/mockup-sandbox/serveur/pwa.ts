@@ -42,8 +42,9 @@ export function pwa() {
     },
     workbox: {
       globPatterns: [
-        "**/*.{js,css,html,webmanifest}",
-        "icons/*.png",
+        // (le manifeste et ses icônes sont ajoutés par le plugin)
+        "**/*.{js,css,html}",
+        "icons/apple-touch-icon-180.png",
         "images/pinkhub-mvp-paglaafi.png",
         "images/splash-paglaafi-heroines.jpg",
         "faq-rose.json",
@@ -53,6 +54,9 @@ export function pwa() {
       navigateFallback: "/index.html",
       navigateFallbackDenylist: [/^\/api\//],
       cleanupOutdatedCaches: true,
+      // Le service worker prend la main dès la première visite et à chaque mise à jour
+      clientsClaim: true,
+      skipWaiting: true,
       runtimeCaching: [
         {
           // Tuiles OpenStreetMap déjà consultées (carte disponible hors-ligne)
