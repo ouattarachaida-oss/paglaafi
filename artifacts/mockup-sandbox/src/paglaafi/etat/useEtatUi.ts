@@ -3,6 +3,9 @@ import type { Section } from "../types";
 import { hapticFeedback } from "../lib/haptique";
 import { useLocation } from "wouter";
 import { cheminDeSection, sectionDepuisChemin } from "../routes";
+import { VERSION_CONSENTEMENT } from "../donnees/confidentialite";
+
+const CLE_CONSENTEMENT = "paglaafi_consentement";
 
 /**
  * Interface générale : onglet actif (porté par l'URL), menus, notifications (toast),
@@ -78,6 +81,26 @@ export function useEtatUi() {
 
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
 
+  // Consentement à la première utilisation (redemandé si le texte change de version)
+  const [consentementAccepte, setConsentementAccepte] = useState(() => {
+    try {
+      return localStorage.getItem(CLE_CONSENTEMENT) === VERSION_CONSENTEMENT;
+    } catch {
+      return false;
+    }
+  });
+  const accepterConsentement = () => {
+    try {
+      localStorage.setItem(CLE_CONSENTEMENT, VERSION_CONSENTEMENT);
+    } catch {
+      // Navigation privée : consentement valable pour cette visite seulement
+    }
+    setConsentementAccepte(true);
+  };
+
+  // Politique de confidentialité (aussi accessible par l'adresse /confidentialite)
+  const [showPolitique, setShowPolitique] = useState(false);
+
   // Accompagnant : choix de la langue du SMS
   const [smsLanguage, setSmsLanguage] = useState<"fr" | "moore">("fr");
 
@@ -140,6 +163,10 @@ export function useEtatUi() {
     isOffline,
     setIsOffline,
     notify,
+    consentementAccepte,
+    accepterConsentement,
+    showPolitique,
+    setShowPolitique,
   };
 }
 

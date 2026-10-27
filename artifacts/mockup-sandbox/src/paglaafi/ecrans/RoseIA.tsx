@@ -101,7 +101,7 @@ export function RoseIA() {
             title="Confidentialité et éthique médicale"
           >
             <ShieldCheck size={12} className="text-emerald-600" />
-            <span>100% Confidentiel</span>
+            <span>{MODE_REEL ? "Questions anonymisées" : "100% Confidentiel"}</span>
           </button>
         </div>
       </div>

@@ -1,8 +1,135 @@
-import { Check, RotateCcw, Shield, ShieldAlert, ShieldCheck, X } from "lucide-react";
-import { useSante } from "../etat/contextes";
+import { useState } from "react";
+import { Check, RotateCcw, Shield, ShieldAlert, ShieldCheck, Trash2, X } from "lucide-react";
+import { useAuth, useSante, useUi } from "../etat/contextes";
+import { MODE_REEL } from "../config";
+
+const MOT = "SUPPRIMER";
 
 /**
- * Paramètres de confidentialité et droit à l'oubli.
+ * Mode réel : résumé honnête de ce que deviennent les données, lien vers la
+ * politique, et suppression complète (compte + données en ligne + appareil)
+ * avec confirmation explicite.
+ */
+function ConfidentialiteReelle() {
+  const { setShowPrivacyModal, supprimerMesDonnees } = useSante();
+  const { sessionReelle } = useAuth();
+  const { setShowPolitique } = useUi();
+  const [etape, setEtape] = useState<"resume" | "confirmation">("resume");
+  const [saisie, setSaisie] = useState("");
+  const [enCours, setEnCours] = useState(false);
+
+  const supprimer = async () => {
+    setEnCours(true);
+    const ok = await supprimerMesDonnees(saisie.trim());
+    setEnCours(false);
+    if (ok) {
+      setSaisie("");
+      setEtape("resume");
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:absolute sm:rounded-[36px]"
+      onClick={() => setShowPrivacyModal(false)}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titre-confidentialite"
+        className="ph-enter max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[28px] border border-[#ecd5df] bg-white p-5 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[#f2e1e7] pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-100 text-emerald-700">
+              <ShieldCheck size={20} />
+            </div>
+            <h3 id="titre-confidentialite" className="ph-display text-sm font-bold text-[#580e36]">
+              Confidentialité & Données
+            </h3>
+          </div>
+          <button
+            onClick={() => setShowPrivacyModal(false)}
+            aria-label="Fermer"
+            className="rounded-full p-1.5 text-[#725261] hover:bg-[#faedf2]"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {etape === "resume" ? (
+          <div className="mt-3 space-y-3 text-[11.5px] leading-relaxed text-[#4d2d3e]">
+            <div className="rounded-2xl border border-[#f0d4de] bg-[#fffafc] p-3">
+              <p className="font-bold text-[#580e36]">Sur ce téléphone</p>
+              <p>Cycle, autopalpations et historique, rattachés à votre compte et chiffrés sur l'appareil. Ils ne protègent pas contre quelqu'un qui utilise votre téléphone avec votre session ouverte.</p>
+            </div>
+            <div className="rounded-2xl border border-[#f0d4de] bg-[#fffafc] p-3">
+              <p className="font-bold text-[#580e36]">En ligne (Supabase)</p>
+              <p>Compte, profil (nom, prénom, téléphone), rappels et, pour les professionnels, demandes, annonces et fiches.</p>
+            </div>
+            <div className="rounded-2xl border border-[#f0d4de] bg-[#fffafc] p-3">
+              <p className="font-bold text-[#580e36]">Rose IA (Gemini, Google)</p>
+              <p>Seule votre question, anonymisée automatiquement, est envoyée. Avec l'offre gratuite, Google peut l'utiliser pour améliorer ses services : n'y écrivez rien de personnel.</p>
+            </div>
+            <button type="button" onClick={() => setShowPolitique(true)} className="text-xs font-bold text-[#ea2d6d] underline">
+              Lire la politique de confidentialité
+            </button>
+            <div className="space-y-2 rounded-2xl border border-rose-200 bg-rose-50/60 p-3">
+              <p className="flex items-center gap-1.5 text-xs font-bold text-rose-900">
+                <ShieldAlert size={14} className="text-rose-700" /> Supprimer mes données
+              </p>
+              <p className="text-[10.5px] text-rose-800">
+                {sessionReelle
+                  ? "Supprime définitivement votre compte, toutes vos données en ligne et vos données de santé sur ce téléphone."
+                  : "Aucun compte n'est connecté : rien n'est enregistré pour vous en ligne."}
+              </p>
+              <button
+                type="button"
+                onClick={() => setEtape("confirmation")}
+                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-300 bg-white py-2 text-xs font-bold text-rose-700 hover:bg-rose-100"
+              >
+                <Trash2 size={13} /> Supprimer mes données
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-3 space-y-3 text-xs text-[#4d2d3e]">
+            <p className="rounded-2xl border border-rose-300 bg-rose-50 p-3 font-semibold text-rose-900">
+              Cette action est définitive. {sessionReelle ? "Votre compte, votre profil, vos rappels et vos demandes seront supprimés, ainsi que vos données de santé sur ce téléphone." : ""}
+            </p>
+            <label htmlFor="confirmation-suppression" className="block font-bold text-[#580e36]">
+              Pour confirmer, tapez {MOT} :
+            </label>
+            <input
+              id="confirmation-suppression"
+              value={saisie}
+              onChange={(e) => setSaisie(e.target.value)}
+              autoComplete="off"
+              className="w-full rounded-xl border border-rose-300 p-2 text-sm font-bold tracking-wider"
+            />
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setEtape("resume")} className="flex-1 rounded-2xl border border-[#debcc8] py-2.5 font-bold text-[#6d4d5d]">
+                Annuler
+              </button>
+              <button
+                type="button"
+                disabled={saisie.trim() !== MOT || enCours}
+                onClick={() => void supprimer()}
+                className="flex-1 rounded-2xl bg-rose-700 py-2.5 font-bold text-white disabled:opacity-40"
+              >
+                {enCours ? "Suppression…" : "Supprimer définitivement"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Paramètres de confidentialité et droit à l'oubli (mode démo : présentation d'origine).
  */
 export function ModaleConfidentialite() {
   const {
@@ -15,6 +142,7 @@ export function ModaleConfidentialite() {
   } = useSante();
 
   if (!showPrivacyModal) return null;
+  if (MODE_REEL) return <ConfidentialiteReelle />;
 
   return (
     <div

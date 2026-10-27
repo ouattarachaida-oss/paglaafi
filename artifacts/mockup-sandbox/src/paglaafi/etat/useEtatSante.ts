@@ -4,6 +4,8 @@ import { messageErreur } from "../lib/supabase";
 import { chargerRappels, creerRappel, type Rappel } from "../depot/rappels";
 import { useDerniereRequete } from "../lib/derniereRequete";
 import { effacerCompte, enregistrer, lire } from "../lib/stockageSecurise";
+import { client } from "../lib/supabase";
+import { supprimerMonCompte } from "../depot/compte";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatAuth } from "./useEtatAuth";
 
@@ -398,6 +400,32 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     setAutopalpationDoneThisMonth(false);
   };
 
+  /**
+   * Mode réel : « Supprimer mes données ». Supprime le compte et ses données en base
+   * (via le serveur), puis les données de santé de cet appareil, puis ferme la session.
+   * Sans compte (mode découverte), seules les données de l'appareil existent.
+   */
+  const supprimerMesDonnees = async (confirmation: string): Promise<boolean> => {
+    const utilisateur = sessionReelle?.userId;
+    if (utilisateur) {
+      const resultat = await supprimerMonCompte(confirmation);
+      if (!resultat.ok) {
+        notify(resultat.message);
+        return false;
+      }
+      await effacerDonneesLocalesDuCompte(utilisateur);
+      await client().auth.signOut().catch(() => {});
+      for (const k of Object.keys(localStorage)) if (/^sb-.*-auth-token$/.test(k)) localStorage.removeItem(k);
+    }
+    setShowPrivacyModal(false);
+    notify(
+      utilisateur
+        ? "Votre compte et vos données ont été supprimés (en ligne et sur cet appareil)."
+        : "Aucun compte connecté : rien n'était enregistré pour vous sur cet appareil.",
+    );
+    return true;
+  };
+
   const handleClearAllLocalData = () => {
     if (typeof window !== "undefined") {
       try {
@@ -417,6 +445,7 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     showPrivacyModal,
     setShowPrivacyModal,
     effacerDonneesLocalesDuCompte,
+    supprimerMesDonnees,
     privacySettings,
     setPrivacySettings,
     lastPeriodDate,

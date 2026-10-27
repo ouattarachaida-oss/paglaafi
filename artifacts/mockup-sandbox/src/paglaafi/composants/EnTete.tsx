@@ -194,7 +194,7 @@ export function EnTete() {
                             <span>Confidentialité & Données</span>
                           </span>
                           <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">
-                            100% Local
+                            {MODE_REEL ? "Vos données" : "100% Local"}
                           </span>
                         </button>
 

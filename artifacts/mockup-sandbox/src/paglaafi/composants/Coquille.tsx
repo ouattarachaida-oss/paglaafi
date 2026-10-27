@@ -4,7 +4,9 @@ import { CHEMINS } from "../routes";
 import { BandeauDemo } from "./BandeauDemo";
 import { BandeauHorsLigne } from "./BandeauHorsLigne";
 import { BarreNavigation } from "./BarreNavigation";
+import { EcranConsentement } from "./EcranConsentement";
 import { EcranDemarrage } from "./EcranDemarrage";
+import { PolitiqueConfidentialite } from "./PolitiqueConfidentialite";
 import { EnTete } from "./EnTete";
 import { MenuLateral } from "./MenuLateral";
 import { Toast } from "./Toast";
@@ -66,6 +68,8 @@ export function Coquille() {
       {/* Cadre smartphone (mobile-first) */}
       <div className="relative mx-auto flex h-[100dvh] w-full max-w-[440px] flex-col overflow-hidden bg-[#fffbfa] shadow-[0_28px_80px_rgba(93,39,61,.18)] sm:h-[min(900px,96dvh)] sm:rounded-[36px] sm:border sm:border-white/90">
         <EcranDemarrage />
+        <EcranConsentement />
+        <PolitiqueConfidentialite />
         <MenuLateral />
         <EnTete />
         <BandeauDemo />
