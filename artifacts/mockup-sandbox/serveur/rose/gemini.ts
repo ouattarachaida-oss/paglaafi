@@ -64,7 +64,12 @@ export async function calculerEmbeddings(
 }
 
 /** Génération de la réponse (JSON structuré imposé). */
-export async function genererReponse(f: Fetch, cle: string, modele: string, messageUtilisateur: string): Promise<unknown> {
+export async function genererReponse(
+  f: Fetch,
+  cle: string,
+  modele: string,
+  messageUtilisateur: string,
+): Promise<unknown> {
   const json = await appeler(f, `${BASE}/models/${modele}:generateContent`, cle, {
     systemInstruction: { parts: [{ text: INSTRUCTIONS_SYSTEME }] },
     contents: [{ role: "user", parts: [{ text: messageUtilisateur }] }],

@@ -56,7 +56,8 @@ export function validerReponse(brut: unknown, nombreSources: number, langue: Lan
       return rejet("réponse non JSON");
     }
   }
-  if (!objet || typeof objet.reponse !== "string" || !Array.isArray(objet.sources_utilisees)) return rejet("format inattendu");
+  if (!objet || typeof objet.reponse !== "string" || !Array.isArray(objet.sources_utilisees))
+    return rejet("format inattendu");
 
   const alerte = objet.alerte === true;
   if (objet.hors_sujet === true) {

@@ -22,23 +22,47 @@ const REGLES: Array<{ type: string; motif: RegExp; remplacement: string }> = [
 ];
 
 // Formules qui annoncent un nom (insensibles à la casse)
-const ANNONCES_NOM = /\b(je m['’]appelle|mon nom est|mon nom c['’]est|mon prénom est|moi c['’]est|je suis madame|je suis mme|my name is|i am called)\s+/giu;
+const ANNONCES_NOM =
+  /\b(je m['’]appelle|mon nom est|mon nom c['’]est|mon prénom est|moi c['’]est|je suis madame|je suis mme|my name is|i am called)\s+/giu;
 // Mots qui marquent la fin du nom
 const MOTS_ARRET = new Set([
-  "et", "j", "je", "j'ai", "j’ai", "mais", "donc", "car", "qui", "que", "avec", "depuis", "and", "i", "but", "de", "du", "la", "le", "ma", "mon",
+  "et",
+  "j",
+  "je",
+  "j'ai",
+  "j’ai",
+  "mais",
+  "donc",
+  "car",
+  "qui",
+  "que",
+  "avec",
+  "depuis",
+  "and",
+  "i",
+  "but",
+  "de",
+  "du",
+  "la",
+  "le",
+  "ma",
+  "mon",
 ]);
 
 /** Masque jusqu'à 3 mots après une formule « je m'appelle… », en s'arrêtant aux mots usuels ou à la ponctuation. */
 function masquerNoms(texte: string): { texte: string; trouve: boolean } {
   let trouve = false;
-  const resultat = texte.replace(new RegExp(ANNONCES_NOM.source + "([^.,;:!?\\n]*)", "giu"), (_t, annonce: string, suite: string) => {
-    const mots = suite.split(/\s+/);
-    let n = 0;
-    while (n < mots.length && n < 3 && mots[n] && !MOTS_ARRET.has(mots[n].toLowerCase())) n++;
-    if (n === 0) return `${annonce} ${suite}`;
-    trouve = true;
-    return `${annonce} [nom masqué] ${mots.slice(n).join(" ")}`;
-  });
+  const resultat = texte.replace(
+    new RegExp(ANNONCES_NOM.source + "([^.,;:!?\\n]*)", "giu"),
+    (_t, annonce: string, suite: string) => {
+      const mots = suite.split(/\s+/);
+      let n = 0;
+      while (n < mots.length && n < 3 && mots[n] && !MOTS_ARRET.has(mots[n].toLowerCase())) n++;
+      if (n === 0) return `${annonce} ${suite}`;
+      trouve = true;
+      return `${annonce} [nom masqué] ${mots.slice(n).join(" ")}`;
+    },
+  );
   return { texte: resultat, trouve };
 }
 

@@ -15,8 +15,26 @@ const ENV = {
 };
 
 const FICHES = [
-  { fiche_id: 10, titre: "Autopalpation", morceau: "Chaque mois, après les règles…", source_titre: "OMS (test)", source_url: "https://exemple.test/a", langue: "fr", groupe: "boule", similarite: 0.82 },
-  { fiche_id: 11, titre: "Consulter", morceau: "Consulter en cas de boule…", source_titre: "Ministère (test)", source_url: null, langue: "fr", groupe: "boule", similarite: 0.74 },
+  {
+    fiche_id: 10,
+    titre: "Autopalpation",
+    morceau: "Chaque mois, après les règles…",
+    source_titre: "OMS (test)",
+    source_url: "https://exemple.test/a",
+    langue: "fr",
+    groupe: "boule",
+    similarite: 0.82,
+  },
+  {
+    fiche_id: 11,
+    titre: "Consulter",
+    morceau: "Consulter en cas de boule…",
+    source_titre: "Ministère (test)",
+    source_url: null,
+    langue: "fr",
+    groupe: "boule",
+    similarite: 0.74,
+  },
 ];
 
 interface Options {
@@ -34,7 +52,8 @@ function simuler(opts: Options = {}) {
     const corps = typeof init.body === "string" ? init.body : "";
     appels.push({ url, corps, entetes: (init.headers ?? {}) as Record<string, string> });
     const rep = (statut: number, donnees: unknown) => new Response(JSON.stringify(donnees), { status: statut });
-    if (url.endsWith("/auth/v1/user")) return opts.utilisateur === null ? rep(401, {}) : rep(200, { id: opts.utilisateur ?? "u-1" });
+    if (url.endsWith("/auth/v1/user"))
+      return opts.utilisateur === null ? rep(401, {}) : rep(200, { id: opts.utilisateur ?? "u-1" });
     if (url.includes("consommer_quota_rose")) return rep(200, opts.quota ?? true);
     if (url.includes(":batchEmbedContents")) {
       if (opts.geminiEnPanne) return rep(503, {});
@@ -42,8 +61,15 @@ function simuler(opts: Options = {}) {
     }
     if (url.includes("rechercher_fiches")) return rep(200, opts.fiches ?? FICHES);
     if (url.includes(":generateContent")) {
-      const r = opts.reponseModele ?? { reponse: "Fais l'autopalpation chaque mois après tes règles.", sources_utilisees: [1], alerte: false, hors_sujet: false };
-      return rep(200, { candidates: [{ content: { parts: [{ text: typeof r === "string" ? r : JSON.stringify(r) }] } }] });
+      const r = opts.reponseModele ?? {
+        reponse: "Fais l'autopalpation chaque mois après tes règles.",
+        sources_utilisees: [1],
+        alerte: false,
+        hors_sujet: false,
+      };
+      return rep(200, {
+        candidates: [{ content: { parts: [{ text: typeof r === "string" ? r : JSON.stringify(r) }] } }],
+      });
     }
     if (url.includes("/rest/v1/fiches_connaissance")) return rep(200, opts.fichesLocales ?? []);
     return rep(404, {});
@@ -88,10 +114,14 @@ describe("gestionnaire /api/rose-chat", () => {
 
   it("n'envoie AUCUNE donnée personnelle à Gemini", async () => {
     const { f, appels } = simuler();
-    const question = "Je m'appelle Awa Ouédraogo, 70 12 34 56, awa@test.bf, née le 03/04/1985 : comment faire l'autopalpation ?";
+    const question =
+      "Je m'appelle Awa Ouédraogo, 70 12 34 56, awa@test.bf, née le 03/04/1985 : comment faire l'autopalpation ?";
     const r = await traiterQuestion(requete({ question }), ENV, f);
     assert.equal(r.status, 200);
-    const versGoogle = appels.filter((a) => a.url.includes("googleapis")).map((a) => a.corps).join("\n");
+    const versGoogle = appels
+      .filter((a) => a.url.includes("googleapis"))
+      .map((a) => a.corps)
+      .join("\n");
     assert.ok(versGoogle.length > 0);
     for (const fuite of ["Awa", "Ouédraogo", "70 12 34 56", "awa@test.bf", "03/04/1985"]) {
       assert.ok(!versGoogle.includes(fuite), `fuite vers Gemini : ${fuite}`);
@@ -102,7 +132,11 @@ describe("gestionnaire /api/rose-chat", () => {
 
   it("n'envoie ni historique ni profil : uniquement la question masquée et les sources", async () => {
     const { f, appels } = simuler();
-    await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?", historique: ["secret"], profil: { nom: "X" } }), ENV, f);
+    await traiterQuestion(
+      requete({ question: "Comment faire l'autopalpation ?", historique: ["secret"], profil: { nom: "X" } }),
+      ENV,
+      f,
+    );
     const gen = appels.find((a) => a.url.includes(":generateContent"))!;
     assert.ok(!gen.corps.includes("secret"));
     assert.equal(JSON.parse(gen.corps).contents.length, 1);
@@ -110,9 +144,13 @@ describe("gestionnaire /api/rose-chat", () => {
 
   it("répond avec des citations construites par le serveur", async () => {
     const { f } = simuler();
-    const corps = await (await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?" }), ENV, f)).json();
+    const corps = await (
+      await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?" }), ENV, f)
+    ).json();
     assert.equal(corps.mode, "ia");
-    assert.deepEqual(corps.sources, [{ numero: 1, titre: "Autopalpation", source: "OMS (test)", url: "https://exemple.test/a" }]);
+    assert.deepEqual(corps.sources, [
+      { numero: 1, titre: "Autopalpation", source: "OMS (test)", url: "https://exemple.test/a" },
+    ]);
     assert.match(corps.reponse, /ne remplace pas un soignant/);
   });
 
@@ -124,29 +162,67 @@ describe("gestionnaire /api/rose-chat", () => {
   });
 
   it("ajoute toujours l'orientation d'urgence en cas de signe d'alerte, même si le modèle l'oublie", async () => {
-    const { f } = simuler({ reponseModele: { reponse: "Voici des informations générales sur le sujet.", sources_utilisees: [1], alerte: false, hors_sujet: false } });
+    const { f } = simuler({
+      reponseModele: {
+        reponse: "Voici des informations générales sur le sujet.",
+        sources_utilisees: [1],
+        alerte: false,
+        hors_sujet: false,
+      },
+    });
     const corps = await (await traiterQuestion(requete({ question: "Je saigne beaucoup du mamelon" }), ENV, f)).json();
     assert.equal(corps.alerte, true);
     assert.match(corps.reponse, /urgences/);
   });
 
   it("remplace une réponse de type diagnostic par un message prudent", async () => {
-    const { f } = simuler({ reponseModele: { reponse: "D'après ta description, tu as un cancer.", sources_utilisees: [1], alerte: false, hors_sujet: false } });
-    const corps = await (await traiterQuestion(requete({ question: "J'ai une boule, est-ce un cancer ?" }), ENV, f)).json();
+    const { f } = simuler({
+      reponseModele: {
+        reponse: "D'après ta description, tu as un cancer.",
+        sources_utilisees: [1],
+        alerte: false,
+        hors_sujet: false,
+      },
+    });
+    const corps = await (
+      await traiterQuestion(requete({ question: "J'ai une boule, est-ce un cancer ?" }), ENV, f)
+    ).json();
     assert.equal(corps.mode, "sans_source");
     assert.doesNotMatch(corps.reponse, /tu as un cancer/);
     assert.deepEqual(corps.sources, []);
   });
 
   it("rejette une source inventée par le modèle", async () => {
-    const { f } = simuler({ reponseModele: { reponse: "Réponse appuyée sur une source fantôme.", sources_utilisees: [9], alerte: false, hors_sujet: false } });
-    const corps = await (await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?" }), ENV, f)).json();
+    const { f } = simuler({
+      reponseModele: {
+        reponse: "Réponse appuyée sur une source fantôme.",
+        sources_utilisees: [9],
+        alerte: false,
+        hors_sujet: false,
+      },
+    });
+    const corps = await (
+      await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?" }), ENV, f)
+    ).json();
     assert.equal(corps.mode, "sans_source");
   });
 
   it("Mooré : réponse en français + fiche validée en Mooré, sans génération en Mooré", async () => {
-    const { f, appels } = simuler({ fichesLocales: [{ id: 30, titre: "Autopalpation (Mooré)", contenu: "Texte validé en Mooré", source_titre: "OMS (test)", source_url: null, groupe: "boule" }] });
-    const corps = await (await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?", langue: "moore" }), ENV, f)).json();
+    const { f, appels } = simuler({
+      fichesLocales: [
+        {
+          id: 30,
+          titre: "Autopalpation (Mooré)",
+          contenu: "Texte validé en Mooré",
+          source_titre: "OMS (test)",
+          source_url: null,
+          groupe: "boule",
+        },
+      ],
+    });
+    const corps = await (
+      await traiterQuestion(requete({ question: "Comment faire l'autopalpation ?", langue: "moore" }), ENV, f)
+    ).json();
     assert.equal(corps.ficheLangueLocale.contenu, "Texte validé en Mooré");
     assert.match(appels.find((a) => a.url.includes(":generateContent"))!.corps, /Réponds en français/);
   });

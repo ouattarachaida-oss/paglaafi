@@ -91,8 +91,16 @@ export async function traiterQuestion(requete: Request, env: Env, f: Fetch = fet
     const detection = detecterSignesAlerte(question);
 
     // 4. Recherche dans les fiches validées
-    const [embedding] = await calculerEmbeddings(f, config.geminiCle, config.modeleEmbedding, [questionMasquee], "RETRIEVAL_QUERY");
-    const resultats = (await rechercherFiches(f, config, embedding)).filter((r) => r.similarite >= config.seuilSimilarite);
+    const [embedding] = await calculerEmbeddings(
+      f,
+      config.geminiCle,
+      config.modeleEmbedding,
+      [questionMasquee],
+      "RETRIEVAL_QUERY",
+    );
+    const resultats = (await rechercherFiches(f, config, embedding)).filter(
+      (r) => r.similarite >= config.seuilSimilarite,
+    );
 
     const terminer = (r: Omit<ReponseRose, "reponse"> & { reponse: string }) => {
       const morceaux = [];
@@ -104,7 +112,13 @@ export async function traiterQuestion(requete: Request, env: Env, f: Fetch = fet
 
     // Aucune fiche validée pertinente : pas d'appel au modèle
     if (resultats.length === 0) {
-      return terminer({ mode: "sans_source", reponse: messagePrudent(langue), sources: [], alerte: detection.alerte, horsSujet: false });
+      return terminer({
+        mode: "sans_source",
+        reponse: messagePrudent(langue),
+        sources: [],
+        alerte: detection.alerte,
+        horsSujet: false,
+      });
     }
 
     // 5. Une source par fiche (le meilleur morceau), numérotée
@@ -114,7 +128,12 @@ export async function traiterQuestion(requete: Request, env: Env, f: Fetch = fet
     const sources: SourceFiche[] = lignes.map((l, i) => ({ numero: i + 1, titre: l.titre, extrait: l.morceau }));
 
     // 6. Génération contrainte puis contrôle
-    const brut = await genererReponse(f, config.geminiCle, config.modele, construireMessageUtilisateur(questionMasquee, sources, langue));
+    const brut = await genererReponse(
+      f,
+      config.geminiCle,
+      config.modele,
+      construireMessageUtilisateur(questionMasquee, sources, langue),
+    );
     const v = validerReponse(brut, sources.length, langue);
     const alerte = detection.alerte || v.alerte;
     if (!v.ok) {
@@ -134,7 +153,14 @@ export async function traiterQuestion(requete: Request, env: Env, f: Fetch = fet
       if (locale) ficheLangueLocale = { titre: locale.titre, contenu: locale.contenu, source: locale.source_titre };
     }
 
-    return terminer({ mode: "ia", reponse: v.reponse, sources: citees, alerte, horsSujet: v.horsSujet, ficheLangueLocale });
+    return terminer({
+      mode: "ia",
+      reponse: v.reponse,
+      sources: citees,
+      alerte,
+      horsSujet: v.horsSujet,
+      ficheLangueLocale,
+    });
   } catch (e) {
     // Message générique : aucune donnée de la question dans les journaux
     console.error(`[rose-chat] ${(e as Error).name} : ${(e as Error).message}`);

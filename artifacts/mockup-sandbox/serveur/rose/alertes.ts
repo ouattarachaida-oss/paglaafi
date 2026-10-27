@@ -16,13 +16,52 @@ const normaliser = (t: string) =>
 
 // Chaque règle : tous les fragments d'un des groupes doivent être présents
 const SIGNES: Array<{ motif: string; groupes: string[][] }> = [
-  { motif: "saignement important", groupes: [["saign", "beaucoup"], ["saign", "abondant"], ["hemorrag"], ["perd", "sang"], ["sang", "mamelon"]] },
-  { motif: "douleur intense", groupes: [["douleur", "insupportable"], ["douleur", "intense"], ["douleur", "violente"], ["tres mal"], ["mal", "insupportable"]] },
-  { motif: "douleur dans la poitrine ou essoufflement", groupes: [["douleur", "poitrine"], ["poitrine", "serre"], ["essouffl"], ["respire", "mal"], ["difficulte", "respirer"]] },
+  {
+    motif: "saignement important",
+    groupes: [["saign", "beaucoup"], ["saign", "abondant"], ["hemorrag"], ["perd", "sang"], ["sang", "mamelon"]],
+  },
+  {
+    motif: "douleur intense",
+    groupes: [
+      ["douleur", "insupportable"],
+      ["douleur", "intense"],
+      ["douleur", "violente"],
+      ["tres mal"],
+      ["mal", "insupportable"],
+    ],
+  },
+  {
+    motif: "douleur dans la poitrine ou essoufflement",
+    groupes: [
+      ["douleur", "poitrine"],
+      ["poitrine", "serre"],
+      ["essouffl"],
+      ["respire", "mal"],
+      ["difficulte", "respirer"],
+    ],
+  },
   { motif: "fièvre élevée", groupes: [["fievre"], ["forte temperature"]] },
-  { motif: "malaise ou perte de connaissance", groupes: [["evanoui"], ["perte de connaissance"], ["perdu connaissance"], ["malaise"]] },
-  { motif: "masse qui évolue vite ou peau modifiée", groupes: [["boule", "grossit"], ["boule", "grandit"], ["masse", "grossit"], ["peau d orange"], ["retract"], ["plaie", "sein"], ["sein", "rouge", "chaud"], ["ecoulement", "sang"]] },
-  { motif: "détresse psychologique", groupes: [["suicid"], ["me tuer"], ["en finir"], ["plus envie de vivre"], ["mourir", "envie"]] },
+  {
+    motif: "malaise ou perte de connaissance",
+    groupes: [["evanoui"], ["perte de connaissance"], ["perdu connaissance"], ["malaise"]],
+  },
+  {
+    motif: "masse qui évolue vite ou peau modifiée",
+    groupes: [
+      ["boule", "grossit"],
+      ["boule", "grandit"],
+      ["masse", "grossit"],
+      ["peau d orange"],
+      ["retract"],
+      ["plaie", "sein"],
+      ["sein", "rouge", "chaud"],
+      ["ecoulement", "sang"],
+    ],
+  },
+  {
+    motif: "détresse psychologique",
+    groupes: [["suicid"], ["me tuer"], ["en finir"], ["plus envie de vivre"], ["mourir", "envie"]],
+  },
 ];
 
 export interface DetectionAlerte {

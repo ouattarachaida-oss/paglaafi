@@ -61,7 +61,12 @@ export async function rechercherFiches(f: Fetch, cfg: ConfigRose, embedding: num
 }
 
 /** Fiches validées dans une langue locale (Mooré / Dioula) pour les thèmes trouvés. */
-export async function fichesEnLangue(f: Fetch, cfg: ConfigRose, groupes: string[], langue: string): Promise<FicheLocale[]> {
+export async function fichesEnLangue(
+  f: Fetch,
+  cfg: ConfigRose,
+  groupes: string[],
+  langue: string,
+): Promise<FicheLocale[]> {
   if (!groupes.length) return [];
   const filtre = groupes.map((g) => `"${g.replace(/"/g, "")}"`).join(",");
   const url =
