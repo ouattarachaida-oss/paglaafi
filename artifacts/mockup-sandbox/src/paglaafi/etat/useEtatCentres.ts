@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import "leaflet/dist/leaflet.css";
 import type { HealthCenter } from "../types";
 import { initialCenters } from "../donnees/centres";
 import { MODE_DEMO, MODE_REEL } from "../config";
@@ -91,10 +92,9 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
 
     let isMounted = true;
 
-    const initLeafletMap = () => {
+    // Leaflet installé via npm (plus de chargement depuis unpkg) : module chargé à la demande
+    const initLeafletMap = (L: any) => {
       if (!mapContainerRef.current) return;
-      const L = (window as any).L;
-      if (!L) return;
 
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
@@ -191,27 +191,9 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     };
     window.addEventListener("resize", handleResize);
 
-    if (!(window as any).L) {
-      if (!document.getElementById("leaflet-css")) {
-        const link = document.createElement("link");
-        link.id = "leaflet-css";
-        link.rel = "stylesheet";
-        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        document.head.appendChild(link);
-      }
-
-      if (!document.getElementById("leaflet-js")) {
-        const script = document.createElement("script");
-        script.id = "leaflet-js";
-        script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-        script.onload = () => {
-          if (isMounted) initLeafletMap();
-        };
-        document.body.appendChild(script);
-      }
-    } else {
-      initLeafletMap();
-    }
+    void import("leaflet").then((module) => {
+      if (isMounted) initLeafletMap(module.default ?? module);
+    });
 
     return () => {
       isMounted = false;
