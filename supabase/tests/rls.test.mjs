@@ -217,6 +217,22 @@ async function tester({ comptes, centreA, centreB, asso }) {
   verifier("anonyme", "autorisé", "voir l'annonce une fois publiée", publiee?.length === 1);
   await autorise("superadmin", "refuser une annonce avec motif", sa.from("annonces").update({ statut: "refusee", motif_refus: "Informations incomplètes" }).eq("id", annonceAA?.[0]?.id ?? -1).select());
   await autorise("superadmin", "vérifier un centre", sa.from("centres").update({ verifie: true }).eq("id", centreA.id).select());
+  // Vérification des structures (onglet « Vérifications » du superadmin) : marquer ET retirer
+  const { data: centreVerifieAnon } = await anon.from("centres").select("id").eq("id", centreA.id);
+  verifier("anonyme", "autorisé", "voir un centre une fois vérifié par le superadmin", centreVerifieAnon?.length === 1);
+  await refuse("docteur", "retirer la vérification de son centre", doc.from("centres").update({ verifie: false }).eq("id", centreA.id).select());
+  await refuse("admin centre", "retirer la vérification de son centre", ac.from("centres").update({ verifie: false }).eq("id", centreA.id).select());
+  await autorise("superadmin", "marquer une association comme vérifiée", sa.from("associations").update({ verifiee: true }).eq("id", asso.id).select());
+  await refuse("admin asso", "retirer la vérification de son association", aa.from("associations").update({ verifiee: false }).eq("id", asso.id).select());
+  await refuse("utilisatrice", "marquer une association comme vérifiée", u.from("associations").update({ verifiee: true }).eq("id", asso.id).select());
+  await autorise("superadmin", "retirer la vérification d'un centre", sa.from("centres").update({ verifie: false }).eq("id", centreB.id).select());
+  const { data: centreRetireAnon } = await anon.from("centres").select("id").eq("id", centreB.id);
+  verifier("anonyme", "refusé", "voir un centre dont la vérification a été retirée", centreRetireAnon?.length === 0);
+  await autorise("superadmin", "retirer la vérification d'une association", sa.from("associations").update({ verifiee: false }).eq("id", asso.id).select());
+  const { data: assoVue } = await anon.from("associations").select("id").eq("id", asso.id);
+  verifier("anonyme", "refusé", "voir une association non vérifiée", assoVue?.length === 0);
+  const { data: tout } = await sa.from("centres").select("id, verifie").in("id", [centreA.id, centreB.id]);
+  verifier("superadmin", "autorisé", "lister les centres vérifiés ET non vérifiés", tout?.length === 2);
   await refuse("superadmin", "changer directement un rôle (passage obligé par approuver_demande)", sa.from("profils").update({ role: "docteur" }).eq("id", comptes.utilisatrice2.id).select());
   const { error: eApprouver } = await sa.rpc("approuver_demande", { p_demande: demandeInit[0].id, p_centre: centreA.id });
   verifier("superadmin", "autorisé", "valider une demande d'adhésion (avec rattachement au centre A)", !eApprouver, eApprouver?.message);
