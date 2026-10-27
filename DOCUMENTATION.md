@@ -144,6 +144,7 @@ Leaflet est installé via npm (plus d'unpkg).
 | `pnpm run db:test-rls` | Tests des règles d'accès (comptes de test créés puis supprimés) |
 | `pnpm run rag:indexer [-- --tout]` | Indexer les fiches validées et exporter la FAQ |
 | `pnpm run rag:faq` | Exporter seulement la FAQ hors-ligne |
+| `pnpm run rag:calibrer` | Mesurer le seuil de similarité de Rose IA (lecture seule, à refaire après validation des fiches) |
 | `pnpm run test:rose` | Tests unitaires du serveur (Rose IA, suppression de compte) |
 | `pnpm run test:rose-pieges` | Questions pièges contre le vrai Gemini |
 

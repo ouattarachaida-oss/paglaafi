@@ -16,6 +16,7 @@
     "db:test-rls": "node supabase/tests/rls.test.mjs",
     "test:rose": "node --import tsx --test \"artifacts/mockup-sandbox/serveur/rose/tests/*.test.ts\"",
     "rag:indexer": "node --import tsx supabase/scripts/indexer-fiches.mjs",
+    "rag:calibrer": "node --import tsx supabase/scripts/calibrer-seuil.mjs",
     "rag:faq": "node --import tsx supabase/scripts/indexer-fiches.mjs --faq",
     "test:rose-pieges": "node --import tsx supabase/tests/rose-pieges.test.mjs"
   },
