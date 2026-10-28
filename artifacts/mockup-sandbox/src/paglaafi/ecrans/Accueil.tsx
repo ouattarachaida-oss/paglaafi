@@ -4,6 +4,7 @@ import { roseDailyTips } from "../donnees/conseilsRose";
 import { useUi, useAuth, useAudio, useCentres, useSante, useRose, useAnnonces, useDons } from "../etat/contextes";
 import { BadgeSimulation } from "../composants/BadgeSimulation";
 import { estInvitee } from "../composants/entreesMenu";
+import { sansEmoji } from "../lib/texte";
 import { Bouton, Carte, EnTeteSection, EtatVide, PucesLangue } from "../composants/ui";
 
 /** Date du jour : « mercredi 28/10/2026 » (convention JJ/MM/AAAA). */
@@ -140,7 +141,7 @@ export function Accueil() {
           <Carte>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-petit font-semibold text-texte-2">Conseil du jour · {conseil.categoryLabel}</p>
+                <p className="text-petit font-semibold text-texte-2">Conseil du jour · {sansEmoji(conseil.categoryLabel)}</p>
                 <h2 className="mt-1 text-sous-titre text-prune-900">{conseil.titleFr}</h2>
               </div>
               <button

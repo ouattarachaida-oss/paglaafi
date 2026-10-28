@@ -4,6 +4,7 @@ import { MODE_REEL } from "../config";
 import { useAuth, useCentres, useOrientations } from "../etat/contextes";
 import { BadgeSimulation } from "../composants/BadgeSimulation";
 import type { HealthCenter } from "../types";
+import { sansEmoji } from "../lib/texte";
 import {
   Badge,
   BadgeOSM,
@@ -242,7 +243,7 @@ export function Centres() {
                         <span className="text-corps font-semibold text-prune-900">
                           {o.patientName} ({o.patientAge} ans)
                         </span>
-                        <Badge ton={o.urgencyLevel === "immediate" ? "alerte" : "attention"}>{o.urgencyLabel}</Badge>
+                        <Badge ton={o.urgencyLevel === "immediate" ? "alerte" : "attention"}>{sansEmoji(o.urgencyLabel)}</Badge>
                       </div>
                       <p className="text-petit text-texte-2">
                         Réf. {o.id} · Prescrit par {o.doctorName} · {o.createdAt}

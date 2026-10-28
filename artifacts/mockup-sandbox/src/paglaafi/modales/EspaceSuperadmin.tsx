@@ -5,6 +5,7 @@ import { MODE_REEL } from "../config";
 import type { StructureAVerifier } from "../depot/verifications";
 import type { PendingRegistration } from "../types";
 import { partnerAssociations } from "../donnees/associations";
+import { sansEmoji } from "../lib/texte";
 import { BadgeSimulation } from "../composants/BadgeSimulation";
 import { Badge, BadgeRole, Bandeau, Bouton, Carte, Champ, EtatVide, Feuille, ListeDeroulante, OngletsSoulignes } from "../composants/ui";
 
@@ -239,7 +240,7 @@ export function EspaceSuperadmin() {
                           <strong>Indice de confiance :</strong> {a.aiConfidence}
                         </p>
                         <p className="mt-1">
-                          <strong>Notification préparée :</strong> « {a.pushMessageFr} »
+                          <strong>Notification préparée :</strong> « {sansEmoji(a.pushMessageFr ?? "")} »
                         </p>
                       </div>
                     )}
