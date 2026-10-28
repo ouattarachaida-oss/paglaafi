@@ -43,6 +43,7 @@ export const POLITIQUE: SectionPolitique[] = [
       "Une copie de votre profil (nom, prénom, rôle) est gardée de la même façon, chiffrée sur l'appareil, pour que l'application reste utilisable hors connexion.",
       "Limite de cette protection : elle ne protège pas contre quelqu'un qui utilise votre téléphone déverrouillé avec votre session ouverte. Effacer les données du navigateur ou désinstaller l'application efface aussi la clé : ces données sont alors perdues.",
       "La discussion avec Rose IA n'est pas conservée sur l'appareil en mode réel. Votre langue préférée et votre consentement sont aussi enregistrés sur l'appareil.",
+      "Si vous l'autorisez, votre position sert uniquement sur votre téléphone à calculer la distance jusqu'aux centres de santé : elle n'est ni envoyée ni enregistrée. Si vous choisissez une ville à la place, elle est gardée sur l'appareil.",
     ],
   },
   {
