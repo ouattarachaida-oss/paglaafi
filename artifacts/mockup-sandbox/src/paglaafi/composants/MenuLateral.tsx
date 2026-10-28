@@ -81,7 +81,7 @@ function ContenuMenu({ fermer }: { fermer?: () => void }) {
 
         <div className="mt-5 px-1">
           <p className="mb-2 px-2 text-badge uppercase tracking-wide text-texte-2">Langue des contenus</p>
-          <PucesLangue valeur={appLanguage} onChange={handleSelectAppLanguage} libelle="Langue des contenus" />
+          <PucesLangue valeur={appLanguage} onChange={handleSelectAppLanguage} libelle="Langue des contenus" aLaLigne />
         </div>
 
         {/* Ligne d'urgence : numéro NON CONFIRMÉ, affiché « à vérifier » en démo et masqué en mode réel */}

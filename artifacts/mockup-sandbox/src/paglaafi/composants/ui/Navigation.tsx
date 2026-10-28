@@ -20,14 +20,17 @@ export function PucesLangue({
   onChange,
   langues = ["fr", "en", "moore", "dioula"],
   libelle = "Langue",
+  aLaLigne = false,
 }: {
   valeur: CodeLangue;
   onChange: (l: CodeLangue) => void;
   langues?: CodeLangue[];
   libelle?: string;
+  /** Passe à la ligne au lieu de défiler (colonnes étroites) */
+  aLaLigne?: boolean;
 }) {
   return (
-    <div role="radiogroup" aria-label={libelle} className="defilement-discret flex gap-2 overflow-x-auto">
+    <div role="radiogroup" aria-label={libelle} className={aLaLigne ? "flex flex-wrap gap-2" : "defilement-discret flex gap-2 overflow-x-auto"}>
       {langues.map((l) => {
         const actif = l === valeur;
         return (
