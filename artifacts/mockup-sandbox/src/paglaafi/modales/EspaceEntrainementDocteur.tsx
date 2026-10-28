@@ -118,7 +118,7 @@ export function EspaceEntrainementDocteur() {
                 <li key={p.titre}>
                   <button
                     type="button"
-                    onClick={() => handleSelectDoctorPresetTopic(...p.args)}
+                    onClick={() => handleSelectDoctorPresetTopic(p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[5])}
                     className={`w-full space-y-1 rounded-carte border p-4 text-left ${doctorTeachTopic === p.args[0] ? "border-action bg-rose-100" : "border-bordure bg-surface"}`}
                   >
                     <span className="flex flex-wrap items-center justify-between gap-2">
