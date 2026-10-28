@@ -26,33 +26,44 @@ export function apiRoseLocale(racineApp: string): Plugin {
   return {
     name: "paglaafi-api-rose-locale",
     apply: "serve",
+    // Aussi sur « vite preview » : la version installable (PWA) servie depuis cet ordinateur
+    configurePreviewServer(serveur) {
+      brancherApi(serveur.middlewares, racineApp);
+    },
     configureServer(serveur) {
-      const brancher = (
-        route: string,
-        gestionnaire: (r: Request, env: Record<string, string | undefined>) => Promise<Response>,
-      ) =>
-        serveur.middlewares.use(route, async (req, res) => {
-          const env = {
-            ...lireFichierEnv(path.join(racineApp, ".env")),
-            ...lireFichierEnv(path.join(racineApp, "../../supabase/.env")),
-            ...process.env,
-          };
-          const morceaux: Buffer[] = [];
-          for await (const m of req) morceaux.push(m as Buffer);
-          const requete = new Request(`http://localhost${route}`, {
-            method: req.method,
-            headers: Object.entries(req.headers).flatMap(([k, v]) =>
-              v === undefined ? [] : [[k, Array.isArray(v) ? v.join(", ") : v] as [string, string]],
-            ),
-            body: req.method === "POST" ? Buffer.concat(morceaux) : undefined,
-          });
-          const reponse = await gestionnaire(requete, env);
-          res.statusCode = reponse.status;
-          reponse.headers.forEach((valeur, cle) => res.setHeader(cle, valeur));
-          res.end(await reponse.text());
-        });
-      brancher("/api/rose-chat", traiterQuestion);
-      brancher("/api/supprimer-compte", traiterSuppression);
+      brancherApi(serveur.middlewares, racineApp);
     },
   };
+}
+
+function brancherApi(
+  middlewares: { use: (route: string, fn: (req: any, res: any) => void) => void },
+  racineApp: string,
+) {
+  const brancher = (
+    route: string,
+    gestionnaire: (r: Request, env: Record<string, string | undefined>) => Promise<Response>,
+  ) =>
+    middlewares.use(route, async (req, res) => {
+      const env = {
+        ...lireFichierEnv(path.join(racineApp, ".env")),
+        ...lireFichierEnv(path.join(racineApp, "../../supabase/.env")),
+        ...process.env,
+      };
+      const morceaux: Buffer[] = [];
+      for await (const m of req) morceaux.push(m as Buffer);
+      const requete = new Request(`http://localhost${route}`, {
+        method: req.method,
+        headers: Object.entries(req.headers).flatMap(([k, v]) =>
+          v === undefined ? [] : [[k, Array.isArray(v) ? v.join(", ") : v] as [string, string]],
+        ),
+        body: req.method === "POST" ? Buffer.concat(morceaux) : undefined,
+      });
+      const reponse = await gestionnaire(requete, env);
+      res.statusCode = reponse.status;
+      reponse.headers.forEach((valeur, cle) => res.setHeader(cle, valeur));
+      res.end(await reponse.text());
+    });
+  brancher("/api/rose-chat", traiterQuestion);
+  brancher("/api/supprimer-compte", traiterSuppression);
 }
