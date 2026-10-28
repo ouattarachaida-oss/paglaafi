@@ -1,313 +1,236 @@
-import { Mic, Play, Send, ShieldCheck, Sparkles, Stethoscope, Volume2 } from "lucide-react";
-import { hapticFeedback } from "../lib/haptique";
-import { useUi, useAuth, useAudio, useSante, useRose, useDocteur, useEducation } from "../etat/contextes";
+import { Loader2, MapPin, Mic, Play, Send, ShieldCheck, Sparkles, Volume2 } from "lucide-react";
+import { useUi, useAuth, useAudio, useSante, useRose, useEducation, useCentres } from "../etat/contextes";
 import { MODE_REEL } from "../config";
+import { estInvitee } from "../composants/entreesMenu";
+import { Bandeau, BadgeOrigineRose, LIBELLES_LANGUES } from "../composants/ui";
+
+// Suggestions de questions (libellés d'interface ; la question envoyée reste complète)
+const SUGGESTIONS = [
+  { libelle: "Toilette intime", q: "Comment bien faire ma toilette intime ?" },
+  { libelle: "Comment se palper ?", q: "Comment bien faire l'autopalpation des seins étape par étape ?" },
+  { libelle: "Petite boule au sein", q: "J'ai senti une petite boule dans mon sein, que faire ?" },
+  { libelle: "Douleurs de règles", q: "Comment soulager mes crampes et douleurs de règles naturellement ?" },
+  { libelle: "Moringa et baobab", q: "Quels sont les bienfaits du moringa et du baobab pour ma santé ?" },
+  { libelle: "Centres de dépistage", q: "Où se faire dépister à Ouagadougou ?" },
+  { libelle: "Coût du dépistage", q: "Combien coûte le dépistage au Burkina Faso ?" },
+  { libelle: "Sérénité et moral", q: "Je me sens fatiguée et stressée, aide-moi" },
+];
+
+const MOTIFS = {
+  hors_ligne: "Vous êtes hors ligne : Rose répond depuis la FAQ validée enregistrée sur l'appareil.",
+  non_connectee: "Connectez-vous pour discuter avec Rose IA. En attendant, elle répond depuis la FAQ validée.",
+  quota: "Limite de questions du jour atteinte : Rose répond depuis la FAQ validée jusqu'à demain.",
+  indisponible: "Rose IA est momentanément indisponible : réponse tirée de la FAQ validée.",
+} as const;
 
 /**
- * Onglet Rose IA : discussion écrite ou orale.
+ * Rose IA : bandeau permanent, bulles de discussion, origine et sources sous chaque
+ * réponse, alerte avec accès aux centres, saisie fixe (suggestions, micro, envoi).
+ * Discussion centrée (760 px) et suggestions sur le côté à partir de 1024 px.
  */
 export function RoseIA() {
-  const { appLanguage, section } = useUi();
+  const { appLanguage, isOffline, setSection } = useUi();
   const { currentUser } = useAuth();
   const { handlePlayAudio } = useAudio();
   const { setShowPrivacyModal } = useSante();
-  const {
-    handleSendRoseMessage,
-    handleToggleVoiceRecognition,
-    isRecordingVoice,
-    roseChatBottomRef,
-    roseInput,
-    roseMessages,
-    setRoseInput,
-  } = useRose();
-  const { setShowDoctorTrainModal } = useDocteur();
+  const { handleSendRoseMessage, handleToggleVoiceRecognition, isRecordingVoice, roseChatBottomRef, roseInput, roseMessages, setRoseInput, roseEnAttente } = useRose();
   const { setShowAutopalpationVideoModal } = useEducation();
+  const { setViewMode } = useCentres();
+
+  const dernierMotif = [...roseMessages].reverse().find((m) => m.sender === "rose")?.motif;
+  const etat = isOffline ? "hors_ligne" : MODE_REEL && estInvitee(currentUser) ? "non_connectee" : dernierMotif;
+  const langue = LIBELLES_LANGUES[appLanguage];
+
+  const puces = (vertical?: boolean) => (
+    <div className={vertical ? "flex flex-col gap-2" : "defilement-discret flex gap-2 overflow-x-auto"}>
+      {SUGGESTIONS.map(({ libelle, q }) => (
+        <button
+          key={libelle}
+          type="button"
+          onClick={() => handleSendRoseMessage(q)}
+          className={`min-h-11 shrink-0 rounded-full border border-bordure bg-surface px-4 text-petit font-semibold text-texte active:bg-rose-100 ${vertical ? "text-left" : ""}`}
+        >
+          {libelle}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
-    <section className="ph-enter flex flex-col h-full px-4 pt-2.5 pb-2">
-      {/* ============================================================ */}
-      {/* CONTENEURS DU HAUT SELON LE PROFIL                           */}
-      {/* Profil Utilisatrice : uniquement "Voir la vidéo"             */}
-      {/* Profil Docteur/Superadmin : "Entraîner le modèle" + "Vidéo"  */}
-      {/* ============================================================ */}
-      {currentUser?.adminType === "doctor" || currentUser?.role === "superadmin" ? (
-        /* HAUT DE PAGE POUR DOCTEURS & SUPERADMIN */
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              hapticFeedback(15);
-              setShowDoctorTrainModal(true);
-            }}
-            className="flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-800 p-2.5 text-white font-bold text-xs shadow-xs hover:opacity-95 transition cursor-pointer"
-          >
-            <Stethoscope size={15} className="text-cyan-300" />
-            <span>{MODE_REEL ? "Fiches Rose IA 🩺" : "Entraîner Rose IA 🩺"}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowAutopalpationVideoModal(true)}
-            className="flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-[#9e466b] to-rose-600 p-2.5 text-white font-bold text-xs shadow-xs hover:opacity-95 transition cursor-pointer"
-          >
-            <Play size={14} className="fill-white" />
-            <span>Voir la vidéo 🎬</span>
-          </button>
-        </div>
-      ) : (
-        /* HAUT DE PAGE POUR LES UTILISATRICES : UNIQUEMENT VOIR LA VIDÉO */
-        <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-rose-600 via-[#ea2d6d] to-[#734059] px-3.5 py-2.5 text-white shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <div className="relative grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/20 text-white backdrop-blur-xs">
-              <Play size={14} className="fill-white translate-x-0.5" />
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 border border-white" />
-            </div>
-            <div>
-              <h4 className="font-bold text-xs">Vidéo d'Autopalpation Mammaire</h4>
-              <p className="text-[9.5px] text-white/85">Démonstration guidée pas-à-pas par notre sage-femme</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowAutopalpationVideoModal(true)}
-            className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#ea2d6d] shadow-xs hover:bg-pink-50 transition shrink-0 cursor-pointer"
-          >
-            Voir la vidéo 🎬
-          </button>
-        </div>
-      )}
-
-      {/* Rappel permanent, visible à chaque ouverture de Rose IA */}
-
-      <p
-        role="note"
-        className="mt-2 rounded-xl border border-[#f3d7e0] bg-[#fff5f8] px-3 py-1.5 text-center text-[10.5px] font-semibold text-[#82445e]"
-      >
-        ℹ️ Rose IA informe et oriente : elle ne remplace pas un soignant.
-      </p>
-
-      {/* MINI-BANDEAU D'ÉTAT DISCRET DE ROSE IA */}
-      <div className="mt-2 flex items-center justify-between rounded-xl bg-white border border-[#f0dee3] px-3 py-1.5 text-xs shadow-2xs">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-tr from-[#8a3857] to-[#cf5d83] text-white shadow-2xs">
-              <Sparkles size={14} className="text-amber-300" />
+    <section className="anim-apparition lg:grid lg:grid-cols-[minmax(0,760px)_240px] lg:justify-center lg:gap-8">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="flex items-center gap-2 text-titre text-prune-900">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-action text-sur-action" aria-hidden>
+              <Sparkles size={20} />
             </span>
-            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white ph-pulse" />
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-bold text-[#580e36] text-xs">Rose IA</span>
-            <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded-full border border-emerald-200">
-              En ligne
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowPrivacyModal(true)}
-            className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#863b55] hover:underline cursor-pointer"
-            title="Confidentialité et éthique médicale"
-          >
-            <ShieldCheck size={12} className="text-emerald-600" />
-            <span>{MODE_REEL ? "Questions anonymisées" : "100% Confidentiel"}</span>
+            Rose IA
+          </h1>
+          <button type="button" onClick={() => setShowPrivacyModal(true)} className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-petit font-semibold text-texte-2">
+            <ShieldCheck size={18} aria-hidden /> {MODE_REEL ? "Questions anonymisées" : "Confidentialité"}
           </button>
         </div>
-      </div>
 
-      {/* CAPSULES DE QUESTIONS RAPIDES (INSPIRATION & CONSEILS) */}
-      <div className="ph-scroll mt-2 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
-        {[
-          { label: "🌸 Toilette intime", q: "Comment bien faire ma toilette intime ?" },
-          { label: "🖐️ Comment se palper ?", q: "Comment bien faire l'autopalpation des seins étape par étape ?" },
-          { label: "🔍 Petite boule au sein", q: "J'ai senti une petite boule dans mon sein, que faire ?" },
-          { label: "🩸 Douleurs de règles", q: "Comment soulager mes crampes et douleurs de règles naturellement ?" },
-          { label: "🌿 Moringa & Baobab", q: "Quels sont les bienfaits du moringa et du baobab pour ma santé ?" },
-          { label: "📍 Centres de dépistage", q: "Où se faire dépister à Ouagadougou ?" },
-          { label: "💰 Coût du dépistage", q: "Combien coûte le dépistage au Burkina Faso ?" },
-          { label: "🧘‍♀️ Sérénité & moral", q: "Je me sens fatiguée et stressée, aide-moi" },
-        ].map(({ label, q }) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => handleSendRoseMessage(q)}
-            className="shrink-0 rounded-full border border-[#e4cad3] bg-white px-2.5 py-1 text-[#863b55] font-semibold hover:bg-[#faedf2] transition shadow-2xs cursor-pointer"
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+        {/* Rappel permanent, visible à chaque ouverture de Rose IA */}
+        <Bandeau ton="rose" className="mt-3">
+          <span role="note">Rose IA informe et oriente : elle ne remplace pas un soignant.</span>
+        </Bandeau>
+        {etat && (
+          <Bandeau ton={etat === "hors_ligne" || etat === "quota" ? "horsLigne" : "info"} className="mt-2" role="status">
+            {MOTIFS[etat]}
+          </Bandeau>
+        )}
 
-      {/* ZONE DES MESSAGES DU CHATBOT ROSE IA (HAUTEUR DYNAMIQUE PLEINE) */}
-      <div className="mt-2 space-y-2.5 flex-1 min-h-[300px] overflow-y-auto pr-1">
-        {roseMessages.map((msg, i) => {
-          const isUser = msg.sender === "user";
-          // Texte à afficher selon la langue choisie
-          const displayedText = isUser
-            ? msg.text
-            : appLanguage === "moore" && msg.mooreText
-              ? msg.mooreText
-              : appLanguage === "dioula" && msg.dioulaText
-                ? msg.dioulaText
-                : appLanguage === "en" && msg.englishText
-                  ? msg.englishText
-                  : msg.text;
+        <ol className="mt-4 space-y-4 pb-48 md:pb-6" aria-label="Discussion avec Rose IA" aria-live="polite">
+          {roseMessages.map((msg, i) => {
+            const utilisatrice = msg.sender === "user";
+            const texte = utilisatrice
+              ? msg.text
+              : appLanguage === "moore" && msg.mooreText
+                ? msg.mooreText
+                : appLanguage === "dioula" && msg.dioulaText
+                  ? msg.dioulaText
+                  : appLanguage === "en" && msg.englishText
+                    ? msg.englishText
+                    : msg.text;
+            const video = !utilisatrice && /palpation|geste|boule|sein|nodule/i.test(msg.text);
 
-          const hasVideoRecommendation =
-            !isUser &&
-            (msg.text.toLowerCase().includes("palpation") ||
-              msg.text.toLowerCase().includes("geste") ||
-              msg.text.toLowerCase().includes("boule") ||
-              msg.text.toLowerCase().includes("sein") ||
-              msg.text.toLowerCase().includes("nodule"));
+            return (
+              <li key={i} className={`flex gap-2 ${utilisatrice ? "justify-end" : "justify-start"}`}>
+                {!utilisatrice && (
+                  <span className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-rose-100 text-rose-500" aria-hidden>
+                    <Sparkles size={16} />
+                  </span>
+                )}
+                <div className={`flex max-w-[85%] flex-col ${utilisatrice ? "items-end" : "items-start"}`}>
+                  <span className="sr-only">{utilisatrice ? "Vous :" : "Rose IA :"}</span>
+                  <div
+                    className={`rounded-carte px-4 py-3 text-corps ${
+                      utilisatrice ? "rounded-br-none bg-action text-sur-action" : "rounded-tl-none border border-bordure bg-surface text-texte shadow-carte"
+                    }`}
+                  >
+                    {!utilisatrice && msg.alerte && (
+                      <div className="mb-3 rounded-bouton border-[1.5px] border-alerte bg-alerte-fond p-3 text-petit text-alerte">
+                        <p className="font-semibold">Consultez rapidement un soignant.</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSection("Centres");
+                            setViewMode("map");
+                          }}
+                          className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-bouton bg-[#b42318] px-3 font-semibold text-white"
+                        >
+                          <MapPin size={18} aria-hidden /> Trouver un centre proche
+                        </button>
+                      </div>
+                    )}
+                    <p className="whitespace-pre-wrap">{texte}</p>
 
-          return (
-            <div key={i} className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
-              <div
-                className={`max-w-[88%] rounded-[20px] p-3 text-xs leading-relaxed shadow-xs ${
-                  isUser
-                    ? "bg-[#ea2d6d] text-white rounded-tr-xs"
-                    : "bg-white text-[#580e36] border border-[#f0dfe4] rounded-tl-xs"
-                }`}
-              >
-                <p className="whitespace-pre-wrap">{displayedText}</p>
-
-                {/* Mode réel : origine de la réponse et sources (fiches validées) */}
-                {!isUser && msg.origine && (
-                  <div className="mt-2 border-t border-[#f3e3e8] pt-2 text-[10px] text-[#7d5668]">
-                    <span
-                      className={`inline-block rounded-full px-2 py-0.5 font-bold ${
-                        msg.origine === "ia"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : msg.origine === "faq"
-                              ? "bg-amber-100 text-amber-900"
-                              : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {msg.origine === "ia"
-                        ? "Fondée sur des fiches validées"
-                        : msg.origine === "faq"
-                            ? "Hors ligne · FAQ validée"
-                            : "Aucune fiche validée sur ce sujet"}
-                    </span>
-                    {msg.sources && msg.sources.length > 0 && (
-                      <ol className="mt-1.5 list-decimal space-y-0.5 pl-4">
-                        {msg.sources.map((src, k) => (
-                          <li key={k}>
-                            <span className="font-semibold text-[#580e36]">{src.titre}</span>
-                            {src.source && (
-                              <>
-                                {" — "}
-                                {src.url ? (
-                                  <a href={src.url} target="_blank" rel="noopener noreferrer" className="underline">
-                                    {src.source}
-                                  </a>
-                                ) : (
-                                  src.source
+                    {!utilisatrice && msg.origine && (
+                      <div className="mt-3 space-y-2 border-t border-bordure pt-3">
+                        <BadgeOrigineRose origine={msg.origine} />
+                        {msg.sources && msg.sources.length > 0 && (
+                          <ol className="list-decimal space-y-1 pl-5 text-petit text-texte-2">
+                            {msg.sources.map((src, k) => (
+                              <li key={k}>
+                                <span className="font-semibold text-prune-900">{src.titre}</span>
+                                {src.source && (
+                                  <>
+                                    {" — "}
+                                    {src.url ? (
+                                      <a href={src.url} target="_blank" rel="noopener noreferrer" className="text-action underline underline-offset-2">
+                                        {src.source}
+                                      </a>
+                                    ) : (
+                                      src.source
+                                    )}
+                                  </>
                                 )}
-                              </>
-                            )}
-                          </li>
-                        ))}
-                      </ol>
+                              </li>
+                            ))}
+                          </ol>
+                        )}
+                      </div>
+                    )}
+
+                    {video && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAutopalpationVideoModal(true)}
+                        className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-bouton border-[1.5px] border-action px-3 text-petit font-semibold text-action"
+                      >
+                        <Play size={16} aria-hidden /> Voir la démonstration vidéo
+                      </button>
                     )}
                   </div>
-                )}
-
-                {/* Bouton cliquable pour voir la vidéo si suggéré par Rose IA */}
-                {hasVideoRecommendation && (
-                  <button
-                    type="button"
-                    onClick={() => setShowAutopalpationVideoModal(true)}
-                    className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#ea2d6d] to-rose-700 py-1.5 px-2.5 text-[11px] font-bold text-white shadow-xs hover:opacity-95 transition cursor-pointer"
-                  >
-                    <Play size={12} className="fill-white" />
-                    <span>Voir la démonstration vidéo (Sage-femme) 🎬</span>
-                  </button>
-                )}
-              </div>
-
-              {/* ÉCOUTE VOCALE DISCRÈTE (DANS LA LANGUE CHOISIE) */}
-              {!isUser && (
-                <div className="mt-1 flex items-center gap-2 pl-1">
-                  <button
-                    type="button"
-                    onClick={() => handlePlayAudio(displayedText, appLanguage)}
-                    className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#ea2d6d] hover:underline cursor-pointer"
-                    title={`Écouter à voix haute en ${appLanguage.toUpperCase()}`}
-                  >
-                    <Volume2 size={12} />
-                    <span>
-                      Écouter (
-                      {appLanguage === "moore"
-                        ? "Mooré"
-                        : appLanguage === "dioula"
-                          ? "Dioula"
-                          : appLanguage.toUpperCase()}
-                      )
-                    </span>
-                  </button>
+                  {!utilisatrice && (
+                    <button
+                      type="button"
+                      onClick={() => handlePlayAudio(texte, appLanguage)}
+                      className="mt-1 inline-flex min-h-11 items-center gap-1.5 px-1 text-petit font-semibold text-action"
+                    >
+                      <Volume2 size={18} aria-hidden /> Écouter ({langue})
+                    </button>
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })}
-        {/* Point d'ancrage pour le défilement automatique */}
+              </li>
+            );
+          })}
+          {roseEnAttente && (
+            <li className="flex items-center gap-2 text-petit text-texte-2" role="status">
+              <Loader2 size={18} className="animate-spin text-rose-500" aria-hidden /> Rose cherche dans les fiches…
+            </li>
+          )}
+        </ol>
         <div ref={roseChatBottomRef} />
-      </div>
 
-      {/* RAPPEL ÉTHIQUE MÉDICAL */}
-      <div className="mt-1.5 text-center text-[9px] text-[#936b7c] px-2 italic">
-        🛡️ Rose IA est une conseillère préventive bienveillante. Elle ne remplace pas l'avis d'une sage-femme ou d'un
-        médecin.
-      </div>
-
-      {/* BARRE DE SAISIE MODERNE & RÉACTIVE (<FORM> TOUCHE ENTRÉE + MICRO) */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSendRoseMessage();
-        }}
-        className="mt-1.5 rounded-2xl border border-[#e5ccd5] bg-white p-2 shadow-sm"
-      >
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleToggleVoiceRecognition}
-            className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition cursor-pointer ${
-              isRecordingVoice
-                ? "bg-rose-600 text-white ph-pulse ring-2 ring-rose-300"
-                : "bg-[#f8e7ec] text-[#ea2d6d] hover:bg-[#f2dbe2]"
-            }`}
-            title={isRecordingVoice ? "Arrêter le micro" : "Parler à Rose IA au micro"}
+        {/* Zone de saisie fixe (au-dessus de la barre du bas sur mobile) */}
+        <div className="pb-securite fixed inset-x-0 bottom-[calc(88px+env(safe-area-inset-bottom))] z-20 border-t border-bordure bg-fond/95 px-4 pb-3 pt-3 backdrop-blur md:sticky md:bottom-4 md:mt-4 md:rounded-carte md:border md:bg-surface md:px-3 md:pb-3 md:shadow-flottant">
+          <div className="mb-2 lg:hidden">{puces()}</div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSendRoseMessage();
+            }}
+            className="flex items-center gap-2"
           >
-            <Mic size={17} className={isRecordingVoice ? "animate-pulse" : ""} />
-          </button>
-          <input
-            type="text"
-            value={roseInput}
-            onChange={(e) => setRoseInput(e.target.value)}
-            placeholder={
-              isRecordingVoice
-                ? "Rose IA vous écoute avec tendresse... Parlez"
-                : "Posez votre question à Rose IA (écrit ou micro)..."
-            }
-            className="flex-1 bg-transparent text-xs text-[#580e36] outline-none placeholder:text-gray-400"
-          />
-          <button
-            type="submit"
-            disabled={!roseInput.trim()}
-            className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition cursor-pointer ${
-              roseInput.trim()
-                ? "bg-[#ea2d6d] text-white hover:bg-[#8e3856] shadow-xs"
-                : "bg-gray-100 text-gray-400 cursor-not-allowed"
-            }`}
-            title="Envoyer le message"
-          >
-            <Send size={15} />
-          </button>
+            <button
+              type="button"
+              onClick={handleToggleVoiceRecognition}
+              aria-pressed={isRecordingVoice}
+              aria-label={isRecordingVoice ? "Arrêter le micro" : "Parler à Rose IA au micro"}
+              className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${isRecordingVoice ? "bg-action text-sur-action" : "bg-rose-200 text-prune-900"}`}
+            >
+              <Mic size={22} aria-hidden className={isRecordingVoice ? "animate-pulse" : ""} />
+            </button>
+            <label htmlFor="question-rose" className="sr-only">
+              Votre question à Rose IA
+            </label>
+            <input
+              id="question-rose"
+              type="text"
+              value={roseInput}
+              onChange={(e) => setRoseInput(e.target.value)}
+              placeholder={isRecordingVoice ? "Rose vous écoute… Parlez" : "Posez votre question…"}
+              className="h-12 min-w-0 flex-1 rounded-full border-[1.5px] border-bordure-2 bg-surface px-4 text-corps text-texte placeholder:text-indicatif focus:border-2 focus:border-action focus:outline-none focus:ring-4 focus:ring-rose-200"
+            />
+            <button
+              type="submit"
+              disabled={!roseInput.trim()}
+              aria-label="Envoyer la question"
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-action text-sur-action disabled:opacity-50"
+            >
+              <Send size={20} aria-hidden />
+            </button>
+          </form>
         </div>
-      </form>
+      </div>
+
+      {/* Suggestions sur le côté (ordinateur) */}
+      <aside className="hidden lg:block">
+        <h2 className="mb-3 text-corps font-semibold text-prune-900">Suggestions</h2>
+        {puces(true)}
+      </aside>
     </section>
   );
 }

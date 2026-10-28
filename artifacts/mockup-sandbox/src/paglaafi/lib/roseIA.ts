@@ -17,12 +17,16 @@ export interface ResultatRose {
   sources: SourceRose[];
   origine: "ia" | "sans_source" | "faq";
   alerte: boolean;
+  /** Raison du repli sur la FAQ (affichée comme état dans l'écran Rose IA). */
+  motif?: MotifRepli;
 }
+
+export type MotifRepli = "hors_ligne" | "non_connectee" | "quota" | "indisponible";
 
 // Large : avec un modèle saturé, le serveur peut essayer le modèle de secours (repli FAQ au-delà)
 const DELAI_MS = 25000;
 
-async function repli(question: string, langue: LangueRose, note?: string): Promise<ResultatRose> {
+async function repli(question: string, langue: LangueRose, note: string, motif: MotifRepli): Promise<ResultatRose> {
   const faq = await repondreDepuisFaq(question, langue, note);
   return {
     texte: faq.texte,
@@ -30,6 +34,7 @@ async function repli(question: string, langue: LangueRose, note?: string): Promi
     sources: faq.sources,
     origine: "faq",
     alerte: faq.alerte,
+    motif,
   };
 }
 
@@ -39,6 +44,7 @@ export async function demanderARose(question: string, langue: LangueRose): Promi
       question,
       langue,
       "Mode hors connexion : réponse tirée des fiches validées enregistrées sur l'appareil.",
+      "hors_ligne",
     );
   }
   const { data } = await client().auth.getSession();
@@ -48,6 +54,7 @@ export async function demanderARose(question: string, langue: LangueRose): Promi
       question,
       langue,
       "Connectez-vous pour discuter avec Rose IA. En attendant, voici les fiches validées disponibles.",
+      "non_connectee",
     );
   }
 
@@ -61,9 +68,9 @@ export async function demanderARose(question: string, langue: LangueRose): Promi
       signal: ctrl.signal,
     });
     if (r.status === 429)
-      return repli(question, langue, "Vous avez atteint le nombre de questions du jour pour Rose IA.");
+      return repli(question, langue, "Vous avez atteint le nombre de questions du jour pour Rose IA.", "quota");
     if (!r.ok)
-      return repli(question, langue, "Rose IA est momentanément indisponible : réponse tirée des fiches validées.");
+      return repli(question, langue, "Rose IA est momentanément indisponible : réponse tirée des fiches validées.", "indisponible");
     const corps = await r.json();
     const locale = corps.ficheLangueLocale?.contenu as string | undefined;
     return {
@@ -78,7 +85,7 @@ export async function demanderARose(question: string, langue: LangueRose): Promi
       alerte: corps.alerte === true,
     };
   } catch {
-    return repli(question, langue, "Connexion à Rose IA impossible : réponse tirée des fiches validées.");
+    return repli(question, langue, "Connexion à Rose IA impossible : réponse tirée des fiches validées.", "indisponible");
   } finally {
     clearTimeout(minuteur);
   }

@@ -234,6 +234,9 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
    * Envoi de message à Rose IA avec moteur conversationnel IA enrichi,
    * intégration des fiches cliniques docteurs, et support 4 langues (FR, Mooré, Dioula, EN)
    */
+  // Réponse en cours de préparation (« Rose cherche dans les fiches… »)
+  const [roseEnAttente, setRoseEnAttente] = useState(false);
+
   const handleSendRoseMessage = (textOverride?: string, speakAloud = false) => {
     const textToSend = textOverride || roseInput;
     if (!textToSend.trim()) return;
@@ -245,11 +248,13 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
     };
     setRoseMessages((prev) => [...prev, userMsg]);
     setRoseInput("");
+    setRoseEnAttente(true);
 
     // Mode réel : Rose IA fondée sur les fiches validées (serveur), repli FAQ locale
     if (MODE_REEL) {
       const parler = speakAloud || isRecordingVoice;
       void demanderARose(textToSend, appLanguage).then((r) => {
+        setRoseEnAttente(false);
         setRoseMessages((prev) => [
           ...prev,
           {
@@ -260,6 +265,7 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
             sources: r.sources,
             origine: r.origine,
             alerte: r.alerte,
+            motif: r.motif,
             time: "Maintenant",
           },
         ]);
@@ -287,6 +293,7 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
 
     // Réponse différée pour simulation naturelle d'analyse IA
     window.setTimeout(() => {
+      setRoseEnAttente(false);
       setRoseMessages((prev) => [
         ...prev,
         {
@@ -349,6 +356,7 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
     handleToggleVoiceRecognition,
     handleRequestNotification,
     handleSendRoseMessage,
+    roseEnAttente,
   };
 }
 

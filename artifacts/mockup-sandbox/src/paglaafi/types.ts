@@ -189,6 +189,8 @@ export interface MessageRose extends AudiosLanguesLocales {
   // Mode réel : sources citées, origine de la réponse et signe d'alerte détecté
   sources?: SourceRose[];
   origine?: "ia" | "sans_source" | "faq";
+  /** Raison d'un repli sur la FAQ (hors ligne, non connectée, limite du jour, service indisponible) */
+  motif?: "hors_ligne" | "non_connectee" | "quota" | "indisponible";
   alerte?: boolean;
 }
 
