@@ -1,4 +1,4 @@
-import { Loader2, MapPin, Mic, Play, Send, ShieldCheck, Sparkles } from "lucide-react";
+import { CalendarDays, Loader2, MapPin, Mic, Play, Send, ShieldCheck, Sparkles } from "lucide-react";
 import { useUi, useAuth, useSante, useRose, useEducation, useCentres } from "../etat/contextes";
 import { MODE_REEL } from "../config";
 import { estInvitee } from "../composants/entreesMenu";
@@ -86,7 +86,11 @@ export function RoseIA() {
             const texte = utilisatrice ? msg.text : (locale ?? msg.text);
             const langueTexte = locale ? appLanguage : (msg.langueTexte ?? "fr");
             const traductionManquante = !utilisatrice && appLanguage !== "fr" && langueTexte !== appLanguage;
-            const video = !utilisatrice && /palpation|geste|boule|sein|nodule/i.test(msg.text);
+            // Question posée juste avant : une question sur l'autopalpation renvoie toujours vers le
+            // guide des 4 gestes et le calendrier de l'application, même sans fiche validée
+            const question = !utilisatrice && roseMessages[i - 1]?.sender === "user" ? roseMessages[i - 1].text : "";
+            const autopalpation = /palp|examiner (mes|les|ses) seins|v[ée]rifier (mes|les|ses) seins|self.?exam|check (my|your) breasts/i.test(question);
+            const video = !utilisatrice && !autopalpation && /palpation|geste|boule|sein|nodule/i.test(msg.text);
 
             return (
               <li key={i} className={`flex gap-2 ${utilisatrice ? "justify-end" : "justify-start"}`}>
@@ -144,6 +148,30 @@ export function RoseIA() {
                             ))}
                           </ol>
                         )}
+                      </div>
+                    )}
+
+                    {autopalpation && (
+                      <div className="mt-3 space-y-2 rounded-bouton bg-surface-2 p-3">
+                        <p className="text-petit text-texte">
+                          Dans PagLaafi, le <strong>guide des 4 gestes</strong> montre l'autopalpation étape par étape, et votre calendrier indique le bon moment du mois.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setShowAutopalpationVideoModal(true)}
+                            className="inline-flex min-h-11 items-center gap-2 rounded-bouton bg-action px-3 text-petit font-semibold text-sur-action"
+                          >
+                            <Play size={16} aria-hidden /> Voir le guide des 4 gestes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSection("Calendrier")}
+                            className="inline-flex min-h-11 items-center gap-2 rounded-bouton border-[1.5px] border-action px-3 text-petit font-semibold text-action"
+                          >
+                            <CalendarDays size={16} aria-hidden /> Le bon moment
+                          </button>
+                        </div>
                       </div>
                     )}
 

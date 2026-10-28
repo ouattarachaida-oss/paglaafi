@@ -288,7 +288,9 @@
   animation: pl-pulsation 1.6s ease-out infinite;
 }
 .anim-apparition {
-  animation: pl-apparition 0.2s ease-out both;
+  /* backwards (et non both) : aucun transform ne reste après l'animation, sinon les éléments
+     « fixed » de la page (saisie de Rose IA…) se caleraient sur la section au lieu de l'écran */
+  animation: pl-apparition 0.2s ease-out backwards;
 }
 .anim-feuille {
   animation: pl-feuille 0.2s ease-out both;
