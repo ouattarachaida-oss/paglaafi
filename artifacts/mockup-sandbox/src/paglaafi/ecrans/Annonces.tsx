@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CalendarDays, Clock, Expand, Megaphone, Phone, Plus, Sparkles } from "lucide-react";
 import { useAuth, useAnnonces } from "../etat/contextes";
 import { Badge, Bouton, EtatVide, OngletsSoulignes } from "../composants/ui";
@@ -5,6 +6,21 @@ import type { PartnerAnnouncement } from "../types";
 import { CarrouselAffiches } from "../composants/CarrouselAffiches";
 
 type Filtre = "all" | "month" | "my";
+
+/** Texte limité à 3 lignes (cartes de même hauteur), « Lire la suite » pour tout afficher. */
+function TexteRepliable({ texte }: { texte: string }) {
+  const [ouvert, setOuvert] = useState(false);
+  return (
+    <div>
+      <p className={`text-corps text-texte ${ouvert ? "" : "line-clamp-3"}`}>{texte}</p>
+      {texte.length > 140 && (
+        <button type="button" onClick={() => setOuvert(!ouvert)} aria-expanded={ouvert} className="min-h-11 text-petit font-semibold text-action underline underline-offset-4">
+          {ouvert ? "Réduire" : "Lire la suite"}
+        </button>
+      )}
+    </div>
+  );
+}
 
 /** Statut d'une annonce (la mention « en attente » rappelle qui peut la voir). */
 function StatutAnnonce({ a }: { a: PartnerAnnouncement }) {
@@ -64,10 +80,11 @@ export function Annonces() {
           <EtatVide icone={<Megaphone size={24} />} titre="Aucune annonce dans cette catégorie" texte="Les événements validés apparaîtront ici." />
         </div>
       ) : (
-        <ul className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <ul className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {displayedAnnouncements.map((a) => (
             <li key={a.id} className="flex flex-col overflow-hidden rounded-carte border border-bordure bg-surface shadow-carte">
-              {a.imageUrl && (
+              {/* Zone image de taille fixe (même hauteur pour toutes les cartes, avec ou sans affiche) */}
+              {a.imageUrl ? (
                 <div className="relative">
                   <img src={a.imageUrl} alt={a.imageCaption || `Affiche : ${a.title}`} loading="lazy" className="aspect-[4/3] w-full object-cover" width={640} height={480} />
                   <button
@@ -78,13 +95,19 @@ export function Annonces() {
                     <Expand size={16} aria-hidden /> Voir l'affiche
                   </button>
                 </div>
+              ) : (
+                <div className="grid aspect-[4/3] w-full place-items-center bg-rose-100 text-rose-500" aria-hidden>
+                  <Megaphone size={40} />
+                </div>
               )}
               <div className="flex flex-1 flex-col gap-2 p-4">
                 <p className="flex items-center gap-1.5 text-petit font-semibold text-action">
                   <CalendarDays size={16} aria-hidden /> {a.date}
                 </p>
-                <h2 className="text-sous-titre text-prune-900">{a.title}</h2>
-                <p className="text-petit text-texte-2">
+                <div className="min-h-[3.5rem]">
+                  <h2 className="line-clamp-2 text-sous-titre text-prune-900">{a.title}</h2>
+                </div>
+                <p className="line-clamp-1 text-petit text-texte-2">
                   {a.author} · {a.city}
                 </p>
                 {a.isRoseAIDetected && (
@@ -92,10 +115,10 @@ export function Annonces() {
                     <Sparkles size={16} aria-hidden /> Repérée par la veille Rose IA · {a.sourceWebUrl}
                   </p>
                 )}
-                <p className="text-corps text-texte">{a.content}</p>
+                <TexteRepliable texte={a.content} />
                 {a.contact && (
-                  <p className="flex items-center gap-1.5 text-petit text-texte-2">
-                    <Phone size={16} aria-hidden /> {a.contact}
+                  <p className="flex items-center gap-1.5 truncate text-petit text-texte-2">
+                    <Phone size={16} aria-hidden className="shrink-0" /> <span className="truncate">{a.contact}</span>
                   </p>
                 )}
                 <div className="mt-auto pt-2">

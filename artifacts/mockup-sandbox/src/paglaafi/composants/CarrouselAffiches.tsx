@@ -58,16 +58,18 @@ export function CarrouselAffiches() {
     >
       <ul ref={piste} onScroll={auDefilement} className="defilement-discret flex snap-x snap-mandatory gap-3 overflow-x-auto">
         {AFFICHES.map((a, i) => (
-          <li key={a.id} className="w-[78%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]" aria-roledescription="diapositive" aria-label={`${i + 1} sur ${AFFICHES.length}`}>
+          <li key={a.id} className="flex w-[78%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]" aria-roledescription="diapositive" aria-label={`${i + 1} sur ${AFFICHES.length}`}>
             <button
               type="button"
               onClick={() => setSelectedPosterModal({ url: a.image, title: a.titre, author: a.organisateur, caption: `${a.quand} · ${a.ou}` })}
-              className="block w-full overflow-hidden rounded-carte border border-bordure bg-surface text-left shadow-carte"
+              className="flex w-full flex-col overflow-hidden rounded-carte border border-bordure bg-surface text-left shadow-carte"
             >
               <img src={a.image} alt={`Affiche : ${a.titre}`} loading={i < 2 ? "eager" : "lazy"} className="aspect-[4/5] w-full object-cover object-top" width={400} height={500} />
               <span className="block p-3">
-                <span className="block text-petit font-semibold text-action">{a.quand}</span>
-                <span className="line-clamp-2 block text-corps font-semibold text-prune-900">{a.titre}</span>
+                <span className="line-clamp-1 block text-petit font-semibold text-action">{a.quand}</span>
+                <span className="block min-h-[3rem]">
+                  <span className="line-clamp-2 text-corps font-semibold text-prune-900">{a.titre}</span>
+                </span>
                 <span className="block truncate text-petit text-texte-2">
                   {a.organisateur} · {a.ou}
                 </span>
