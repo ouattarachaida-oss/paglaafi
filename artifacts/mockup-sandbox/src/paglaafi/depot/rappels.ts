@@ -35,6 +35,12 @@ export async function chargerRappels(): Promise<Rappel[]> {
   return (data as LigneRappel[]).map(versRappel);
 }
 
+/** Active ou désactive un rappel (la base n'accepte que les rappels de l'utilisatrice connectée). */
+export async function changerEtatRappel(id: number, actif: boolean): Promise<void> {
+  const { error } = await client().from("rappels").update({ actif }).eq("id", id);
+  if (error) throw error;
+}
+
 export async function creerRappel(r: Omit<Rappel, "id">): Promise<Rappel> {
   const { data, error } = await client()
     .from("rappels")

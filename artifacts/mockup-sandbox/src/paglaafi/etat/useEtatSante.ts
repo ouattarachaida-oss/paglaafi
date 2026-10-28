@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MODE_REEL } from "../config";
 import { messageErreur } from "../lib/supabase";
-import { chargerRappels, creerRappel, type Rappel } from "../depot/rappels";
+import { changerEtatRappel, chargerRappels, creerRappel, type Rappel } from "../depot/rappels";
 import { useDerniereRequete } from "../lib/derniereRequete";
 import { effacerCompte, enregistrer, lire } from "../lib/stockageSecurise";
 import { client } from "../lib/supabase";
@@ -248,6 +248,22 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     return true;
   };
 
+  /** Active ou désactive un rappel (mis à jour tout de suite, annulé si la base refuse). */
+  const basculerRappel = async (id: number) => {
+    const actuel = (reminders as Rappel[]).find((r) => r.id === id);
+    if (!actuel) return;
+    const actif = !actuel.active;
+    setReminders((prev: Rappel[]) => prev.map((r) => (r.id === id ? { ...r, active: actif } : r)));
+    if (MODE_REEL && sessionReelle) {
+      try {
+        await changerEtatRappel(id, actif);
+      } catch (erreur) {
+        setReminders((prev: Rappel[]) => prev.map((r) => (r.id === id ? { ...r, active: !actif } : r)));
+        notify(messageErreur(erreur as Error));
+      }
+    }
+  };
+
   const [showNewReminderForm, setShowNewReminderForm] = useState(false);
 
   const [newReminderTitle, setNewReminderTitle] = useState("");
@@ -471,6 +487,7 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     reminders,
     setReminders,
     ajouterRappel,
+    basculerRappel,
     showNewReminderForm,
     setShowNewReminderForm,
     newReminderTitle,

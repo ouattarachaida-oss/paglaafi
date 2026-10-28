@@ -1,11 +1,117 @@
-import { AlertCircle, Bell, Calendar, Check, CheckCheck, CheckCircle2, Clock, RotateCcw, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Bell, CalendarClock, Check, ChevronLeft, ChevronRight, Clock, Hand, Plus, RotateCcw, Sparkles } from "lucide-react";
 import { useUi, useSante } from "../etat/contextes";
+import { Bandeau, Bouton, Carte, Champ, EnTeteSection, EtatVide, Interrupteur, ListeDeroulante } from "../composants/ui";
+import type { Rappel } from "../depot/rappels";
+
+/** « 2026-10-28 » pour une date locale (sans décalage de fuseau). */
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const depuisIso = (s: string) => {
+  const [a, m, j] = s.split("-").map((x) => parseInt(x, 10));
+  return new Date(a, (m || 1) - 1, j || 1);
+};
+const decaler = (d: Date, jours: number) => {
+  const n = new Date(d);
+  n.setDate(n.getDate() + jours);
+  return n;
+};
+const JOURS = ["L", "M", "M", "J", "V", "S", "D"];
+const NOMS_JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
 /**
- * Onglet Cycle : règles, fenêtre d'autopalpation, recalibration et rappels.
+ * Calendrier mensuel : premier jour des règles noté (case pleine), fenêtre
+ * d'autopalpation J+7 à J+11 (pointillés) et début prévu des prochaines règles
+ * (bordure prune). Aucune durée de règles n'est supposée. Légende textuelle.
  */
+function CalendrierCycle({ debutRegles, dureeCycle }: { debutRegles: string; dureeCycle: number }) {
+  const debut = depuisIso(debutRegles);
+  const [mois, setMois] = useState(() => {
+    const t = new Date();
+    return new Date(t.getFullYear(), t.getMonth(), 1);
+  });
+  const fenetre = new Set(Array.from({ length: 5 }, (_, i) => iso(decaler(debut, 7 + i))));
+  const prevision = iso(decaler(debut, dureeCycle));
+  const aujourdhui = iso(new Date());
+
+  const cases = useMemo(() => {
+    const premier = (mois.getDay() + 6) % 7; // lundi = 0
+    const nb = new Date(mois.getFullYear(), mois.getMonth() + 1, 0).getDate();
+    return [...Array(premier).fill(null), ...Array.from({ length: nb }, (_, i) => new Date(mois.getFullYear(), mois.getMonth(), i + 1))];
+  }, [mois]);
+
+  const titreMois = mois.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  return (
+    <Carte>
+      <div className="flex items-center justify-between">
+        <h2 className="text-sous-titre capitalize text-prune-900">{titreMois}</h2>
+        <div className="flex">
+          <button type="button" aria-label="Mois précédent" onClick={() => setMois(new Date(mois.getFullYear(), mois.getMonth() - 1, 1))} className="grid h-11 w-11 place-items-center rounded-full text-texte-2 active:bg-rose-200">
+            <ChevronLeft size={22} aria-hidden />
+          </button>
+          <button type="button" aria-label="Mois suivant" onClick={() => setMois(new Date(mois.getFullYear(), mois.getMonth() + 1, 1))} className="grid h-11 w-11 place-items-center rounded-full text-texte-2 active:bg-rose-200">
+            <ChevronRight size={22} aria-hidden />
+          </button>
+        </div>
+      </div>
+
+      <div role="grid" aria-label={`Calendrier du cycle, ${titreMois}`} className="mt-2 grid grid-cols-7 gap-1 text-center">
+        {JOURS.map((j, i) => (
+          <span key={i} role="columnheader" aria-label={NOMS_JOURS[i]} className="py-1 text-badge text-texte-2">
+            {j}
+          </span>
+        ))}
+        {cases.map((d, i) => {
+          if (!d) return <span key={`v${i}`} aria-hidden />;
+          const k = iso(d);
+          const regles = k === debutRegles;
+          const autop = fenetre.has(k);
+          const prev = k === prevision;
+          const etats = [regles && "début des règles noté", autop && "fenêtre d'autopalpation", prev && "prochaines règles prévues", k === aujourdhui && "aujourd'hui"].filter(Boolean);
+          return (
+            <span
+              key={k}
+              role="gridcell"
+              aria-label={`${d.getDate()}${etats.length ? ` : ${etats.join(", ")}` : ""}`}
+              className={`grid aspect-square min-h-10 place-items-center rounded-full text-petit ${
+                regles
+                  ? "bg-action font-bold text-sur-action"
+                  : autop
+                    ? "bordure-pointillee bg-rose-100 font-semibold text-prune-900"
+                    : prev
+                      ? "border-2 border-prune-900 font-semibold text-prune-900"
+                      : "text-texte"
+              } ${k === aujourdhui && !regles ? "underline decoration-2 underline-offset-4" : ""}`}
+            >
+              {d.getDate()}
+            </span>
+          );
+        })}
+      </div>
+
+      <ul className="mt-4 grid gap-2 text-petit text-texte min-[420px]:grid-cols-2" aria-label="Légende">
+        <li className="flex items-center gap-2">
+          <span className="h-5 w-5 shrink-0 rounded-full bg-action" aria-hidden /> Début des règles noté (case pleine)
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="bordure-pointillee h-5 w-5 shrink-0 rounded-full bg-rose-100" aria-hidden /> Fenêtre d'autopalpation (pointillés)
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-5 w-5 shrink-0 rounded-full border-2 border-prune-900" aria-hidden /> Prochaines règles prévues (contour)
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="w-5 text-center font-semibold underline decoration-2 underline-offset-4" aria-hidden>
+            1
+          </span>
+          Aujourd'hui (souligné)
+        </li>
+      </ul>
+    </Carte>
+  );
+}
+
+/** Cycle & Autopalpation : calendrier, prévisions, recalibrage, autopalpation, historique et rappels. */
 export function Cycle() {
-  const { notify, section } = useUi();
+  const { notify } = useUi();
   const {
     cycleHistory,
     cycleInfo,
@@ -26,6 +132,7 @@ export function Cycle() {
     setNewReminderType,
     setRealPeriodDateInput,
     ajouterRappel,
+    basculerRappel,
     setShowCycleHistory,
     setShowNewReminderForm,
     setShowRecalibrateBox,
@@ -34,385 +141,223 @@ export function Cycle() {
     showRecalibrateBox,
   } = useSante();
 
+  const ecart = Math.round((depuisIso(realPeriodDateInput).getTime() - depuisIso(lastPeriodDate).getTime()) / 86400000);
+  const jours = cycleInfo.daysUntilNextPeriod;
+
   return (
-    <section className="ph-enter px-5 pt-4">
-      <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">Santé intime & Prévention</span>
-      <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">Cycle & Autopalpation</h1>
-      <p className="mt-1 text-xs text-[#795f6d]">
-        Suivez vos règles, sachez le moment idéal pour observer vos seins et programmez vos rappels médicaux.
-      </p>
+    <section className="anim-apparition">
+      <h1 className="text-display text-prune-900">Cycle & Autopalpation</h1>
+      <p className="mt-1 text-corps text-texte-2">Vos règles, le bon moment pour observer vos seins et vos rappels.</p>
 
-      {/* Suivi des règles, Prédictions & Recalibration adaptative */}
-      <div className="mt-3.5 rounded-[24px] border border-[#f0d4df] bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#f6e6ec] pb-2.5">
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] text-[#ea2d6d]">
-              <Calendar size={17} />
-            </span>
-            <div>
-              <h3 className="ph-display text-sm font-bold text-[#580e36]">Cycle & Prédictions</h3>
-              <p className="text-[10px] text-[#8c566d]">Prévision locale adaptative</p>
-            </div>
-          </div>
-          <span className="rounded-full bg-pink-100 px-2.5 py-0.5 text-[10px] font-bold text-[#ea2d6d]">
-            Cycle moyen : {cycleLengthDays} jours
-          </span>
-        </div>
+      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+        <div className="space-y-4">
+          <CalendrierCycle debutRegles={lastPeriodDate} dureeCycle={cycleLengthDays} />
 
-        {/* Estimation actuelle calculée */}
-        <div className="mt-3 rounded-2xl bg-gradient-to-br from-[#fdf5f7] to-[#faedf2] border border-[#f5dfe6] p-3 text-xs">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="text-[10px] font-bold text-[#91586e] uppercase tracking-wider">
-                Prochaines règles estimées :
-              </span>
-              <p className="text-base font-extrabold text-[#580e36] mt-0.5">{cycleInfo.nextPeriodStr}</p>
-              <p className="text-[10px] text-[#785566]">
-                Dernier début noté : {new Date(lastPeriodDate).toLocaleDateString("fr-FR")}
+          <div className="grid grid-cols-2 gap-3">
+            <Carte>
+              <p className="text-petit text-texte-2">Prochaines règles</p>
+              <p className="mt-1 text-sous-titre text-prune-900">{cycleInfo.nextPeriodStr}</p>
+              <p className="mt-1 flex items-center gap-1 text-petit text-texte-2">
+                {jours > 0 ? (
+                  <>
+                    <Clock size={16} aria-hidden /> Dans {jours} j
+                  </>
+                ) : jours === 0 ? (
+                  "Prévues aujourd'hui"
+                ) : (
+                  <>
+                    <RotateCcw size={16} aria-hidden /> Décalage de {Math.abs(jours)} j
+                  </>
+                )}
               </p>
-            </div>
+            </Carte>
+            <Carte>
+              <p className="text-petit text-texte-2">Autopalpation</p>
+              <p className="mt-1 text-sous-titre text-prune-900">{cycleInfo.autopalpWindowStr}</p>
+              <p className="mt-1 text-petit text-texte-2">{cycleInfo.isOptimalWindow ? "C'est le bon moment" : `Cycle de ${cycleLengthDays} jours`}</p>
+            </Carte>
+          </div>
 
-            <div className="text-right">
-              {cycleInfo.daysUntilNextPeriod > 0 ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#ea2d6d] shadow-xs border border-pink-100">
-                  <Clock size={12} /> Dans {cycleInfo.daysUntilNextPeriod} j
-                </span>
-              ) : cycleInfo.daysUntilNextPeriod === 0 ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-800 shadow-xs">
-                  <AlertCircle size={12} /> Prévues aujourd'hui
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-bold text-orange-800 shadow-xs">
-                  <RotateCcw size={12} /> Décalage ({Math.abs(cycleInfo.daysUntilNextPeriod)} j)
-                </span>
+          {recalibrationFeedback && (
+            <Bandeau ton={recalibrationFeedback.type === "success" ? "succes" : recalibrationFeedback.type === "warning" ? "horsLigne" : "info"} role="status">
+              <p className="font-semibold">Ajustement automatique du cycle</p>
+              <p>{recalibrationFeedback.text}</p>
+            </Bandeau>
+          )}
+
+          {/* Recalibrage */}
+          <Carte>
+            <h2 className="text-sous-titre text-prune-900">Vos règles sont là ?</h2>
+            <p className="mt-1 text-petit text-texte-2">Enregistrez la date réelle pour recalibrer la prédiction si elle n'est pas exacte.</p>
+            <div className="mt-3 grid gap-2 min-[420px]:grid-cols-2">
+              <Bouton icone={<Check size={20} aria-hidden />} onClick={() => handleRecalibratePeriod(iso(new Date()))}>
+                Règles débutées aujourd'hui
+              </Bouton>
+              <Bouton variante="secondaire" icone={<RotateCcw size={18} aria-hidden />} aria-expanded={showRecalibrateBox} onClick={() => setShowRecalibrateBox(!showRecalibrateBox)}>
+                {showRecalibrateBox ? "Masquer" : "Autre date"}
+              </Bouton>
+            </div>
+            {showRecalibrateBox && (
+              <div className="mt-4 space-y-3 border-t border-bordure pt-4">
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Raccourcis de date">
+                  {[
+                    ["Aujourd'hui", 0],
+                    ["Hier", 1],
+                    ["Avant-hier", 2],
+                  ].map(([libelle, n]) => {
+                    const v = iso(decaler(new Date(), -(n as number)));
+                    return (
+                      <button
+                        key={libelle}
+                        type="button"
+                        aria-pressed={realPeriodDateInput === v}
+                        onClick={() => setRealPeriodDateInput(v)}
+                        className={`min-h-11 rounded-full px-4 text-petit font-semibold ${realPeriodDateInput === v ? "bg-carte-prune text-white" : "border border-bordure text-texte"}`}
+                      >
+                        {libelle}
+                      </button>
+                    );
+                  })}
+                </div>
+                <Champ libelle="Date précise du premier jour" type="date" value={realPeriodDateInput} onChange={(e) => setRealPeriodDateInput(e.target.value)} />
+                <p className="flex justify-between rounded-bouton bg-surface-2 px-3 py-2 text-petit text-texte">
+                  <span>Écart depuis le cycle précédent</span>
+                  <strong className="text-prune-900">{ecart > 0 ? `${ecart} jours` : "Date invalide"}</strong>
+                </p>
+                <Bouton pleineLargeur onClick={() => handleRecalibratePeriod(realPeriodDateInput)}>
+                  Enregistrer et recalibrer
+                </Bouton>
+              </div>
+            )}
+
+            <div className="mt-4 border-t border-bordure pt-2">
+              <Bouton variante="discret" aria-expanded={showCycleHistory} onClick={() => setShowCycleHistory(!showCycleHistory)}>
+                {showCycleHistory ? "Masquer l'historique" : "Voir l'historique"} ({cycleHistory.length})
+              </Bouton>
+              {showCycleHistory && (
+                <ul className="mt-2 space-y-2">
+                  {cycleHistory.map((item) => (
+                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-bouton bg-surface-2 px-3 py-2">
+                      <span className="min-w-0">
+                        <span className="block text-petit font-semibold text-prune-900">Cycle du {item.date}</span>
+                        <span className="block text-petit text-texte-2">{item.note}</span>
+                      </span>
+                      <span className="shrink-0 text-petit font-semibold text-texte">{item.duration} jours</span>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
-          </div>
+          </Carte>
         </div>
 
-        {/* Feedback vivant lors d'un recalibrage récent */}
-        {recalibrationFeedback && (
-          <div
-            className={`mt-2.5 rounded-xl p-2.5 text-xs flex items-start gap-2 border ${
-              recalibrationFeedback.type === "success"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-                : recalibrationFeedback.type === "warning"
-                  ? "bg-amber-50 border-amber-200 text-amber-900"
-                  : "bg-blue-50 border-blue-200 text-blue-900"
-            }`}
-          >
-            <Sparkles size={15} className="shrink-0 mt-0.5 text-[#ea2d6d]" />
-            <div className="flex-1 text-[11px] leading-relaxed">
-              <p className="font-bold">Ajustement automatique du cycle :</p>
-              <p>{recalibrationFeedback.text}</p>
-            </div>
-          </div>
-        )}
-
-        {/* MODULE D'ENREGISTREMENT ET DE RECALIBRATION */}
-        <div className="mt-3 rounded-2xl bg-[#fff8fa] border border-[#f0d4de] p-3 text-xs">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-[#4c2a3b]">Vos règles sont là ?</p>
-              <p className="text-[10px] text-[#865d70]">
-                Enregistrez la date réelle pour recalibrer la prédiction si elle n'est pas exacte.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {/* Bouton 1-clic direct pour aujourd'hui */}
+        <div className="space-y-4">
+          {/* Autopalpation du mois */}
+          <div className="rounded-carte bg-carte-prune p-5 text-white shadow-carte">
+            <p className="flex items-center gap-2 text-petit font-semibold text-white/85">
+              <Hand size={18} aria-hidden /> Autopalpation du mois
+            </p>
+            <p className="mt-2 text-petit text-white/85">Dernière autopalpation notée</p>
+            <p className="text-sous-titre text-white">{lastAutopalpationDate}</p>
             <button
               type="button"
               onClick={() => {
-                const d = new Date();
-                const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-                handleRecalibratePeriod(todayStr);
+                setAutopalpationDoneThisMonth(true);
+                setLastAutopalpationDate(new Date().toLocaleDateString("fr-FR"));
+                notify("Bravo ! Autopalpation enregistrée pour ce mois-ci.");
               }}
-              className="flex items-center justify-center gap-2 rounded-xl bg-[#ea2d6d] py-2 px-3 text-xs font-bold text-white shadow-xs hover:bg-[#8e3855] transition active:scale-[0.98]"
+              className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-bouton bg-white px-4 text-center text-corps font-semibold text-[#580e36] active:bg-[#faeff2]"
             >
-              <CheckCircle2 size={15} /> Mes règles ont débuté aujourd'hui
-            </button>
-
-            {/* Bouton d'ouverture du sélecteur fin */}
-            <button
-              type="button"
-              onClick={() => setShowRecalibrateBox(!showRecalibrateBox)}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-[#d6a5b6] bg-white py-2 px-3 text-xs font-bold text-[#8c3855] shadow-xs hover:bg-[#faedf1] transition"
-            >
-              <RotateCcw size={14} />
-              {showRecalibrateBox ? "Masquer le réglage" : "Autre date / Recalibrer"}
+              <Check size={20} aria-hidden /> J'ai réalisé mon autopalpation ce mois-ci ({lastAutopalpationDate})
             </button>
           </div>
 
-          {/* Volet rétractable pour choisir une date spécifique et recalibrer */}
-          {showRecalibrateBox && (
-            <div className="mt-3 rounded-xl bg-white p-3 border border-[#ebd0db] shadow-xs space-y-2.5">
-              <p className="font-bold text-[#553043] text-xs">Indiquez le jour réel où vos règles ont commencé :</p>
+          {/* Recommandation (texte médical inchangé) */}
+          <Carte>
+            <p className="flex items-center gap-2 text-petit font-semibold text-succes">
+              <Sparkles size={18} aria-hidden /> Recommandation médicale
+            </p>
+            <h2 className="mt-1 text-sous-titre text-prune-900">Fenêtre d'autopalpation : {cycleInfo.autopalpWindowStr}</h2>
+            <p className="mt-2 text-corps text-texte">
+              Le meilleur moment pour observer vos seins est <strong>2 à 5 jours après la fin des règles</strong>, quand les tissus mammaires sont
+              souples et non douloureux.
+            </p>
+            <ol className="mt-3 space-y-2 text-corps text-texte">
+              <li className="rounded-bouton bg-surface-2 px-3 py-2">
+                <b>1. Devant le miroir :</b> Observez bras le long du corps, puis levés (recherchez une fossette ou un pli).
+              </li>
+              <li className="rounded-bouton bg-surface-2 px-3 py-2">
+                <b>2. Palpation circulaire :</b> Avec la pulpe des 3 doigts, faites des petits cercles fermes de l'extérieur vers le centre.
+              </li>
+              <li className="rounded-bouton bg-surface-2 px-3 py-2">
+                <b>3. Sous l'aisselle :</b> Vérifiez le creux du bras pour vous assurer de l'absence de nodule ou ganglion dur.
+              </li>
+              <li className="rounded-bouton bg-surface-2 px-3 py-2">
+                <b>4. Pression douce :</b> Pincez légèrement le mamelon pour vérifier l'absence d'écoulement anormal.
+              </li>
+            </ol>
+          </Carte>
 
-              {/* Raccourcis tactiles rapides */}
-              <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                <button
-                  type="button"
+          {/* Rappels */}
+          <section aria-labelledby="titre-rappels">
+            <EnTeteSection
+              id="titre-rappels"
+              titre="Mes rappels de santé"
+              action={
+                <Bouton variante="secondaire" taille="petit" icone={<Plus size={18} aria-hidden />} aria-expanded={showNewReminderForm} onClick={() => setShowNewReminderForm(!showNewReminderForm)}>
+                  Ajouter
+                </Bouton>
+              }
+            />
+            {showNewReminderForm && (
+              <Carte className="mb-3 space-y-3">
+                <Champ libelle="Titre du rappel" placeholder="Ex : Échographie Schiphra" value={newReminderTitle} onChange={(e) => setNewReminderTitle(e.target.value)} />
+                <Champ libelle="Date et heure" placeholder="Ex : 28 octobre à 10h" value={newReminderDate} onChange={(e) => setNewReminderDate(e.target.value)} />
+                <ListeDeroulante libelle="Type" value={newReminderType} onChange={(e) => setNewReminderType(e.target.value as typeof newReminderType)}>
+                  <option value="screening">Dépistage</option>
+                  <option value="appointment">Rendez-vous</option>
+                  <option value="treatment">Traitement</option>
+                </ListeDeroulante>
+                <Bouton
+                  pleineLargeur
+                  disabled={!newReminderTitle}
                   onClick={() => {
-                    const d = new Date();
-                    const str = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-                    setRealPeriodDateInput(str);
+                    void ajouterRappel({ title: newReminderTitle, date: newReminderDate || "Bientôt", type: newReminderType }).then((ok) => {
+                      if (!ok) return;
+                      setNewReminderTitle("");
+                      setNewReminderDate("");
+                      setShowNewReminderForm(false);
+                      notify("Rappel ajouté avec succès.");
+                    });
                   }}
-                  className={`rounded-lg px-2.5 py-1 font-semibold border ${
-                    realPeriodDateInput ===
-                    `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`
-                      ? "bg-[#ea2d6d] text-white border-[#ea2d6d]"
-                      : "bg-[#faeff2] text-[#6b3c50] border-[#ebd1dc]"
-                  }`}
                 >
-                  Aujourd'hui
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const d = new Date();
-                    d.setDate(d.getDate() - 1);
-                    const str = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-                    setRealPeriodDateInput(str);
-                  }}
-                  className="rounded-lg px-2.5 py-1 font-semibold bg-[#faeff2] text-[#6b3c50] border border-[#ebd1dc] hover:bg-[#f6e1e8]"
-                >
-                  Hier
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const d = new Date();
-                    d.setDate(d.getDate() - 2);
-                    const str = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-                    setRealPeriodDateInput(str);
-                  }}
-                  className="rounded-lg px-2.5 py-1 font-semibold bg-[#faeff2] text-[#6b3c50] border border-[#ebd1dc] hover:bg-[#f6e1e8]"
-                >
-                  Avant-hier
-                </button>
-              </div>
-
-              {/* Sélecteur de date natif */}
-              <div>
-                <label className="block text-[10px] font-bold text-[#865d70] mb-1">
-                  Date précise du premier jour :
-                </label>
-                <input
-                  type="date"
-                  value={realPeriodDateInput}
-                  onChange={(e) => setRealPeriodDateInput(e.target.value)}
-                  className="w-full rounded-xl border border-[#ebd2dd] p-2 text-xs font-bold text-[#580e36] bg-[#fffcfd]"
-                />
-              </div>
-
-              {/* Aperçu du calcul de l'écart */}
-              {(() => {
-                const prevParts = lastPeriodDate.split("-");
-                const prevDate = new Date(
-                  parseInt(prevParts[0], 10),
-                  parseInt(prevParts[1], 10) - 1,
-                  parseInt(prevParts[2], 10),
-                );
-                const realParts = realPeriodDateInput.split("-");
-                const realDate = new Date(
-                  parseInt(realParts[0], 10),
-                  parseInt(realParts[1], 10) - 1,
-                  parseInt(realParts[2], 10),
-                );
-                const diff = Math.round((realDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
-                return (
-                  <div className="rounded-lg bg-[#faeff2] p-2 text-[11px] text-[#6a3c50] flex items-center justify-between">
-                    <span>Écart constaté depuis le cycle précédent :</span>
-                    <span className="font-extrabold text-[#ea2d6d]">
-                      {diff > 0 ? `${diff} jours` : "Date invalide"}
+                  Enregistrer le rappel
+                </Bouton>
+              </Carte>
+            )}
+            {reminders.length === 0 ? (
+              <EtatVide icone={<Bell size={24} />} titre="Aucun rappel" texte="Ajoutez un dépistage ou un rendez-vous pour ne pas l'oublier." />
+            ) : (
+              <ul className="space-y-2">
+                {(reminders as Rappel[]).map((r) => (
+                  <li key={r.id} className="flex items-center gap-3 rounded-carte border border-bordure bg-surface px-4 py-2 shadow-carte">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rose-100 text-rose-500" aria-hidden>
+                      <CalendarClock size={20} />
                     </span>
-                  </div>
-                );
-              })()}
-
-              <button
-                type="button"
-                onClick={() => handleRecalibratePeriod(realPeriodDateInput)}
-                className="w-full rounded-xl bg-gradient-to-r from-[#ea2d6d] to-[#b34d70] py-2 text-xs font-bold text-white shadow hover:opacity-95 transition"
-              >
-                Enregistrer & Recalibrer la prédiction
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Historique des cycles recalibrés (accordéon repliable) */}
-        <div className="mt-2.5 pt-2 border-t border-[#f7e4eb] flex items-center justify-between text-[11px]">
-          <button
-            type="button"
-            onClick={() => setShowCycleHistory(!showCycleHistory)}
-            className="inline-flex items-center gap-1 font-bold text-[#914c66] hover:underline"
-          >
-            <span>{showCycleHistory ? "Masquer l'historique" : "Voir l'historique de recalibration"}</span>
-            <span>({cycleHistory.length})</span>
-          </button>
-          <span className="text-[10px] text-[#9a7082]">Stockage 100% privé local</span>
-        </div>
-
-        {showCycleHistory && (
-          <div className="mt-2 space-y-1.5 text-xs">
-            {cycleHistory.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-xl border border-[#f0dae2] bg-[#fffafb] p-2 flex items-center justify-between"
-              >
-                <div>
-                  <p className="font-bold text-[#580e36] text-[11px]">Cycle du {item.date}</p>
-                  <p className="text-[10px] text-[#7a5868]">{item.note}</p>
-                </div>
-                <span className="rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-bold text-[#ea2d6d]">
-                  {item.duration} jours
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Fenêtre d'autopalpation recommandée par l'OMS */}
-      <div className="mt-3.5 rounded-[24px] border-2 border-emerald-300 bg-gradient-to-br from-[#f2fbf6] to-[#e7f7ee] p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[9.5px] font-bold text-white shadow-xs">
-            <CheckCheck size={13} /> Recommandation médicale
-          </span>
-          <span className="text-[10px] font-bold text-emerald-800">
-            {cycleInfo.isOptimalWindow ? "🟢 Période Idéale Aujourd'hui" : "Prochaine période"}
-          </span>
-        </div>
-
-        <h3 className="ph-display mt-2 text-base font-bold text-[#204030]">
-          Fenêtre d'autopalpation : {cycleInfo.autopalpWindowStr}
-        </h3>
-        <p className="mt-1 text-xs text-[#39614c] leading-relaxed">
-          Le meilleur moment pour observer vos seins est <strong>2 à 5 jours après la fin des règles</strong>, quand les
-          tissus mammaires sont souples et non douloureux.
-        </p>
-
-        <div className="mt-3 space-y-1.5 text-xs">
-          <div className="rounded-xl bg-white/90 p-2 border border-emerald-200">
-            <b>1. Devant le miroir :</b> Observez bras le long du corps, puis levés (recherchez une fossette ou un pli).
-          </div>
-          <div className="rounded-xl bg-white/90 p-2 border border-emerald-200">
-            <b>2. Palpation circulaire :</b> Avec la pulpe des 3 doigts, faites des petits cercles fermes de l'extérieur
-            vers le centre.
-          </div>
-          <div className="rounded-xl bg-white/90 p-2 border border-emerald-200">
-            <b>3. Sous l'aisselle :</b> Vérifiez le creux du bras pour vous assurer de l'absence de nodule ou ganglion
-            dur.
-          </div>
-          <div className="rounded-xl bg-white/90 p-2 border border-emerald-200">
-            <b>4. Pression douce :</b> Pincez légèrement le mamelon pour vérifier l'absence d'écoulement anormal.
-          </div>
-        </div>
-
-        <button
-          onClick={() => {
-            setAutopalpationDoneThisMonth(true);
-            setLastAutopalpationDate(new Date().toLocaleDateString("fr-FR"));
-            notify("Bravo ! Autopalpation enregistrée pour ce mois-ci.");
-          }}
-          className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-700 py-2.5 text-xs font-bold text-white shadow hover:bg-emerald-800"
-        >
-          <Check size={16} /> J'ai réalisé mon autopalpation ce mois-ci ({lastAutopalpationDate})
-        </button>
-      </div>
-
-      {/* Rappels personnalisés */}
-      <div className="mt-3.5 rounded-[24px] border border-[#f0d4df] bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#f6e6ec] pb-2.5">
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#faedf1] text-[#ea2d6d]">
-              <Bell size={17} />
-            </span>
-            <h3 className="ph-display text-sm font-bold text-[#580e36]">Mes rappels de santé</h3>
-          </div>
-          <button
-            onClick={() => setShowNewReminderForm(!showNewReminderForm)}
-            className="text-xs font-bold text-[#ea2d6d] hover:underline"
-          >
-            + Ajouter
-          </button>
-        </div>
-
-        {showNewReminderForm && (
-          <div className="mt-3 rounded-2xl bg-[#fdf5f7] p-3 text-xs space-y-2 border border-[#f2dbe3]">
-            <p className="font-bold text-[#623c4d]">Nouveau rappel médical :</p>
-            <input
-              type="text"
-              placeholder="Titre du rappel (ex: Échographie Schiphra)"
-              value={newReminderTitle}
-              onChange={(e) => setNewReminderTitle(e.target.value)}
-              className="w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-            />
-            <input
-              type="text"
-              placeholder="Date et heure (ex: 28 Octobre à 10h)"
-              value={newReminderDate}
-              onChange={(e) => setNewReminderDate(e.target.value)}
-              className="w-full rounded-xl border border-[#e4cfd6] p-2 text-xs"
-            />
-            <div className="flex gap-2">
-              <select
-                value={newReminderType}
-                onChange={(e) => setNewReminderType(e.target.value as any)}
-                className="rounded-xl border border-[#e4cfd6] p-1.5 text-xs font-semibold"
-              >
-                <option value="screening">Dépistage</option>
-                <option value="appointment">Rendez-vous</option>
-                <option value="treatment">Traitement</option>
-              </select>
-              <button
-                onClick={() => {
-                  if (!newReminderTitle) return;
-                  void ajouterRappel({
-                    title: newReminderTitle,
-                    date: newReminderDate || "Bientôt",
-                    type: newReminderType,
-                  }).then((ok) => {
-                    if (!ok) return;
-                    setNewReminderTitle("");
-                    setNewReminderDate("");
-                    setShowNewReminderForm(false);
-                    notify("Rappel ajouté avec succès.");
-                  });
-                }}
-                className="flex-1 rounded-xl bg-[#ea2d6d] py-1.5 font-bold text-white text-xs"
-              >
-                Enregistrer
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="mt-3 space-y-2 text-xs">
-          {reminders.map((r: any) => (
-            <div
-              key={r.id}
-              className="flex items-center justify-between rounded-xl border border-[#f2e2e7] p-2.5 bg-[#fffafc]"
-            >
-              <div className="flex items-center gap-2.5">
-                <span
-                  className={`grid h-7 w-7 place-items-center rounded-lg ${r.type === "screening" ? "bg-purple-100 text-purple-800" : r.type === "appointment" ? "bg-blue-100 text-blue-800" : "bg-emerald-100 text-emerald-800"}`}
-                >
-                  <Clock size={14} />
-                </span>
-                <div>
-                  <p className="font-bold text-[#580e36]">{r.title}</p>
-                  <p className="text-[10px] text-[#865d70]">{r.date}</p>
-                </div>
-              </div>
-              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800">
-                Actif ✓
-              </span>
-            </div>
-          ))}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-corps font-semibold text-prune-900">{r.title}</span>
+                      <span className="block text-petit text-texte-2">
+                        {r.date} · {r.type === "screening" ? "Dépistage" : r.type === "appointment" ? "Rendez-vous" : "Traitement"}
+                      </span>
+                    </span>
+                    <span className="w-14 shrink-0">
+                      <Interrupteur libelle={`Rappel « ${r.title} » ${r.active ? "actif" : "désactivé"}`} libelleMasque actif={r.active} onChange={() => void basculerRappel(r.id)} />
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
       </div>
     </section>
