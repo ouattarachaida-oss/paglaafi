@@ -186,7 +186,7 @@ export function ModaleMiseAJourCentre() {
           {/* 5. Message audio / Consigne du jour */}
           <div>
             <label className="block text-[10.5px] font-bold text-[#580e36] mb-1">
-              Consigne vocale du jour aux patientes (Français) :
+              Consigne du jour aux patientes :
             </label>
             <textarea
               rows={2}

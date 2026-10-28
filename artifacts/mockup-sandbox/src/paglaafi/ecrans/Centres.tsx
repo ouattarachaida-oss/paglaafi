@@ -8,10 +8,9 @@ import {
   FileText,
   Navigation,
   Search,
-  Volume2,
 } from "lucide-react";
 import { MODE_REEL } from "../config";
-import { useUi, useAuth, useAudio, useCentres, useOrientations } from "../etat/contextes";
+import { useUi, useAuth, useCentres, useOrientations } from "../etat/contextes";
 import { BadgeSimulation } from "../composants/BadgeSimulation";
 
 /**
@@ -20,7 +19,6 @@ import { BadgeSimulation } from "../composants/BadgeSimulation";
 export function Centres() {
   const { section } = useUi();
   const { currentUser } = useAuth();
-  const { handlePlayAudio } = useAudio();
   const {
     centers,
     cityFilter,
@@ -330,30 +328,6 @@ export function Centres() {
             </div>
 
             <div className="mt-2.5 flex items-center justify-between gap-1 border-t border-[#f4e4e9] pt-2 text-[10px]">
-              <button
-                onClick={() => handlePlayAudio(center.audioMessageFr, "fr")}
-                className="inline-flex items-center gap-1 rounded-full border border-[#e4bfcd] bg-white px-2 py-0.5 font-bold text-[#92405d]"
-              >
-                <Volume2 size={11} /> FR
-              </button>
-              <button
-                onClick={() => handlePlayAudio(center.audioMessageEn, "en")}
-                className="inline-flex items-center gap-1 rounded-full border border-[#e4bfcd] bg-white px-2 py-0.5 font-bold text-[#92405d]"
-              >
-                <Volume2 size={11} /> EN
-              </button>
-              <button
-                onClick={() => handlePlayAudio(center.audioMessageMoore, "moore")}
-                className="inline-flex items-center gap-1 rounded-full border border-[#e4bfcd] bg-white px-2 py-0.5 font-bold text-[#92405d]"
-              >
-                <Volume2 size={11} /> Mooré
-              </button>
-              <button
-                onClick={() => handlePlayAudio(center.audioMessageDioula, "dioula")}
-                className="inline-flex items-center gap-1 rounded-full border border-[#e4bfcd] bg-white px-2 py-0.5 font-bold text-[#92405d]"
-              >
-                <Volume2 size={11} /> Dioula
-              </button>
               <button
                 onClick={() => openNavigation(center.lat, center.lng, center.name)}
                 className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 font-bold text-white shadow-xs hover:bg-emerald-700 transition"

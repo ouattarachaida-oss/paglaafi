@@ -1,12 +1,11 @@
-import { ArrowLeft, MapPin, Navigation, Phone, Volume2 } from "lucide-react";
-import { useUi, useAudio, useCentres } from "../etat/contextes";
+import { ArrowLeft, MapPin, Navigation, Phone } from "lucide-react";
+import { useUi, useCentres } from "../etat/contextes";
 
 /**
  * Fiche détaillée d'un centre de santé.
  */
 export function FicheCentre() {
   const { section } = useUi();
-  const { handlePlayAudio } = useAudio();
   const { mapInstanceRef, openNavigation, selectedCenter, setSelectedCenter } = useCentres();
 
   if (!selectedCenter) return null;
@@ -74,39 +73,13 @@ export function FicheCentre() {
         </div>
       </div>
 
-      {/* Messages audio en 4 langues du centre */}
-      <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3 text-xs">
-        <span className="flex items-center gap-1.5 font-bold text-[#4a2b3b]">
-          <Volume2 size={15} className="text-[#ea2d6d]" /> Message audio du centre
-        </span>
-        <p className="mt-1 italic text-[#725462]">« {selectedCenter.audioMessageFr} »</p>
-        <div className="mt-2.5 grid grid-cols-4 gap-1">
-          <button
-            onClick={() => handlePlayAudio(selectedCenter.audioMessageFr, "fr")}
-            className="rounded-xl bg-[#ea2d6d] py-1.5 text-[10px] font-bold text-white"
-          >
-            FR
-          </button>
-          <button
-            onClick={() => handlePlayAudio(selectedCenter.audioMessageEn, "en")}
-            className="rounded-xl bg-[#ea2d6d] py-1.5 text-[10px] font-bold text-white"
-          >
-            EN
-          </button>
-          <button
-            onClick={() => handlePlayAudio(selectedCenter.audioMessageMoore, "moore")}
-            className="rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-[10px] font-bold text-[#8a3350]"
-          >
-            Mooré
-          </button>
-          <button
-            onClick={() => handlePlayAudio(selectedCenter.audioMessageDioula, "dioula")}
-            className="rounded-xl border border-[#e2bac8] bg-[#fdf5f7] py-1.5 text-[10px] font-bold text-[#8a3350]"
-          >
-            Dioula
-          </button>
+      {/* Consigne du jour du centre (français, sans traduction) */}
+      {selectedCenter.audioMessageFr.trim() && (
+        <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3 text-xs">
+          <span className="font-bold text-[#4a2b3b]">Consigne du jour</span>
+          <p className="mt-1 text-[#725462]">{selectedCenter.audioMessageFr}</p>
         </div>
-      </div>
+      )}
 
       {/* Tarifs */}
       <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3.5">
