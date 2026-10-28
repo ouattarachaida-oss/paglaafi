@@ -93,8 +93,9 @@ export interface HealthCenter extends AudiosLanguesLocales {
   address: string;
   lastUpdate: string;
   coordinates: { x: number; y: number };
-  lat: number;
-  lng: number;
+  /** null : centre sans coordonnées (pas de distance, fin de liste, absent de la carte) */
+  lat: number | null;
+  lng: number | null;
 }
 
 // Annonce avec gestion du cycle de validation Superadmin, mois en cours et veille Rose IA

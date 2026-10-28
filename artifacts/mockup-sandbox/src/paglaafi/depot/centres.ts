@@ -77,8 +77,8 @@ function versCentre(c: LigneCentre): HealthCenter {
     address: c.adresse ?? "",
     lastUpdate: `Mis à jour le ${dateHeure(c.maj_le)}`,
     coordinates: { x: 50, y: 50 },
-    lat: c.lat ?? 12.3714,
-    lng: c.lng ?? -1.5197,
+    lat: c.lat,
+    lng: c.lng,
   };
 }
 

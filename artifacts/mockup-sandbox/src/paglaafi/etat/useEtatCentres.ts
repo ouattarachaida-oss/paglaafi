@@ -6,6 +6,7 @@ import { initialCenters } from "../donnees/centres";
 import { MODE_DEMO, MODE_REEL } from "../config";
 import { messageErreur } from "../lib/supabase";
 import { useDerniereRequete } from "../lib/derniereRequete";
+import { aCoordonnees, trierParProximite, urlItineraire, type Position } from "../lib/proximite";
 import { chargerCentreGere, chargerCentresVerifies, enregistrerDisponibilites } from "../depot/centres";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatAuth } from "./useEtatAuth";
@@ -29,6 +30,9 @@ const LIBELLES_STATUT: Record<string, string> = {
 };
 
 const CLE_CACHE_CENTRES = "paglaafi_centres_verifies";
+// Ville choisie quand la position n'est pas disponible, et indicateur « explication déjà montrée »
+const CLE_VILLE = "paglaafi_ville";
+const CLE_POSITION_DEMANDEE = "paglaafi_position_demandee";
 function lireCentresEnCache(): HealthCenter[] {
   try {
     const v = JSON.parse(localStorage.getItem(CLE_CACHE_CENTRES) ?? "[]");
@@ -93,7 +97,8 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
 
   const [cityFilter, setCityFilter] = useState<string>("all");
 
-  const [viewMode, setViewMode] = useState<"map" | "list">("map");
+  // « Près de moi » (vue par défaut) ou carte complète
+  const [viewMode, setViewMode] = useState<"proches" | "carte">("proches");
 
   // Modal mise à jour centre (strictement réservé aux admins centres & médecins)
   const [showCenterUpdateModal, setShowCenterUpdateModal] = useState(false);
@@ -108,15 +113,12 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   /**
    * Ouvre l'itinéraire GPS vers le centre de soins dans Google Maps (Android/Web) ou Apple Maps (iOS)
    */
-  const openNavigation = (lat: number, lng: number, name: string) => {
-    const isApple = typeof navigator !== "undefined" && /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
-    const encodedName = encodeURIComponent(name);
-    let url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=&travelmode=driving`;
-    if (isApple) {
-      url = `https://maps.apple.com/?daddr=${lat},${lng}&q=${encodedName}`;
+  const openNavigation = (lat: number | null, lng: number | null, name: string) => {
+    if (lat === null || lng === null) {
+      notify("Ce centre n'a pas encore de position sur la carte.");
+      return;
     }
-    window.open(url, "_blank", "noopener,noreferrer");
-    notify(`Ouverture de la navigation GPS vers ${name}...`);
+    window.open(urlItineraire(lat, lng, name), "_blank", "noopener,noreferrer");
   };
 
   /**
@@ -149,16 +151,137 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
 
   // Centre sélectionné sur la carte (carte de prévisualisation sous la carte)
   const [centreApercu, setCentreApercu] = useState<HealthCenter | null>(null);
-  const positionRef = useRef<any>(null);
+
+  /*
+   * « Près de moi » : la position reste en mémoire le temps de la session, sur
+   * l'appareil uniquement (jamais envoyée ni enregistrée). À défaut, la ville
+   * choisie est gardée sur l'appareil.
+   */
+  const [position, setPosition] = useState<Position | null>(null);
+  const [etatPosition, setEtatPosition] = useState<"inconnue" | "explication" | "recherche" | "ok" | "ville">("inconnue");
+  const [ville, setVilleEtat] = useState<string>(() => {
+    try {
+      return localStorage.getItem(CLE_VILLE) ?? "";
+    } catch {
+      return "";
+    }
+  });
+  const [choixVilleOuvert, setChoixVilleOuvert] = useState(false);
+  const [filtresProches, setFiltresProches] = useState({ disponible: false, mammographe: false });
+  const rechercheRef = useRef(0);
+
+  const replierSurVille = () => {
+    setEtatPosition("ville");
+    if (!ville) setChoixVilleOuvert(true);
+  };
+  const choisirVille = (v: string) => {
+    setVilleEtat(v);
+    try {
+      localStorage.setItem(CLE_VILLE, v);
+    } catch {
+      // stockage indisponible : ville valable pour la session
+    }
+    setChoixVilleOuvert(false);
+    if (!position) setEtatPosition("ville");
+  };
+  const marquerDemande = () => {
+    try {
+      localStorage.setItem(CLE_POSITION_DEMANDEE, "1");
+    } catch {
+      // sans stockage, l'explication pourra être reproposée
+    }
+  };
+
+  /** Lit la position (8 s maximum), sinon repli sur la ville. */
+  const localiser = () => {
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
+      replierSurVille();
+      return;
+    }
+    const n = ++rechercheRef.current;
+    setEtatPosition("recherche");
+    const delai = window.setTimeout(() => n === rechercheRef.current && replierSurVille(), 8000);
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        window.clearTimeout(delai);
+        if (n !== rechercheRef.current) return;
+        setPosition({ lat: p.coords.latitude, lng: p.coords.longitude });
+        setEtatPosition("ok");
+      },
+      () => {
+        window.clearTimeout(delai);
+        if (n === rechercheRef.current) replierSurVille();
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
+    );
+  };
+
+  /**
+   * Point d'entrée (onglet Centres, carte de l'accueil, bouton de Rose) : position
+   * déjà autorisée → lecture directe ; jamais demandée → explication une seule fois ;
+   * refusée → ville.
+   */
+  const trouverCentreProche = async () => {
+    if (position || etatPosition === "recherche" || etatPosition === "explication") return;
+    let etat: string | undefined;
+    try {
+      etat = (await navigator.permissions?.query({ name: "geolocation" as PermissionName }))?.state;
+    } catch {
+      etat = undefined;
+    }
+    let demandee = false;
+    try {
+      demandee = localStorage.getItem(CLE_POSITION_DEMANDEE) === "1";
+    } catch {
+      demandee = false;
+    }
+    if (etat === "granted") localiser();
+    else if (etat === "denied") replierSurVille();
+    else if (!demandee) setEtatPosition("explication");
+    else replierSurVille();
+  };
+  const accepterPosition = () => {
+    marquerDemande();
+    localiser();
+  };
+  const refuserPosition = () => {
+    marquerDemande();
+    replierSurVille();
+  };
+
+  // À l'ouverture de l'onglet Centres : position (ou ville) pour « Près de moi »
+  useEffect(() => {
+    if (section === "Centres" && etatPosition === "inconnue") void trouverCentreProche();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [section]);
+
+  const centresProches = useMemo(
+    () =>
+      trierParProximite(
+        centers.filter(
+          (c) => (!filtresProches.disponible || c.status === "available") && (!filtresProches.mammographe || c.isApparatusWorking),
+        ),
+        position,
+        ville,
+      ),
+    [centers, filtresProches, position, ville],
+  );
+  const plusProche = useMemo(() => trierParProximite(centers, position, ville)[0] ?? null, [centers, position, ville]);
+
+  // Carte : centres de la vue active (« Près de moi » ou carte filtrée), avec coordonnées
+  const centresCarte = useMemo(
+    () => (viewMode === "proches" ? centresProches.map((p) => p.centre) : filteredCenters).filter(aCoordonnees),
+    [viewMode, centresProches, filteredCenters],
+  );
 
   /**
    * Carte OpenStreetMap (Leaflet, chargé à la demande) : marqueurs ronds colorés
    * selon le statut avec une icône (✓, horloge, ✕, ?, porte), regroupés par
    * leaflet.markercluster ; un appui ouvre l'aperçu du centre. Les marqueurs
-   * suivent les filtres (recherche, statut, ville).
+   * suivent la vue active ; la position (si connue) est affichée et centre la carte.
    */
   useEffect(() => {
-    if (section !== "Centres" || (viewMode !== "map" && !grandEcran) || selectedCenter !== null) return;
+    if (section !== "Centres" || (viewMode !== "carte" && !grandEcran) || selectedCenter !== null) return;
     let actif = true;
 
     const initialiser = async () => {
@@ -192,7 +315,7 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
           }),
       });
 
-      filteredCenters.forEach((center) => {
+      centresCarte.forEach((center) => {
         const { couleur, glyphe } = ICONES_STATUT[center.status] ?? ICONES_STATUT.outdated;
         const icone = L.divIcon({
           className: "pl-marqueur",
@@ -211,13 +334,13 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
       });
       map.addLayer(groupe);
 
-      // Cadrage sur les centres affichés (une ville choisie, une recherche…)
-      if (filteredCenters.length > 1) map.fitBounds(groupe.getBounds(), { padding: [32, 32], maxZoom: 13, animate: false });
-      else if (filteredCenters.length === 1) map.setView([filteredCenters[0].lat, filteredCenters[0].lng], 14, { animate: false });
-
-      if (positionRef.current) {
-        L.circleMarker(positionRef.current, { radius: 9, color: "#fff", weight: 3, fillColor: "#1e4f91", fillOpacity: 1 }).addTo(map);
-      }
+      if (position) {
+        L.circleMarker([position.lat, position.lng], { radius: 9, color: "#fff", weight: 3, fillColor: "#1e4f91", fillOpacity: 1 })
+          .bindTooltip("Vous êtes ici")
+          .addTo(map);
+        map.setView([position.lat, position.lng], 12, { animate: false });
+      } else if (centresCarte.length > 1) map.fitBounds(groupe.getBounds(), { padding: [32, 32], maxZoom: 13, animate: false });
+      else if (centresCarte.length === 1) map.setView([centresCarte[0].lat, centresCarte[0].lng], 14, { animate: false });
 
       // Rendu complet même après une transition d'affichage
       [120, 350, 700].forEach((ms) => setTimeout(() => actif && mapInstanceRef.current?.invalidateSize(), ms));
@@ -239,30 +362,12 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
         mapInstanceRef.current = null;
       }
     };
-  }, [section, viewMode, grandEcran, filteredCenters, selectedCenter, currentUser]);
+  }, [section, viewMode, grandEcran, centresCarte, position, selectedCenter, currentUser]);
 
-  /** Géolocalisation facultative : demandée seulement quand la personne appuie sur le bouton. */
-  const localiserMoi = () => {
-    if (!("geolocation" in navigator)) {
-      notify("La géolocalisation n'est pas disponible sur cet appareil.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
-        positionRef.current = [p.coords.latitude, p.coords.longitude];
-        const map = mapInstanceRef.current;
-        if (map) {
-          void import("leaflet").then((module: any) => {
-            const L = module.default ?? module;
-            L.circleMarker(positionRef.current, { radius: 9, color: "#fff", weight: 3, fillColor: "#1e4f91", fillOpacity: 1 }).addTo(map);
-            map.setView(positionRef.current, 13);
-          });
-        }
-        notify("Carte centrée sur votre position.");
-      },
-      () => notify("Position non disponible : autorisation refusée ou signal trop faible."),
-      { enableHighAccuracy: false, timeout: 10000 },
-    );
+  /** Centre la carte sur un centre et ouvre son aperçu (synchronisation liste ↔ carte). */
+  const focaliser = (c: HealthCenter) => {
+    setCentreApercu(c);
+    if (aCoordonnees(c)) mapInstanceRef.current?.setView([c.lat, c.lng], 15, { animate: false });
   };
 
   /**
@@ -359,7 +464,21 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     centreApercu,
     setCentreApercu,
     grandEcran,
-    localiserMoi,
+    position,
+    etatPosition,
+    ville,
+    choisirVille,
+    choixVilleOuvert,
+    setChoixVilleOuvert,
+    filtresProches,
+    setFiltresProches,
+    centresProches,
+    plusProche,
+    trouverCentreProche,
+    accepterPosition,
+    refuserPosition,
+    localiser,
+    focaliser,
   };
 }
 
