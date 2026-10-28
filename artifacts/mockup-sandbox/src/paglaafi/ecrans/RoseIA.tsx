@@ -35,7 +35,7 @@ export function RoseIA() {
   const { setShowPrivacyModal } = useSante();
   const { handleSendRoseMessage, handleToggleVoiceRecognition, isRecordingVoice, roseChatBottomRef, roseInput, roseMessages, setRoseInput, roseEnAttente } = useRose();
   const { setShowAutopalpationVideoModal } = useEducation();
-  const { setViewMode } = useCentres();
+  const { setViewMode, trouverCentreProche } = useCentres();
 
   const dernierMotif = [...roseMessages].reverse().find((m) => m.sender === "rose")?.motif;
   const etat = isOffline ? "hors_ligne" : MODE_REEL && estInvitee(currentUser) ? "non_connectee" : dernierMotif;
@@ -116,7 +116,8 @@ export function RoseIA() {
                           type="button"
                           onClick={() => {
                             setSection("Centres");
-                            setViewMode("map");
+                            setViewMode("proches");
+                            void trouverCentreProche();
                           }}
                           className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-bouton bg-[#b42318] px-3 font-semibold text-white"
                         >

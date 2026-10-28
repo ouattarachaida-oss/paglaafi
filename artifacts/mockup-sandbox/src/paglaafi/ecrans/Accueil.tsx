@@ -1,11 +1,12 @@
-import { Bell, BellRing, CalendarDays, Gift, Hand, MapPin, Megaphone, RefreshCw, Sparkles, UserPlus, Volume2 } from "lucide-react";
+import { Bell, BellRing, CalendarDays, Gift, LocateFixed, Navigation, Hand, MapPin, Megaphone, RefreshCw, Sparkles, UserPlus, Volume2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { roseDailyTips } from "../donnees/conseilsRose";
 import { useUi, useAuth, useAudio, useCentres, useSante, useRose, useAnnonces, useDons } from "../etat/contextes";
 import { BadgeSimulation } from "../composants/BadgeSimulation";
 import { estInvitee } from "../composants/entreesMenu";
 import { sansEmoji } from "../lib/texte";
-import { Bouton, Carte, EnTeteSection, EtatVide, PucesLangue } from "../composants/ui";
+import { formaterDistance, urlItineraire } from "../lib/proximite";
+import { BadgeStatutCentre, Bouton, Carte, EnTeteSection, EtatVide, PucesLangue } from "../composants/ui";
 
 /** Date du jour : « mercredi 28/10/2026 » (convention JJ/MM/AAAA). */
 function dateDuJour() {
@@ -39,7 +40,7 @@ export function Accueil() {
   const { setSection } = useUi();
   const { currentUser } = useAuth();
   const { handlePlayAudio } = useAudio();
-  const { setViewMode } = useCentres();
+  const { setViewMode, plusProche, position, ville, trouverCentreProche, setSelectedCenter } = useCentres();
   const { cycleInfo } = useSante();
   const { dailyTipIndex, dailyTipLang, handleRequestNotification, notificationEnabled, setDailyTipIndex, setDailyTipLang } = useRose();
   const { announcements } = useAnnonces();
@@ -173,6 +174,62 @@ export function Accueil() {
             </div>
           </Carte>
 
+          {/* Centre le plus proche (position ou ville connue), sinon activation de la position */}
+          <Carte className="space-y-3">
+            <p className="flex items-center gap-2 text-petit font-semibold text-texte-2">
+              <MapPin size={18} aria-hidden /> Centre le plus proche
+            </p>
+            {plusProche && (position || ville) ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSection("Centres");
+                    setSelectedCenter(plusProche.centre);
+                  }}
+                  className="text-left text-sous-titre text-prune-900 underline-offset-4 hover:underline"
+                >
+                  {plusProche.centre.name}
+                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <BadgeStatutCentre statut={plusProche.centre.status} />
+                  <span className="text-petit text-texte-2">
+                    {plusProche.distance !== null ? formaterDistance(plusProche.distance) : plusProche.centre.city}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {plusProche.centre.lat !== null && plusProche.centre.lng !== null && (
+                    <a
+                      href={urlItineraire(plusProche.centre.lat, plusProche.centre.lng, plusProche.centre.name)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-bouton bg-action px-4 font-semibold text-sur-action shadow-carte"
+                    >
+                      <Navigation size={20} aria-hidden /> Y aller
+                    </a>
+                  )}
+                  <Bouton
+                    variante="secondaire"
+                    className="flex-1"
+                    onClick={() => {
+                      setSection("Centres");
+                      setViewMode("proches");
+                    }}
+                  >
+                    Autres centres
+                  </Bouton>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-corps text-texte">Activez votre position pour voir le centre de santé le plus proche et y aller en un geste.</p>
+                <Bouton icone={<LocateFixed size={20} aria-hidden />} onClick={() => void trouverCentreProche()}>
+                  Activer ma position
+                </Bouton>
+              </>
+            )}
+          </Carte>
+
           {/* Raccourcis */}
           <section aria-labelledby="titre-raccourcis">
             <h2 id="titre-raccourcis" className="sr-only">
@@ -180,17 +237,10 @@ export function Accueil() {
             </h2>
             <div className="grid grid-cols-2 gap-3">
               <Raccourci icone={<Sparkles size={22} />} titre="Rose IA" texte="Poser une question" onClick={() => setSection("RoseIA")} />
-              <Raccourci
-                icone={<MapPin size={22} />}
-                titre="Centres proches"
-                texte="Voir la carte des soins"
-                onClick={() => {
-                  setSection("Centres");
-                  setViewMode("map");
-                }}
-              />
               <Raccourci icone={<Hand size={22} />} titre="Autopalpation" texte="Mon calendrier" onClick={() => setSection("Calendrier")} />
-              <Raccourci icone={<UserPlus size={22} />} titre="Accompagnant·e" texte="Inviter un proche" onClick={() => setSection("Accompagnant")} />
+              <div className="col-span-2">
+                <Raccourci icone={<UserPlus size={22} />} titre="Accompagnant·e" texte="Inviter un proche" onClick={() => setSection("Accompagnant")} />
+              </div>
             </div>
           </section>
 
