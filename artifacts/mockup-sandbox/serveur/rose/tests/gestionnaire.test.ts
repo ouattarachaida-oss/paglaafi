@@ -103,16 +103,8 @@ const requete = (corps: object, jeton: string | null = "jeton-valide") =>
   });
 
 describe("gestionnaire /api/rose-chat", () => {
-  it("réponse libre (démonstration) : citations prises uniquement dans la liste fixe de références", async () => {
-    const { f, appels } = simuler({
-      fiches: FICHES.map((x) => ({ ...x, similarite: 0.3 })),
-      reponseModele: {
-        reponse: "Palpe chaque sein une fois par mois et consulte en cas de changement.",
-        sources_utilisees: [1],
-        alerte: false,
-        hors_sujet: false,
-      },
-    });
+  it("sans fiche validée, aucune réponse IA (même avec l'ancien réglage ROSE_REPONSE_LIBRE)", async () => {
+    const { f, appels } = simuler({ fiches: [] });
     const corps = await (
       await traiterQuestion(
         requete({ question: "Comment fait-on l'autopalpation ?" }),
@@ -120,29 +112,8 @@ describe("gestionnaire /api/rose-chat", () => {
         f,
       )
     ).json();
-    assert.equal(corps.mode, "ia_libre");
-    assert.equal(corps.sources.length, 1);
-    assert.ok(corps.sources[0].url.startsWith("https://www.who.int/fr/"));
-    assert.match(corps.reponse, /ne remplace pas un soignant/);
-    const gen = JSON.parse(appels.find((x) => x.url.includes(":generateContent"))!.corps);
-    assert.match(gen.systemInstruction.parts[0].text, /RÉFÉRENCES/);
-  });
-
-  it("réponse libre : une référence hors liste fait rejeter la réponse", async () => {
-    const { f } = simuler({
-      fiches: [],
-      reponseModele: {
-        reponse: "Une réponse quelconque assez longue.",
-        sources_utilisees: [99],
-        alerte: false,
-        hors_sujet: false,
-      },
-    });
-    const corps = await (
-      await traiterQuestion(requete({ question: "Question ?" }), { ...ENV, ROSE_REPONSE_LIBRE: "true" }, f)
-    ).json();
     assert.equal(corps.mode, "sans_source");
-    assert.deepEqual(corps.sources, []);
+    assert.ok(!appels.some((a) => a.url.includes(":generateContent")));
   });
 
   it("règle la réflexion du modèle au minimum et ignore les parties « réflexion »", async () => {

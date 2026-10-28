@@ -74,14 +74,13 @@ export async function genererReponse(
   messageUtilisateur: string,
   reflexion = "minimal",
   delaiMs = 8000,
-  instructions = INSTRUCTIONS_SYSTEME,
 ): Promise<unknown> {
   const json = await appeler(
     f,
     `${BASE}/models/${modele}:generateContent`,
     cle,
     {
-      systemInstruction: { parts: [{ text: instructions }] },
+      systemInstruction: { parts: [{ text: INSTRUCTIONS_SYSTEME }] },
       contents: [{ role: "user", parts: [{ text: messageUtilisateur }] }],
       generationConfig: {
         temperature: 0.2,

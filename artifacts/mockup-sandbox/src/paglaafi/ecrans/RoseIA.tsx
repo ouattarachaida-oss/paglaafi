@@ -179,18 +179,14 @@ export function RoseIA() {
                       className={`inline-block rounded-full px-2 py-0.5 font-bold ${
                         msg.origine === "ia"
                           ? "bg-emerald-100 text-emerald-800"
-                          : msg.origine === "ia_libre"
-                            ? "bg-orange-100 text-orange-900"
-                            : msg.origine === "faq"
+                          : msg.origine === "faq"
                               ? "bg-amber-100 text-amber-900"
                               : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {msg.origine === "ia"
                         ? "Fondée sur des fiches validées"
-                        : msg.origine === "ia_libre"
-                          ? "Réponse IA non validée par un soignant · références générales"
-                          : msg.origine === "faq"
+                        : msg.origine === "faq"
                             ? "Hors ligne · FAQ validée"
                             : "Aucune fiche validée sur ce sujet"}
                     </span>

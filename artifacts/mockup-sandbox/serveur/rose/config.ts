@@ -19,8 +19,6 @@ export interface ConfigRose {
   quotaJour: number;
   seuilSimilarite: number;
   nombreSources: number;
-  /** Démonstration : réponse générale de Gemini quand aucune fiche validée ne correspond. */
-  reponseLibre: boolean;
 }
 
 export type Env = Record<string, string | undefined>;
@@ -45,7 +43,6 @@ export function lireConfig(env: Env): ConfigRose | { manquantes: string[] } {
     // Calibré le 27/10/2026 sur les fiches initiales (pnpm run rag:calibrer) : à refaire après validation
     seuilSimilarite: nombre(env.ROSE_SEUIL_SIMILARITE, 0.67),
     nombreSources: nombre(env.ROSE_NOMBRE_SOURCES, 4),
-    reponseLibre: env.ROSE_REPONSE_LIBRE === "true",
   };
 }
 
