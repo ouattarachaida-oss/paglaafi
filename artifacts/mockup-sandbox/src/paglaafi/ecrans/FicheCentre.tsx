@@ -1,98 +1,158 @@
-import { ArrowLeft, MapPin, Navigation, Phone } from "lucide-react";
-import { useUi, useCentres } from "../etat/contextes";
+import { useEffect, useRef } from "react";
+import { ArrowLeft, Clock, MapPin, Navigation, Phone, ScanLine, Users, UsersRound } from "lucide-react";
+import { useCentres } from "../etat/contextes";
+import { BadgeOSM, Bouton, Carte, EtatVide, STATUTS_CENTRE } from "../composants/ui";
+import { estOSM } from "./Centres";
+
+const FOND_STATUT: Record<string, string> = {
+  succes: "bg-succes-fond text-succes",
+  attention: "bg-attention-fond text-attention",
+  alerte: "bg-alerte-fond text-alerte",
+  info: "bg-info-fond text-info",
+  neutre: "bg-surface-2 text-texte",
+};
+
+function Info({ icone, titre, valeur, detail }: { icone: React.ReactNode; titre: string; valeur: string; detail?: string }) {
+  return (
+    <div className="rounded-carte border border-bordure bg-surface p-3">
+      <p className="flex items-center gap-1.5 text-petit text-texte-2">
+        {icone} {titre}
+      </p>
+      <p className="mt-1 text-corps font-semibold text-prune-900">{valeur}</p>
+      {detail && <p className="text-petit text-texte-2">{detail}</p>}
+    </div>
+  );
+}
 
 /**
- * Fiche détaillée d'un centre de santé.
+ * Fiche d'un centre : statut du jour avec l'heure de mise à jour, Appeler et Itinéraire,
+ * équipement, personnel, file et attente, consigne du jour, examens et tarifs,
+ * mention OpenStreetMap si applicable. Aucune traduction sur les centres.
+ * Ordinateur : informations et mini-carte côte à côte.
  */
 export function FicheCentre() {
-  const { section } = useUi();
-  const { mapInstanceRef, openNavigation, selectedCenter, setSelectedCenter } = useCentres();
+  const { mapInstanceRef, openNavigation, selectedCenter: c, setSelectedCenter } = useCentres();
+  const carteRef = useRef<HTMLDivElement>(null);
 
-  if (!selectedCenter) return null;
+  // Mini-carte du centre (ordinateur)
+  useEffect(() => {
+    if (!c || !carteRef.current) return;
+    let carte: any = null;
+    let actif = true;
+    void import("leaflet").then((module: any) => {
+      const L = module.default ?? module;
+      if (!actif || !carteRef.current) return;
+      carte = L.map(carteRef.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false }).setView([c.lat, c.lng], 15);
+      carte.attributionControl.setPrefix(false);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© contributeurs OpenStreetMap" }).addTo(carte);
+      L.circleMarker([c.lat, c.lng], { radius: 10, color: "#fff", weight: 3, fillColor: "#d41e5c", fillOpacity: 1 }).addTo(carte);
+      setTimeout(() => carte?.invalidateSize(), 150);
+    });
+    return () => {
+      actif = false;
+      carte?.remove();
+    };
+  }, [c]);
+
+  if (!c) return null;
+  const statut = STATUTS_CENTRE[c.status] ?? STATUTS_CENTRE.outdated;
+  const telephone = c.phone?.trim();
 
   return (
-    <section className="ph-enter px-5 pt-4">
-      <button
+    <section className="anim-apparition">
+      <Bouton
+        variante="discret"
         onClick={() => {
           setSelectedCenter(null);
-          setTimeout(() => {
-            if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
-          }, 150);
+          setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150);
         }}
-        className="mb-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#ea2d6d] hover:underline cursor-pointer"
       >
-        <ArrowLeft size={16} /> Retour à la carte des centres
-      </button>
+        <ArrowLeft size={18} aria-hidden /> Retour à la carte des centres
+      </Bouton>
 
-      <div className="rounded-[26px] bg-[#f8e7ec] p-4 shadow-sm border border-[#eed6de]">
-        <div className="flex items-start justify-between">
+      <div className="mt-2 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="space-y-4">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold text-[#8f4a64] shadow-2xs">
-              <span className={`h-2 w-2 rounded-full ${selectedCenter.statusColor}`} />
-              {selectedCenter.statusLabel}
+            <h1 className="text-titre text-prune-900">{c.name}</h1>
+            <p className="mt-1 flex items-start gap-1.5 text-corps text-texte-2">
+              <MapPin size={20} aria-hidden className="mt-0.5 shrink-0" /> {c.address ? `${c.address} (${c.place})` : c.place}
+            </p>
+            {estOSM(c) && (
+              <div className="mt-2">
+                <BadgeOSM />
+              </div>
+            )}
+          </div>
+
+          <div className={`flex items-center gap-3 rounded-carte p-4 ${FOND_STATUT[statut.ton] ?? FOND_STATUT.neutre}`} role="status">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-white" style={{ background: statut.couleur }} aria-hidden>
+              {statut.icone}
             </span>
-            <h1 className="ph-display text-xl font-bold text-[#580e36] mt-1.5">{selectedCenter.name}</h1>
-            <p className="text-xs text-[#805e6f] mt-0.5 flex items-center gap-1">
-              <MapPin size={13} className="text-[#ea2d6d] shrink-0" /> {selectedCenter.address} ({selectedCenter.place})
-            </p>
-            <p className="text-xs text-[#805e6f] mt-0.5 flex items-center gap-1">
-              <Phone size={13} className="text-[#ea2d6d] shrink-0" /> {selectedCenter.phone}
-            </p>
-          </div>
-        </div>
-
-        {/* Boutons d'Action Principaux : Itinéraire GPS & Téléphone */}
-        <div className="mt-3.5 grid grid-cols-2 gap-2">
-          <button
-            onClick={() => openNavigation(selectedCenter.lat, selectedCenter.lng, selectedCenter.name)}
-            className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition cursor-pointer"
-            title="Ouvrir dans Google Maps ou Apple Maps selon votre appareil"
-          >
-            <Navigation size={15} /> Itinéraire GPS
-          </button>
-          <a
-            href={`tel:${selectedCenter.phone}`}
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#ea2d6d] px-3 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#8e3856] transition text-center"
-            title="Appeler le secrétariat du centre"
-          >
-            <Phone size={15} /> Appeler
-          </a>
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-          <div className="rounded-xl bg-white/90 p-2.5 border border-[#eed6de]">
-            <p className="text-[9px] font-bold uppercase text-[#9f697d]">Équipement</p>
-            <p className="font-bold text-[#580e36] mt-0.5">{selectedCenter.apparatus}</p>
-          </div>
-          <div className="rounded-xl bg-white/90 p-2.5 border border-[#eed6de]">
-            <p className="text-[9px] font-bold uppercase text-[#9f697d]">File d'attente</p>
-            <p className="font-bold text-[#580e36] mt-0.5">
-              {selectedCenter.queueCount} personnes ({selectedCenter.estimatedWait})
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Consigne du jour du centre (français, sans traduction) */}
-      {selectedCenter.audioMessageFr.trim() && (
-        <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3 text-xs">
-          <span className="font-bold text-[#4a2b3b]">Consigne du jour</span>
-          <p className="mt-1 text-[#725462]">{selectedCenter.audioMessageFr}</p>
-        </div>
-      )}
-
-      {/* Tarifs */}
-      <div className="mt-3 rounded-2xl border border-[#ebd6dc] bg-white p-3.5">
-        <h3 className="ph-display text-sm font-bold text-[#580e36]">Examens & Tarifs officiels</h3>
-        <div className="mt-2 divide-y divide-[#f5e6eb] text-xs">
-          {selectedCenter.exams.map((exam, i) => (
-            <div key={i} className="flex items-center justify-between py-1.5">
-              <span>{exam.name}</span>
-              <span className={exam.free ? "font-bold text-emerald-700" : "font-bold text-[#ea2d6d]"}>
-                {exam.free ? "0 FCFA (Gratuit)" : `${exam.price.toLocaleString("fr-FR")} FCFA`}
-              </span>
+            <div>
+              <p className="text-sous-titre">{statut.libelle}</p>
+              <p className="text-petit">Mis à jour : {c.lastUpdate}</p>
             </div>
-          ))}
+          </div>
+
+          <div className="grid gap-3 min-[400px]:grid-cols-2">
+            {telephone ? (
+              <a
+                href={`tel:${telephone}`}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-bouton bg-action px-4 text-corps font-semibold text-sur-action shadow-carte active:bg-action-appui"
+              >
+                <Phone size={20} aria-hidden /> Appeler
+              </a>
+            ) : (
+              <p className="flex min-h-12 items-center justify-center rounded-bouton bg-surface-2 px-4 text-petit text-texte-2">Téléphone non renseigné</p>
+            )}
+            <Bouton variante="secondaire" icone={<Navigation size={20} aria-hidden />} onClick={() => openNavigation(c.lat, c.lng, c.name)}>
+              Itinéraire
+            </Bouton>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Info icone={<ScanLine size={16} aria-hidden />} titre="Mammographe" valeur={c.apparatus} detail={c.isApparatusWorking ? "Fonctionnel" : "Non fonctionnel ou non renseigné"} />
+            <Info icone={<UsersRound size={16} aria-hidden />} titre="Personnel" valeur={`${c.agentsPresent} présent(s)`} detail={c.staffDescription || undefined} />
+            <Info icone={<Users size={16} aria-hidden />} titre="File d'attente" valeur={`${c.queueCount} personne(s)`} />
+            <Info icone={<Clock size={16} aria-hidden />} titre="Attente estimée" valeur={c.estimatedWait || "Non renseignée"} />
+          </div>
+
+          {c.audioMessageFr.trim() && (
+            <Carte douce>
+              <h2 className="text-corps font-semibold text-prune-900">Consigne du jour</h2>
+              <p className="mt-1 text-corps text-texte">{c.audioMessageFr}</p>
+            </Carte>
+          )}
+
+          <Carte>
+            <h2 className="text-sous-titre text-prune-900">Examens et tarifs</h2>
+            {c.exams.length === 0 ? (
+              <div className="mt-3">
+                <EtatVide icone={<ScanLine size={24} />} titre="Tarifs non renseignés" texte="Renseignez-vous directement auprès du centre." />
+              </div>
+            ) : (
+              <ul className="mt-2 divide-y divide-bordure">
+                {c.exams.map((e, i) => (
+                  <li key={i} className="flex items-center justify-between gap-3 py-2.5 text-corps">
+                    <span className="text-texte">{e.name}</span>
+                    <span className={`shrink-0 font-semibold ${e.free ? "text-succes" : "text-prune-900"}`}>
+                      {e.free ? "0 FCFA (Gratuit)" : `${e.price.toLocaleString("fr-FR")} FCFA`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Carte>
+
+          {telephone && (
+            <p className="flex items-center gap-2 text-corps text-texte">
+              <Phone size={18} aria-hidden className="text-texte-2" /> {telephone}
+            </p>
+          )}
+        </div>
+
+        <div className="hidden lg:block">
+          <div ref={carteRef} className="sticky top-20 h-[360px] overflow-hidden rounded-carte border border-bordure" role="region" aria-label={`Position de ${c.name} sur la carte`} />
         </div>
       </div>
     </section>

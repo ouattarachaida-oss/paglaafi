@@ -1,14 +1,32 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
 import type { HealthCenter } from "../types";
 import { initialCenters } from "../donnees/centres";
 import { MODE_DEMO, MODE_REEL } from "../config";
 import { messageErreur } from "../lib/supabase";
-import { echapperHtml } from "../lib/securite";
 import { useDerniereRequete } from "../lib/derniereRequete";
 import { chargerCentreGere, chargerCentresVerifies, enregistrerDisponibilites } from "../depot/centres";
 import type { EtatUi } from "./useEtatUi";
 import type { EtatAuth } from "./useEtatAuth";
+
+// Marqueurs : couleur de statut + icône blanche (l'information ne repose pas sur la couleur seule)
+const svg = (d: string) =>
+  `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ICONES_STATUT: Record<string, { couleur: string; glyphe: string }> = {
+  available: { couleur: "#1d7a4a", glyphe: svg('<path d="M20 6 9 17l-5-5"/>') },
+  busy: { couleur: "#8f5b00", glyphe: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>') },
+  maintenance: { couleur: "#b42318", glyphe: svg('<path d="M18 6 6 18M6 6l12 12"/>') },
+  outdated: { couleur: "#475467", glyphe: svg('<path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>') },
+  closed: { couleur: "#6b5a63", glyphe: svg('<path d="M5 12h14"/>') },
+};
+const LIBELLES_STATUT: Record<string, string> = {
+  available: "Disponible",
+  busy: "Saturé",
+  maintenance: "En panne",
+  outdated: "À mettre à jour",
+  closed: "Fermé",
+};
 
 /**
  * Centres de santé : liste, filtres, carte OpenStreetMap (Leaflet), fiche et mise à jour par un admin.
@@ -83,127 +101,147 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   };
 
   /**
-   * Intégration fiabilisée de la carte OpenStreetMap via Leaflet
-   * Fonctionne de manière synchrone sur tous les profils et réactualise
-   * automatiquement les tuiles à chaque transition d'onglet.
+   * Filtrage des centres de santé
+   */
+  const filteredCenters = useMemo(() => {
+    return centers.filter((center) => {
+      const matchesSearch =
+        searchQuery.trim() === "" ||
+        `${center.name} ${center.place} ${center.city}`.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "available" && center.status === "available") ||
+        (statusFilter === "free" && center.exams.some((e) => e.free));
+      const matchesCity = cityFilter === "all" || center.city === cityFilter;
+      return matchesSearch && matchesStatus && matchesCity;
+    });
+  }, [centers, searchQuery, statusFilter, cityFilter]);
+
+  // Ordinateur (1024 px et plus) : la carte et la liste sont affichées ensemble
+  const [grandEcran, setGrandEcran] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches,
+  );
+  useEffect(() => {
+    const requete = window.matchMedia("(min-width: 1024px)");
+    const changer = () => setGrandEcran(requete.matches);
+    requete.addEventListener("change", changer);
+    return () => requete.removeEventListener("change", changer);
+  }, []);
+
+  // Centre sélectionné sur la carte (carte de prévisualisation sous la carte)
+  const [centreApercu, setCentreApercu] = useState<HealthCenter | null>(null);
+  const positionRef = useRef<any>(null);
+
+  /**
+   * Carte OpenStreetMap (Leaflet, chargé à la demande) : marqueurs ronds colorés
+   * selon le statut avec une icône (✓, horloge, ✕, ?, porte), regroupés par
+   * leaflet.markercluster ; un appui ouvre l'aperçu du centre. Les marqueurs
+   * suivent les filtres (recherche, statut, ville).
    */
   useEffect(() => {
-    if (section !== "Centres" || viewMode !== "map" || selectedCenter !== null) return;
+    if (section !== "Centres" || (viewMode !== "map" && !grandEcran) || selectedCenter !== null) return;
+    let actif = true;
 
-    let isMounted = true;
-
-    // Leaflet installé via npm (plus de chargement depuis unpkg) : module chargé à la demande
-    const initLeafletMap = (L: any) => {
-      if (!mapContainerRef.current) return;
+    const initialiser = async () => {
+      const module: any = await import("leaflet");
+      const L = module.default ?? module;
+      // leaflet.markercluster s'appuie sur la variable globale L
+      (window as any).L = L;
+      await import("leaflet.markercluster");
+      if (!actif || !mapContainerRef.current) return;
 
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
-
-      const map = L.map(mapContainerRef.current, {
-        zoomControl: true,
-        attributionControl: false,
-      }).setView([12.3714, -1.5197], 12);
-
+      const map = L.map(mapContainerRef.current, { zoomControl: true, attributionControl: true }).setView([12.3714, -1.5197], 12);
+      map.attributionControl.setPrefix(false);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
+        attribution: "© contributeurs OpenStreetMap",
       }).addTo(map);
 
-      // Invalidation progressive pour garantir le rendu complet même après transition CSS
-      setTimeout(() => {
-        if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
-      }, 120);
-      setTimeout(() => {
-        if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
-      }, 350);
-      setTimeout(() => {
-        if (isMounted && mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
-      }, 700);
-
-      centers.forEach((center) => {
-        const markerColor =
-          center.status === "available"
-            ? "#10b981"
-            : center.status === "busy"
-              ? "#f59e0b"
-              : center.status === "maintenance"
-                ? "#ef4444"
-                : "#94a3b8";
-
-        const customIcon = L.divIcon({
-          className: "custom-osm-pin",
-          html: `
-            <div style="position:relative; width:26px; height:26px; display:flex; align-items:center; justify-content:center;">
-              <span style="position:absolute; inset:-4px; border-radius:50%; background:${markerColor}; opacity:0.4; animation:ph-pulse-glow 2s infinite;"></span>
-              <span style="position:relative; width:22px; height:22px; border-radius:50%; background:${markerColor}; border:2px solid #ffffff; box-shadow:0 3px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:#ffffff; font-size:10px; font-weight:bold;">
-                ●
-              </span>
-            </div>
-          `,
-          iconSize: [26, 26],
-          iconAnchor: [13, 13],
-        });
-
-        const marker = L.marker([center.lat, center.lng], { icon: customIcon }).addTo(map);
-
-        marker.bindPopup(`
-          <div style="font-family:'DM Sans', sans-serif; min-width:200px; padding:3px;">
-            <b style="color:#580e36; font-size:12px; display:block;">${echapperHtml(center.shortName)}</b>
-            <span style="display:inline-block; font-size:10px; font-weight:bold; color:${markerColor}; margin-top:2px;">● ${echapperHtml(center.statusLabel)}</span>
-            <div style="font-size:10px; color:#6b4d5d; margin-top:3px;">Attente : <b>${echapperHtml(center.estimatedWait)}</b></div>
-            <div style="font-size:10px; color:#6b4d5d;">Agents : <b>${echapperHtml(center.agentsPresent)}</b></div>
-            <div style="font-size:9.5px; color:#846b77; margin-top:2px;">📍 ${echapperHtml(center.place)}</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:8px;">
-              <button id="osm-nav-${center.id}" style="border:none; background:#10b981; color:#ffffff; font-size:10px; font-weight:bold; padding:5px 6px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:3px;">
-                📍 Itinéraire
-              </button>
-              <button id="osm-btn-${center.id}" style="border:none; background:#ea2d6d; color:#ffffff; font-size:10px; font-weight:bold; padding:5px 6px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
-                Fiche →
-              </button>
-            </div>
-          </div>
-        `);
-
-        marker.on("popupopen", () => {
-          const btn = document.getElementById(`osm-btn-${center.id}`);
-          if (btn) {
-            btn.onclick = () => {
-              setSelectedCenter(center);
-            };
-          }
-          const navBtn = document.getElementById(`osm-nav-${center.id}`);
-          if (navBtn) {
-            navBtn.onclick = () => {
-              openNavigation(center.lat, center.lng, center.name);
-            };
-          }
-        });
+      const groupe = L.markerClusterGroup({
+        showCoverageOnHover: false,
+        maxClusterRadius: 50,
+        iconCreateFunction: (cluster: any) =>
+          L.divIcon({
+            className: "pl-groupe",
+            html: `<span aria-hidden="true" style="display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#d41e5c;color:#fff;font:700 14px 'DM Sans',sans-serif;border:3px solid #fff;box-shadow:0 2px 8px rgba(88,14,54,.3)">${cluster.getChildCount()}</span>`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+          }),
       });
 
+      filteredCenters.forEach((center) => {
+        const { couleur, glyphe } = ICONES_STATUT[center.status] ?? ICONES_STATUT.outdated;
+        const icone = L.divIcon({
+          className: "pl-marqueur",
+          html: `<span style="display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:${couleur};border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">${glyphe}</span>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+        });
+        const marqueur = L.marker([center.lat, center.lng], {
+          icon: icone,
+          title: center.shortName,
+          alt: `${center.shortName} : ${LIBELLES_STATUT[center.status] ?? ""}`,
+          keyboard: true,
+        });
+        marqueur.on("click", () => setCentreApercu(center));
+        groupe.addLayer(marqueur);
+      });
+      map.addLayer(groupe);
+
+      // Cadrage sur les centres affichés (une ville choisie, une recherche…)
+      if (filteredCenters.length > 1) map.fitBounds(groupe.getBounds(), { padding: [32, 32], maxZoom: 13 });
+      else if (filteredCenters.length === 1) map.setView([filteredCenters[0].lat, filteredCenters[0].lng], 14);
+
+      if (positionRef.current) {
+        L.circleMarker(positionRef.current, { radius: 9, color: "#fff", weight: 3, fillColor: "#1e4f91", fillOpacity: 1 }).addTo(map);
+      }
+
+      // Rendu complet même après une transition d'affichage
+      [120, 350, 700].forEach((ms) => setTimeout(() => actif && mapInstanceRef.current?.invalidateSize(), ms));
       mapInstanceRef.current = map;
     };
 
-    const handleResize = () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.invalidateSize();
-      }
-    };
-    window.addEventListener("resize", handleResize);
-
-    void import("leaflet").then((module) => {
-      if (isMounted) initLeafletMap(module.default ?? module);
-    });
+    const redimensionner = () => mapInstanceRef.current?.invalidateSize();
+    window.addEventListener("resize", redimensionner);
+    void initialiser();
 
     return () => {
-      isMounted = false;
-      window.removeEventListener("resize", handleResize);
+      actif = false;
+      window.removeEventListener("resize", redimensionner);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, [section, viewMode, centers, selectedCenter, currentUser]);
+  }, [section, viewMode, grandEcran, filteredCenters, selectedCenter, currentUser]);
+
+  /** Géolocalisation facultative : demandée seulement quand la personne appuie sur le bouton. */
+  const localiserMoi = () => {
+    if (!("geolocation" in navigator)) {
+      notify("La géolocalisation n'est pas disponible sur cet appareil.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        positionRef.current = [p.coords.latitude, p.coords.longitude];
+        const map = mapInstanceRef.current;
+        if (map) {
+          void import("leaflet").then((module: any) => {
+            const L = module.default ?? module;
+            L.circleMarker(positionRef.current, { radius: 9, color: "#fff", weight: 3, fillColor: "#1e4f91", fillOpacity: 1 }).addTo(map);
+            map.setView(positionRef.current, 13);
+          });
+        }
+        notify("Carte centrée sur votre position.");
+      },
+      () => notify("Position non disponible : autorisation refusée ou signal trop faible."),
+      { enableHighAccuracy: false, timeout: 10000 },
+    );
+  };
 
   /**
    * Sauvegarde des modifications du centre de santé
@@ -266,23 +304,6 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     setShowCenterUpdateModal(true);
   };
 
-  /**
-   * Filtrage des centres de santé
-   */
-  const filteredCenters = useMemo(() => {
-    return centers.filter((center) => {
-      const matchesSearch =
-        searchQuery.trim() === "" ||
-        `${center.name} ${center.place} ${center.city}`.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus =
-        statusFilter === "all" ||
-        (statusFilter === "available" && center.status === "available") ||
-        (statusFilter === "free" && center.exams.some((e) => e.free));
-      const matchesCity = cityFilter === "all" || center.city === cityFilter;
-      return matchesSearch && matchesStatus && matchesCity;
-    });
-  }, [centers, searchQuery, statusFilter, cityFilter]);
-
   return {
     centers,
     setCenters,
@@ -308,6 +329,10 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     ouvrirMiseAJourCentre,
     rechargerCentres,
     filteredCenters,
+    centreApercu,
+    setCentreApercu,
+    grandEcran,
+    localiserMoi,
   };
 }
 

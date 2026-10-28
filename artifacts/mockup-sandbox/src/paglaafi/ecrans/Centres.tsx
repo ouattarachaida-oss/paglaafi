@@ -1,349 +1,314 @@
-import {
-  AlertTriangle,
-  Check,
-  CheckCircle2,
-  ChevronRight,
-  Clock,
-  Edit3,
-  FileText,
-  Navigation,
-  Search,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, ChevronRight, Clock, Edit3, FileText, LocateFixed, MapPin, Navigation, Search, X } from "lucide-react";
 import { MODE_REEL } from "../config";
-import { useUi, useAuth, useCentres, useOrientations } from "../etat/contextes";
+import { useAuth, useCentres, useOrientations } from "../etat/contextes";
 import { BadgeSimulation } from "../composants/BadgeSimulation";
+import type { HealthCenter } from "../types";
+import {
+  Badge,
+  BadgeOSM,
+  BadgeStatutCentre,
+  Bouton,
+  Carte,
+  EtatVide,
+  ListeDeroulante,
+  OngletsSegmentes,
+  STATUTS_CENTRE,
+} from "../composants/ui";
+
+const PAR_PAGE = 20;
+/** Centre importé d'OpenStreetMap (informations à vérifier). */
+export const estOSM = (c: HealthCenter) => c.statusLabel.startsWith("Données OpenStreetMap");
+
+/** Puce de filtre (bouton à bascule). */
+function Puce({ actif, onClick, children }: { actif: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={actif}
+      onClick={onClick}
+      className={`min-h-11 shrink-0 rounded-full px-4 text-petit font-semibold ${actif ? "bg-carte-prune text-white" : "border border-bordure bg-surface text-texte"}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Ligne de la liste des centres. */
+function LigneCentre({ c, onFiche, onItineraire }: { c: HealthCenter; onFiche: () => void; onItineraire: () => void }) {
+  return (
+    <li className="rounded-carte border border-bordure bg-surface p-4 shadow-carte">
+      <div className="flex flex-wrap items-center gap-2">
+        <BadgeStatutCentre statut={c.status} />
+        {estOSM(c) && <BadgeOSM />}
+      </div>
+      <h3 className="mt-2 text-corps font-semibold text-prune-900">{c.name}</h3>
+      <p className="flex items-center gap-1 text-petit text-texte-2">
+        <MapPin size={16} aria-hidden /> {c.place}
+      </p>
+      <div className="mt-3 flex gap-2">
+        <Bouton variante="secondaire" taille="petit" className="flex-1" icone={<Navigation size={18} aria-hidden />} onClick={onItineraire}>
+          Itinéraire
+        </Bouton>
+        <Bouton taille="petit" className="flex-1" onClick={onFiche}>
+          Voir la fiche <ChevronRight size={18} aria-hidden />
+        </Bouton>
+      </div>
+    </li>
+  );
+}
 
 /**
- * Onglet Centres : carte OpenStreetMap, liste, filtres et orientations d'urgence.
+ * Carte des soins : recherche, filtre ville, filtres de statut, carte OpenStreetMap
+ * (marqueurs regroupés, légende, géolocalisation facultative, aperçu du centre)
+ * et liste paginée. Mobile : bascule Carte / Liste ; ordinateur : les deux côte à côte.
  */
 export function Centres() {
-  const { section } = useUi();
   const { currentUser } = useAuth();
   const {
     centers,
     cityFilter,
     filteredCenters,
     mapContainerRef,
-    mapInstanceRef,
     openNavigation,
     ouvrirMiseAJourCentre,
     searchQuery,
-    setCenterUpdateData,
     setCityFilter,
     setSearchQuery,
     setSelectedCenter,
-    setShowCenterUpdateModal,
     setStatusFilter,
     setViewMode,
     statusFilter,
     viewMode,
+    centreApercu,
+    setCentreApercu,
+    grandEcran,
+    localiserMoi,
   } = useCentres();
   const { handleValidateOrientationByCenter, setShowOrientationModal, urgentOrientations } = useOrientations();
+  const [nb, setNb] = useState(PAR_PAGE);
+  useEffect(() => setNb(PAR_PAGE), [searchQuery, statusFilter, cityFilter]);
+
+  const villes = useMemo(() => [...new Set(centers.map((c) => c.city))].sort((a, b) => a.localeCompare(b, "fr")), [centers]);
+  const pro = currentUser?.role === "admin" && (currentUser.adminType === "center" || currentUser.adminType === "doctor");
+  const afficherCarte = viewMode === "map" || grandEcran;
+  const afficherListe = viewMode === "list" || grandEcran;
 
   return (
-    <section className="ph-enter px-5 pt-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-            Temps réel · Burkina Faso
-          </span>
-          <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">Carte des soins</h1>
-        </div>
-        <div className="flex rounded-2xl border border-[#ebd8de] bg-[#f8e9ed] p-1">
-          <button
-            onClick={() => setViewMode("map")}
-            className={`rounded-xl px-2.5 py-1 text-xs font-bold transition ${viewMode === "map" ? "bg-white text-[#963c5d] shadow-sm" : "text-[#835e6e]"}`}
-          >
-            Carte
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={`rounded-xl px-2.5 py-1 text-xs font-bold transition ${viewMode === "list" ? "bg-white text-[#963c5d] shadow-sm" : "text-[#835e6e]"}`}
-          >
-            Liste ({filteredCenters.length})
-          </button>
+    <section className="anim-apparition">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h1 className="text-display text-prune-900">Carte des soins</h1>
+        <div className="w-full min-[420px]:w-64 lg:hidden">
+          <OngletsSegmentes<"map" | "list">
+            libelle="Affichage des centres"
+            valeur={viewMode}
+            onChange={setViewMode}
+            onglets={[
+              { id: "map", libelle: "Carte" },
+              { id: "list", libelle: `Liste (${filteredCenters.length})` },
+            ]}
+          />
         </div>
       </div>
 
-      {/* Recherche & Filtres */}
-      <div className="mt-3 relative">
-        <Search size={16} className="absolute left-3.5 top-3 text-[#9f7183]" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Rechercher centre, ville, examen..."
-          className="w-full rounded-2xl border border-[#ebd8de] bg-white py-2 pl-9 pr-8 text-xs text-[#4b2f3e] focus:border-[#ea2d6d] focus:outline-none"
-        />
+      {/* Recherche et filtres */}
+      <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="relative">
+          <label htmlFor="recherche-centre" className="sr-only">
+            Rechercher un centre, une ville
+          </label>
+          <Search size={20} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-texte-2" />
+          <input
+            id="recherche-centre"
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Rechercher un centre, une ville…"
+            className="h-12 w-full rounded-champ border-[1.5px] border-bordure-2 bg-surface pl-10 pr-3 text-corps text-texte placeholder:text-indicatif focus:border-2 focus:border-action focus:outline-none focus:ring-4 focus:ring-rose-200"
+          />
+        </div>
+        <ListeDeroulante libelle="Ville" libelleMasque value={cityFilter} onChange={(e) => setCityFilter(e.target.value)}>
+          <option value="all">Toutes les villes</option>
+          {villes.map((v) => (
+            <option key={v} value={v}>
+              {v}
+            </option>
+          ))}
+        </ListeDeroulante>
       </div>
-
-      {/* Badges de filtrage et recentrage par ville */}
-      <div className="ph-scroll mt-2 flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
-        <button
-          onClick={() => {
-            setStatusFilter("all");
-            setCityFilter("all");
-            if (mapInstanceRef.current) mapInstanceRef.current.setView([12.3714, -1.5197], 12);
-          }}
-          className={`shrink-0 rounded-full px-3 py-1 font-bold ${statusFilter === "all" && cityFilter === "all" ? "bg-[#ea2d6d] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
-        >
-          Tous ({centers.length})
-        </button>
-        <button
-          onClick={() => setStatusFilter(statusFilter === "available" ? "all" : "available")}
-          className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-bold ${statusFilter === "available" ? "bg-emerald-600 text-white" : "border border-emerald-300 bg-emerald-50 text-emerald-800"}`}
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Dispo de suite
-        </button>
-        <button
-          onClick={() => setStatusFilter(statusFilter === "free" ? "all" : "free")}
-          className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${statusFilter === "free" ? "bg-[#ea2d6d] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
-        >
-          0 FCFA (Gratuit)
-        </button>
-        <button
-          onClick={() => {
-            setCityFilter(cityFilter === "Ouagadougou" ? "all" : "Ouagadougou");
-            if (mapInstanceRef.current) mapInstanceRef.current.flyTo([12.3714, -1.5197], 12);
-          }}
-          className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Ouagadougou" ? "bg-[#ea2d6d] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
-        >
-          Ouaga
-        </button>
-        <button
-          onClick={() => {
-            setCityFilter(cityFilter === "Bobo-Dioulasso" ? "all" : "Bobo-Dioulasso");
-            if (mapInstanceRef.current) mapInstanceRef.current.flyTo([11.178, -4.295], 13);
-          }}
-          className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Bobo-Dioulasso" ? "bg-[#ea2d6d] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
-        >
-          Bobo
-        </button>
-        <button
-          onClick={() => {
-            setCityFilter(cityFilter === "Koudougou" ? "all" : "Koudougou");
-            if (mapInstanceRef.current) mapInstanceRef.current.flyTo([12.251, -2.366], 13);
-          }}
-          className={`shrink-0 rounded-full px-2.5 py-1 font-bold ${cityFilter === "Koudougou" ? "bg-[#ea2d6d] text-white" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
-        >
-          Koudougou
-        </button>
+      <div className="defilement-discret mt-3 flex gap-2 overflow-x-auto" role="group" aria-label="Filtres">
+        <Puce actif={statusFilter === "available"} onClick={() => setStatusFilter(statusFilter === "available" ? "all" : "available")}>
+          Disponible maintenant
+        </Puce>
+        <Puce actif={statusFilter === "free"} onClick={() => setStatusFilter(statusFilter === "free" ? "all" : "free")}>
+          Examen gratuit
+        </Puce>
+        {(statusFilter !== "all" || cityFilter !== "all" || searchQuery) && (
+          <Bouton
+            variante="discret"
+            onClick={() => {
+              setStatusFilter("all");
+              setCityFilter("all");
+              setSearchQuery("");
+            }}
+          >
+            Effacer les filtres
+          </Bouton>
+        )}
       </div>
 
       {/* Mode réel : état vide explicite tant qu'aucun centre n'a été vérifié (replit.md) */}
       {MODE_REEL && centers.length === 0 && (
-        <div
-          role="status"
-          className="mt-2.5 rounded-2xl border border-dashed border-[#e3bccb] bg-[#fdf6f8] p-4 text-center text-xs text-[#6b4d5d]"
-        >
-          <p className="font-bold text-[#580e36]">Aucun centre vérifié pour le moment</p>
-          <p className="mt-1">
-            Les informations des centres (disponibilités, tarifs, contacts) sont en cours de vérification auprès des
-            structures de santé. En cas d'urgence, rendez-vous au centre de santé le plus proche.
-          </p>
+        <div role="status" className="mt-4">
+          <EtatVide
+            icone={<MapPin size={24} />}
+            titre="Aucun centre vérifié pour le moment"
+            texte="Les informations des centres (disponibilités, tarifs, contacts) sont en cours de vérification auprès des structures de santé. En cas d'urgence, rendez-vous au centre de santé le plus proche."
+          />
         </div>
       )}
 
-      {/* VRAIE CARTE OPENSTREETMAP LEAFLET GRATUITE ET OPEN-SOURCE */}
-      {viewMode === "map" && (
-        <div className="mt-2.5">
-          <div className="relative h-[280px] w-full overflow-hidden rounded-[24px] border-2 border-[#e5d0d8] bg-[#f8edf1] shadow-inner">
-            <div ref={mapContainerRef} className="h-full w-full z-10" />
-
-            <div className="absolute bottom-2 left-2 z-20 flex items-center gap-2 rounded-xl bg-white/90 px-2.5 py-1 text-[9px] font-bold text-[#580e36] shadow backdrop-blur-xs">
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Dispo
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-amber-500" /> Affluence
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-rose-500" /> Panne
-              </span>
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+        {afficherCarte && (
+          <div className="space-y-3 lg:sticky lg:top-20 lg:self-start">
+            <div className="relative h-[340px] overflow-hidden rounded-carte border border-bordure md:h-[440px] lg:h-[calc(100dvh-220px)] lg:min-h-[420px]">
+              <div ref={mapContainerRef} className="z-10 h-full w-full" role="region" aria-label="Carte OpenStreetMap des centres" />
+              <button
+                type="button"
+                onClick={localiserMoi}
+                aria-label="Centrer la carte sur ma position"
+                className="absolute right-3 top-3 z-20 grid h-11 w-11 place-items-center rounded-full bg-surface text-prune-900 shadow-flottant"
+              >
+                <LocateFixed size={22} aria-hidden />
+              </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ENCART D'URGENCE INTERACTIF : ORIENTATIONS REÇUES PAR LE CENTRE OU SUIVIES PAR LE DOCTEUR */}
-      {currentUser?.role === "admin" &&
-        (currentUser?.adminType === "center" || currentUser?.adminType === "doctor") && (
-          <div className="mt-3 space-y-2">
-            <div className="rounded-2xl border-2 border-rose-300 bg-gradient-to-br from-rose-50 via-white to-pink-50 p-3.5 shadow-sm">
-              <div className="flex items-center justify-between border-b border-rose-100 pb-2">
-                <div className="flex items-center gap-2">
-                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-rose-600 text-white shadow-xs animate-pulse">
-                    <AlertTriangle size={16} />
+            <ul className="flex flex-wrap gap-x-4 gap-y-2 text-petit text-texte" aria-label="Légende de la carte">
+              {(["available", "busy", "maintenance", "outdated"] as const).map((s) => (
+                <li key={s} className="flex items-center gap-1.5">
+                  <span className="grid h-6 w-6 place-items-center rounded-full text-white" style={{ background: STATUTS_CENTRE[s].couleur }} aria-hidden>
+                    {STATUTS_CENTRE[s].icone}
                   </span>
-                  <div>
-                    <h4 className="font-bold text-xs text-[#580e36]">
-                      {currentUser.adminType === "center"
-                        ? "🚨 Orientations d'Urgence Reçues"
-                        : "🩺 Vos Orientations Patientes en Cours"}
-                      <BadgeSimulation detail="Orientations fictives : aucune donnée de patiente réelle." />
-                    </h4>
-                    <p className="text-[10px] text-rose-700 font-semibold">
-                      {currentUser.adminType === "center"
-                        ? "Coordination directe avec les médecins prescripteurs"
-                        : "Suivi en direct de la prise en charge au centre"}
+                  {STATUTS_CENTRE[s].libelle}
+                </li>
+              ))}
+            </ul>
+
+            {centreApercu && (
+              <Carte className="anim-apparition" aria-live="polite">
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <BadgeStatutCentre statut={centreApercu.status} />
+                      {estOSM(centreApercu) && <BadgeOSM />}
+                    </div>
+                    <h2 className="mt-2 text-sous-titre text-prune-900">{centreApercu.name}</h2>
+                    <p className="text-petit text-texte-2">
+                      {centreApercu.place} · Mis à jour : {centreApercu.lastUpdate}
                     </p>
                   </div>
+                  <button type="button" aria-label="Fermer l'aperçu" onClick={() => setCentreApercu(null)} className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-texte-2 active:bg-rose-200">
+                    <X size={20} aria-hidden />
+                  </button>
                 </div>
-                <span className="rounded-full bg-rose-600 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
-                  {urgentOrientations.length} active(s)
-                </span>
-              </div>
-
-              {/* Liste des fiches d'orientation urgentes */}
-              <div className="mt-2.5 space-y-2 text-xs">
-                {urgentOrientations.map((orient) => (
-                  <div key={orient.id} className="rounded-xl border border-rose-200 bg-white p-3 shadow-2xs space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-extrabold text-xs text-[#580e36]">
-                            {orient.patientName} ({orient.patientAge} ans)
-                          </span>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[9px] font-black ${
-                              orient.urgencyLevel === "immediate"
-                                ? "bg-rose-600 text-white animate-pulse"
-                                : "bg-amber-500 text-white"
-                            }`}
-                          >
-                            {orient.urgencyLabel}
-                          </span>
-                        </div>
-                        <p className="text-[10.5px] text-gray-500 mt-0.5">
-                          Réf : <span className="font-mono font-bold text-[#580e36]">{orient.id}</span> · Prescrit par{" "}
-                          <strong>{orient.doctorName}</strong>
-                        </p>
-                      </div>
-                      <span className="text-[9.5px] font-semibold text-gray-400">{orient.createdAt}</span>
-                    </div>
-
-                    <div className="rounded-lg bg-pink-50/60 p-2 text-[11px] text-[#580e36]">
-                      <p className="font-bold text-[10px] uppercase text-[#ea2d6d]">Examens prescrits :</p>
-                      <p className="font-semibold">{orient.recommendedExam}</p>
-                      <p className="mt-1 text-[10.5px] italic text-[#785566]">« {orient.clinicalObservations} »</p>
-                    </div>
-
-                    {/* Statut & Réponse du Centre */}
-                    {orient.status === "accepted_urgent" ? (
-                      <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-2 text-emerald-900 text-[11px] flex items-center justify-between">
-                        <span className="flex items-center gap-1.5 font-bold">
-                          <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
-                          <span>Validé : Patiente attendue d'urgence ({orient.centerEstimatedDelay})</span>
-                        </span>
-                        <span className="text-[9px] bg-emerald-200 px-1.5 py-0.5 rounded font-bold text-emerald-900">
-                          Confirmé
-                        </span>
-                      </div>
-                    ) : orient.status === "scheduled_wait" ? (
-                      <div className="rounded-lg bg-amber-50 border border-amber-200 p-2 text-amber-900 text-[11px] flex items-center justify-between">
-                        <span className="flex items-center gap-1.5 font-bold">
-                          <Clock size={14} className="text-amber-600 shrink-0" />
-                          <span>{orient.centerValidationMessage}</span>
-                        </span>
-                        <span className="text-[9px] bg-amber-200 px-1.5 py-0.5 rounded font-bold text-amber-900">
-                          Programmé
-                        </span>
-                      </div>
-                    ) : /* En attente de validation par le Centre de Santé */
-                    currentUser.adminType === "center" ? (
-                      <div className="pt-1 border-t border-rose-100 flex flex-col sm:flex-row gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleValidateOrientationByCenter(orient.id, "immediate")}
-                          className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-emerald-600 py-2 px-2.5 text-[11px] font-bold text-white shadow hover:bg-emerald-700 transition cursor-pointer"
-                        >
-                          <Check size={13} />
-                          <span>Envoyez-la vite ! (Attente &lt; 15 min)</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleValidateOrientationByCenter(orient.id, "scheduled", "~45 min")}
-                          className="flex items-center justify-center gap-1 rounded-xl bg-amber-600 py-2 px-2.5 text-[11px] font-bold text-white shadow hover:bg-amber-700 transition cursor-pointer"
-                        >
-                          <Clock size={13} />
-                          <span>Affluence (créneau 45 min)</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="rounded-lg bg-blue-50 border border-blue-200 p-2 text-blue-900 text-[10.5px] flex items-center justify-between">
-                        <span className="flex items-center gap-1 font-semibold">
-                          <Clock size={13} className="text-blue-600" />
-                          <span>En attente de confirmation par le {orient.targetCenterName}</span>
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Bouton pour créer une nouvelle orientation si docteur */}
-              {currentUser.adminType === "doctor" && (
-                <button
-                  type="button"
-                  onClick={() => setShowOrientationModal(true)}
-                  className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-[#ea2d6d] py-2 text-xs font-bold text-white shadow hover:opacity-95 transition cursor-pointer"
-                >
-                  <FileText size={14} />
-                  <span>Orienter une nouvelle patiente en urgence</span>
-                </button>
-              )}
-            </div>
-
-            {/* Bouton de mise à jour des disponibilités du centre */}
-            <button
-              onClick={() => {
-                ouvrirMiseAJourCentre();
-              }}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#580e36] to-[#ea2d6d] py-2.5 text-xs font-bold text-white shadow-sm hover:opacity-95 cursor-pointer"
-            >
-              <Edit3 size={15} /> Mettre à jour les disponibilités de mon centre
-            </button>
+                <div className="mt-3 flex gap-2">
+                  <Bouton variante="secondaire" className="flex-1" icone={<Navigation size={18} aria-hidden />} onClick={() => openNavigation(centreApercu.lat, centreApercu.lng, centreApercu.name)}>
+                    Itinéraire
+                  </Bouton>
+                  <Bouton className="flex-1" onClick={() => setSelectedCenter(centreApercu)}>
+                    Voir la fiche
+                  </Bouton>
+                </div>
+              </Carte>
+            )}
           </div>
         )}
 
-      {/* Liste des centres */}
-      <div className="mt-3 space-y-2">
-        {filteredCenters.map((center) => (
-          <div key={center.id} className="rounded-2xl border border-[#efdfe4] bg-white p-3.5 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className={`h-2 w-2 rounded-full ${center.statusColor}`} />
-                  <span className="text-[10px] font-bold text-[#8f4a64]">{center.statusLabel}</span>
+        {afficherListe && (
+          <div className="space-y-4">
+            {/* Espace des centres et docteurs : orientations d'urgence (simulées) et mise à jour du centre */}
+            {pro && (
+              <Carte className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-sous-titre text-prune-900">
+                    {currentUser?.adminType === "center" ? "Orientations d'urgence reçues" : "Vos orientations en cours"}
+                  </h2>
+                  <BadgeSimulation detail="Orientations fictives : aucune donnée de patiente réelle." />
+                  <Badge ton="alerte">{urgentOrientations.length} active(s)</Badge>
                 </div>
-                <h3 className="ph-display mt-0.5 text-sm font-bold text-[#580e36]">{center.name}</h3>
-                <p className="text-[11px] text-[#846b77]">{center.place}</p>
-              </div>
-              <button
-                onClick={() => setSelectedCenter(center)}
-                className="rounded-xl bg-[#faedf1] p-1.5 text-[#ea2d6d]"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
+                <ul className="space-y-3">
+                  {urgentOrientations.map((o) => (
+                    <li key={o.id} className="space-y-2 rounded-bouton border border-bordure p-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-corps font-semibold text-prune-900">
+                          {o.patientName} ({o.patientAge} ans)
+                        </span>
+                        <Badge ton={o.urgencyLevel === "immediate" ? "alerte" : "attention"}>{o.urgencyLabel}</Badge>
+                      </div>
+                      <p className="text-petit text-texte-2">
+                        Réf. {o.id} · Prescrit par {o.doctorName} · {o.createdAt}
+                      </p>
+                      <p className="rounded-bouton bg-surface-2 px-3 py-2 text-petit text-texte">
+                        <strong>Examens prescrits :</strong> {o.recommendedExam}
+                        <br />
+                        <em>« {o.clinicalObservations} »</em>
+                      </p>
+                      {o.status === "accepted_urgent" ? (
+                        <p className="flex items-center gap-2 text-petit font-semibold text-succes">
+                          <Check size={18} aria-hidden /> Validé : patiente attendue d'urgence ({o.centerEstimatedDelay})
+                        </p>
+                      ) : o.status === "scheduled_wait" ? (
+                        <p className="flex items-center gap-2 text-petit font-semibold text-attention">
+                          <Clock size={18} aria-hidden /> {o.centerValidationMessage}
+                        </p>
+                      ) : currentUser?.adminType === "center" ? (
+                        <div className="flex flex-col gap-2 min-[420px]:flex-row">
+                          <Bouton taille="petit" className="flex-1" onClick={() => handleValidateOrientationByCenter(o.id, "immediate")}>
+                            Envoyez-la vite (attente &lt; 15 min)
+                          </Bouton>
+                          <Bouton variante="secondaire" taille="petit" className="flex-1" onClick={() => handleValidateOrientationByCenter(o.id, "scheduled", "~45 min")}>
+                            Affluence (créneau 45 min)
+                          </Bouton>
+                        </div>
+                      ) : (
+                        <p className="text-petit text-info">En attente de confirmation par {o.targetCenterName}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex flex-col gap-2">
+                  {currentUser?.adminType === "doctor" && (
+                    <Bouton variante="secondaire" icone={<FileText size={18} aria-hidden />} onClick={() => setShowOrientationModal(true)}>
+                      Orienter une nouvelle patiente
+                    </Bouton>
+                  )}
+                  <Bouton icone={<Edit3 size={18} aria-hidden />} onClick={() => void ouvrirMiseAJourCentre()}>
+                    Mettre à jour mon centre
+                  </Bouton>
+                </div>
+              </Carte>
+            )}
 
-            <div className="mt-2.5 flex items-center justify-between gap-1 border-t border-[#f4e4e9] pt-2 text-[10px]">
-              <button
-                onClick={() => openNavigation(center.lat, center.lng, center.name)}
-                className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 font-bold text-white shadow-xs hover:bg-emerald-700 transition"
-                title="Démarrer l'itinéraire dans Google Maps / Apple Maps"
-              >
-                <Navigation size={10} /> GPS
-              </button>
-              <button
-                onClick={() => setSelectedCenter(center)}
-                className="rounded-full bg-[#ea2d6d] px-2.5 py-1 font-bold text-white"
-              >
-                Détails
-              </button>
-            </div>
+            {filteredCenters.length === 0 && centers.length > 0 ? (
+              <EtatVide icone={<Search size={24} />} titre="Aucun centre ne correspond" texte="Modifiez la recherche ou les filtres." />
+            ) : (
+              <>
+                <p className="text-petit text-texte-2" aria-live="polite">
+                  {filteredCenters.length} centre(s)
+                </p>
+                <ul className="space-y-3">
+                  {filteredCenters.slice(0, nb).map((c) => (
+                    <LigneCentre key={c.id} c={c} onFiche={() => setSelectedCenter(c)} onItineraire={() => openNavigation(c.lat, c.lng, c.name)} />
+                  ))}
+                </ul>
+                {filteredCenters.length > nb && (
+                  <Bouton variante="secondaire" pleineLargeur onClick={() => setNb(nb + PAR_PAGE)}>
+                    Afficher plus ({filteredCenters.length - nb} restants)
+                  </Bouton>
+                )}
+              </>
+            )}
           </div>
-        ))}
+        )}
       </div>
     </section>
   );
