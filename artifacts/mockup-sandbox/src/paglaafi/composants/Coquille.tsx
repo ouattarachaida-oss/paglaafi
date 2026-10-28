@@ -29,6 +29,7 @@ import { ModaleInstallationPwa } from "../modales/ModaleInstallationPwa";
 import { ModaleMiseAJourCentre } from "../modales/ModaleMiseAJourCentre";
 import { ModaleNouvelleAnnonce } from "../modales/ModaleNouvelleAnnonce";
 import { ModaleOrientation } from "../modales/ModaleOrientation";
+import { ModalePosition } from "../modales/ModalePosition";
 import { ModaleVideoAutopalpation } from "../modales/ModaleVideoAutopalpation";
 import { TableauDeBordAdmin } from "../modales/TableauDeBordAdmin";
 import { MODE_REEL } from "../config";
@@ -104,6 +105,7 @@ export function Coquille() {
       {MODE_REEL ? <EspaceFichesDocteur /> : <EspaceEntrainementDocteur />}
       <ModaleVideoAutopalpation />
       <ModaleAffiche />
+      <ModalePosition />
 
       <Toast />
     </div>

@@ -36,7 +36,7 @@ export function FicheCentre() {
 
   // Mini-carte du centre (ordinateur)
   useEffect(() => {
-    if (!c || !carteRef.current) return;
+    if (!c || !carteRef.current || c.lat === null || c.lng === null) return;
     let carte: any = null;
     let actif = true;
     void import("leaflet").then((module: any) => {

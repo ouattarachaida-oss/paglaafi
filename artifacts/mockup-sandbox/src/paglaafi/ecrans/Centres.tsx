@@ -4,6 +4,7 @@ import { MODE_REEL } from "../config";
 import { useAuth, useCentres, useOrientations } from "../etat/contextes";
 import { BadgeSimulation } from "../composants/BadgeSimulation";
 import type { HealthCenter } from "../types";
+import { PresDeMoi } from "./PresDeMoi";
 import { sansEmoji } from "../lib/texte";
 import {
   Badge,
@@ -59,12 +60,82 @@ function LigneCentre({ c, onFiche, onItineraire }: { c: HealthCenter; onFiche: (
   );
 }
 
+/** Espace des centres et docteurs : orientations d'urgence (simulées) et mise à jour du centre. */
+export function EspaceProCentres() {
+  const { currentUser } = useAuth();
+  const { ouvrirMiseAJourCentre } = useCentres();
+  const { handleValidateOrientationByCenter, setShowOrientationModal, urgentOrientations } = useOrientations();
+  const pro = currentUser?.role === "admin" && (currentUser.adminType === "center" || currentUser.adminType === "doctor");
+  if (!pro) return null;
+  return (
+    <Carte className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <h2 className="text-sous-titre text-prune-900">
+          {currentUser?.adminType === "center" ? "Orientations d'urgence reçues" : "Vos orientations en cours"}
+        </h2>
+        <BadgeSimulation detail="Orientations fictives : aucune donnée de patiente réelle." />
+        <Badge ton="alerte">{urgentOrientations.length} active(s)</Badge>
+      </div>
+      <ul className="space-y-3">
+        {urgentOrientations.map((o) => (
+          <li key={o.id} className="space-y-2 rounded-bouton border border-bordure p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-corps font-semibold text-prune-900">
+                {o.patientName} ({o.patientAge} ans)
+              </span>
+              <Badge ton={o.urgencyLevel === "immediate" ? "alerte" : "attention"}>{sansEmoji(o.urgencyLabel)}</Badge>
+            </div>
+            <p className="text-petit text-texte-2">
+              Réf. {o.id} · Prescrit par {o.doctorName} · {o.createdAt}
+            </p>
+            <p className="rounded-bouton bg-surface-2 px-3 py-2 text-petit text-texte">
+              <strong>Examens prescrits :</strong> {o.recommendedExam}
+              <br />
+              <em>« {o.clinicalObservations} »</em>
+            </p>
+            {o.status === "accepted_urgent" ? (
+              <p className="flex items-center gap-2 text-petit font-semibold text-succes">
+                <Check size={18} aria-hidden /> Validé : patiente attendue d'urgence ({o.centerEstimatedDelay})
+              </p>
+            ) : o.status === "scheduled_wait" ? (
+              <p className="flex items-center gap-2 text-petit font-semibold text-attention">
+                <Clock size={18} aria-hidden /> {o.centerValidationMessage}
+              </p>
+            ) : currentUser?.adminType === "center" ? (
+              <div className="flex flex-col gap-2 min-[420px]:flex-row">
+                <Bouton taille="petit" className="flex-1" onClick={() => handleValidateOrientationByCenter(o.id, "immediate")}>
+                  Envoyez-la vite (attente &lt; 15 min)
+                </Bouton>
+                <Bouton variante="secondaire" taille="petit" className="flex-1" onClick={() => handleValidateOrientationByCenter(o.id, "scheduled", "~45 min")}>
+                  Affluence (créneau 45 min)
+                </Bouton>
+              </div>
+            ) : (
+              <p className="text-petit text-info">En attente de confirmation par {o.targetCenterName}</p>
+            )}
+          </li>
+        ))}
+      </ul>
+      <div className="flex flex-col gap-2">
+        {currentUser?.adminType === "doctor" && (
+          <Bouton variante="secondaire" icone={<FileText size={18} aria-hidden />} onClick={() => setShowOrientationModal(true)}>
+            Orienter une nouvelle patiente
+          </Bouton>
+        )}
+        <Bouton icone={<Edit3 size={18} aria-hidden />} onClick={() => void ouvrirMiseAJourCentre()}>
+          Mettre à jour mon centre
+        </Bouton>
+      </div>
+    </Carte>
+  );
+}
+
 /**
  * Carte des soins : recherche, filtre ville, filtres de statut, carte OpenStreetMap
  * (marqueurs regroupés, légende, géolocalisation facultative, aperçu du centre)
  * et liste paginée. Mobile : bascule Carte / Liste ; ordinateur : les deux côte à côte.
  */
-export function Centres() {
+function CarteComplete() {
   const { currentUser } = useAuth();
   const {
     centers,
@@ -72,7 +143,6 @@ export function Centres() {
     filteredCenters,
     mapContainerRef,
     openNavigation,
-    ouvrirMiseAJourCentre,
     searchQuery,
     setCityFilter,
     setSearchQuery,
@@ -84,32 +154,22 @@ export function Centres() {
     centreApercu,
     setCentreApercu,
     grandEcran,
-    localiserMoi,
+    localiser,
   } = useCentres();
-  const { handleValidateOrientationByCenter, setShowOrientationModal, urgentOrientations } = useOrientations();
   const [nb, setNb] = useState(PAR_PAGE);
   useEffect(() => setNb(PAR_PAGE), [searchQuery, statusFilter, cityFilter]);
 
   const villes = useMemo(() => [...new Set(centers.map((c) => c.city))].sort((a, b) => a.localeCompare(b, "fr")), [centers]);
-  const pro = currentUser?.role === "admin" && (currentUser.adminType === "center" || currentUser.adminType === "doctor");
-  const afficherCarte = viewMode === "map" || grandEcran;
-  const afficherListe = viewMode === "list" || grandEcran;
+  const afficherCarte = true;
+  const afficherListe = grandEcran;
 
   return (
     <section className="anim-apparition">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-display text-prune-900">Carte des soins</h1>
-        <div className="w-full min-[420px]:w-64 lg:hidden">
-          <OngletsSegmentes<"map" | "list">
-            libelle="Affichage des centres"
-            valeur={viewMode}
-            onChange={setViewMode}
-            onglets={[
-              { id: "map", libelle: "Carte" },
-              { id: "list", libelle: `Liste (${filteredCenters.length})` },
-            ]}
-          />
-        </div>
+        <h1 className="text-display text-prune-900">Carte des centres</h1>
+        <Bouton variante="discret" onClick={() => setViewMode("proches")}>
+          Retour à « Près de moi »
+        </Bouton>
       </div>
 
       {/* Recherche et filtres */}
@@ -176,7 +236,7 @@ export function Centres() {
               <div ref={mapContainerRef} className="z-10 h-full w-full" role="region" aria-label="Carte OpenStreetMap des centres" />
               <button
                 type="button"
-                onClick={localiserMoi}
+                onClick={localiser}
                 aria-label="Centrer la carte sur ma position"
                 className="absolute right-3 top-3 z-20 grid h-11 w-11 place-items-center rounded-full bg-surface text-prune-900 shadow-flottant"
               >
@@ -226,68 +286,7 @@ export function Centres() {
 
         {afficherListe && (
           <div className="space-y-4">
-            {/* Espace des centres et docteurs : orientations d'urgence (simulées) et mise à jour du centre */}
-            {pro && (
-              <Carte className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-sous-titre text-prune-900">
-                    {currentUser?.adminType === "center" ? "Orientations d'urgence reçues" : "Vos orientations en cours"}
-                  </h2>
-                  <BadgeSimulation detail="Orientations fictives : aucune donnée de patiente réelle." />
-                  <Badge ton="alerte">{urgentOrientations.length} active(s)</Badge>
-                </div>
-                <ul className="space-y-3">
-                  {urgentOrientations.map((o) => (
-                    <li key={o.id} className="space-y-2 rounded-bouton border border-bordure p-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-corps font-semibold text-prune-900">
-                          {o.patientName} ({o.patientAge} ans)
-                        </span>
-                        <Badge ton={o.urgencyLevel === "immediate" ? "alerte" : "attention"}>{sansEmoji(o.urgencyLabel)}</Badge>
-                      </div>
-                      <p className="text-petit text-texte-2">
-                        Réf. {o.id} · Prescrit par {o.doctorName} · {o.createdAt}
-                      </p>
-                      <p className="rounded-bouton bg-surface-2 px-3 py-2 text-petit text-texte">
-                        <strong>Examens prescrits :</strong> {o.recommendedExam}
-                        <br />
-                        <em>« {o.clinicalObservations} »</em>
-                      </p>
-                      {o.status === "accepted_urgent" ? (
-                        <p className="flex items-center gap-2 text-petit font-semibold text-succes">
-                          <Check size={18} aria-hidden /> Validé : patiente attendue d'urgence ({o.centerEstimatedDelay})
-                        </p>
-                      ) : o.status === "scheduled_wait" ? (
-                        <p className="flex items-center gap-2 text-petit font-semibold text-attention">
-                          <Clock size={18} aria-hidden /> {o.centerValidationMessage}
-                        </p>
-                      ) : currentUser?.adminType === "center" ? (
-                        <div className="flex flex-col gap-2 min-[420px]:flex-row">
-                          <Bouton taille="petit" className="flex-1" onClick={() => handleValidateOrientationByCenter(o.id, "immediate")}>
-                            Envoyez-la vite (attente &lt; 15 min)
-                          </Bouton>
-                          <Bouton variante="secondaire" taille="petit" className="flex-1" onClick={() => handleValidateOrientationByCenter(o.id, "scheduled", "~45 min")}>
-                            Affluence (créneau 45 min)
-                          </Bouton>
-                        </div>
-                      ) : (
-                        <p className="text-petit text-info">En attente de confirmation par {o.targetCenterName}</p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex flex-col gap-2">
-                  {currentUser?.adminType === "doctor" && (
-                    <Bouton variante="secondaire" icone={<FileText size={18} aria-hidden />} onClick={() => setShowOrientationModal(true)}>
-                      Orienter une nouvelle patiente
-                    </Bouton>
-                  )}
-                  <Bouton icone={<Edit3 size={18} aria-hidden />} onClick={() => void ouvrirMiseAJourCentre()}>
-                    Mettre à jour mon centre
-                  </Bouton>
-                </div>
-              </Carte>
-            )}
+            <EspaceProCentres />
 
             {filteredCenters.length === 0 && centers.length > 0 ? (
               <EtatVide icone={<Search size={24} />} titre="Aucun centre ne correspond" texte="Modifiez la recherche ou les filtres." />
@@ -312,5 +311,26 @@ export function Centres() {
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * Onglet Centres : « Près de moi » par défaut (sur ordinateur, avec la carte à droite,
+ * synchronisée) ; « Voir sur la carte » ouvre la carte complète (recherche, villes, filtres).
+ */
+export function Centres() {
+  const { viewMode, grandEcran, mapContainerRef } = useCentres();
+  if (viewMode === "carte") return <CarteComplete />;
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <PresDeMoi />
+      {grandEcran && (
+        <div className="lg:sticky lg:top-20 lg:self-start">
+          <div className="h-[calc(100dvh-120px)] min-h-[420px] overflow-hidden rounded-carte border border-bordure">
+            <div ref={mapContainerRef} className="z-10 h-full w-full" role="region" aria-label="Carte OpenStreetMap des centres proches" />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
