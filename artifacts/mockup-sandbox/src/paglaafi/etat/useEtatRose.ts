@@ -266,6 +266,7 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
             origine: r.origine,
             alerte: r.alerte,
             motif: r.motif,
+            langueTexte: appLanguage === "en" ? "en" : "fr",
             time: "Maintenant",
           },
         ]);

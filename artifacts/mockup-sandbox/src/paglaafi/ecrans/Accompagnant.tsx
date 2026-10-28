@@ -1,6 +1,6 @@
 import { MessageCircle, MessageSquareText } from "lucide-react";
-import { useUi } from "../etat/contextes";
-import { Bouton, Carte, PucesLangue } from "../composants/ui";
+import { useLangue, useUi } from "../etat/contextes";
+import { Bouton, Carte, choisirTexte, MentionTraduction, PucesLangue } from "../composants/ui";
 
 // Conseils d'accompagnement (soutien, sans contenu médical)
 const CONSEILS = [
@@ -11,12 +11,17 @@ const CONSEILS = [
 
 /** L'Accompagnant : langue du message, aperçu, envoi par WhatsApp ou SMS (sans internet), 3 conseils. */
 export function Accompagnant() {
-  const { appShareUrl, notify, setSmsLanguage, smsLanguage } = useUi();
+  const { appShareUrl, notify, appLanguage } = useUi();
+  const { handleSelectAppLanguage } = useLangue();
   // Messages d'invitation (texte français et traduction mooré inchangés)
-  const message =
-    smsLanguage === "fr"
-      ? `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${appShareUrl}`
-      : `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${appShareUrl}`;
+  const choix = choisirTexte(
+    {
+      fr: `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${appShareUrl}`,
+      moore: `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${appShareUrl}`,
+    },
+    appLanguage,
+  );
+  const message = choix.texte;
 
   return (
     <section className="anim-apparition">
@@ -29,11 +34,14 @@ export function Accompagnant() {
         <Carte className="space-y-4">
           <div>
             <p className="mb-2 text-petit font-semibold text-prune-900">Langue du message</p>
-            <PucesLangue valeur={smsLanguage} onChange={(l) => setSmsLanguage(l as "fr" | "moore")} langues={["fr", "moore"]} libelle="Langue du message" />
+            <PucesLangue valeur={appLanguage} onChange={handleSelectAppLanguage} libelle="Langue des contenus" />
           </div>
           <div>
             <p className="mb-2 text-petit font-semibold text-prune-900">Aperçu du message</p>
-            <blockquote className="rounded-bouton bg-surface-2 p-3 text-corps text-texte">{message}</blockquote>
+            <blockquote className="rounded-bouton bg-surface-2 p-3 text-corps text-texte" data-langue-contenu={choix.langue}>
+              {message}
+            </blockquote>
+            {choix.manquante && <MentionTraduction langue={appLanguage} />}
           </div>
           <Bouton
             taille="grand"

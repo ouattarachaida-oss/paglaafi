@@ -1,8 +1,8 @@
-import { Loader2, MapPin, Mic, Play, Send, ShieldCheck, Sparkles, Volume2 } from "lucide-react";
-import { useUi, useAuth, useAudio, useSante, useRose, useEducation, useCentres } from "../etat/contextes";
+import { Loader2, MapPin, Mic, Play, Send, ShieldCheck, Sparkles } from "lucide-react";
+import { useUi, useAuth, useSante, useRose, useEducation, useCentres } from "../etat/contextes";
 import { MODE_REEL } from "../config";
 import { estInvitee } from "../composants/entreesMenu";
-import { Bandeau, BadgeOrigineRose, LIBELLES_LANGUES } from "../composants/ui";
+import { Bandeau, BadgeOrigineRose, BoutonEcouter, MentionTraduction } from "../composants/ui";
 
 // Suggestions de questions (libellés d'interface ; la question envoyée reste complète)
 const SUGGESTIONS = [
@@ -31,7 +31,6 @@ const MOTIFS = {
 export function RoseIA() {
   const { appLanguage, isOffline, setSection } = useUi();
   const { currentUser } = useAuth();
-  const { handlePlayAudio } = useAudio();
   const { setShowPrivacyModal } = useSante();
   const { handleSendRoseMessage, handleToggleVoiceRecognition, isRecordingVoice, roseChatBottomRef, roseInput, roseMessages, setRoseInput, roseEnAttente } = useRose();
   const { setShowAutopalpationVideoModal } = useEducation();
@@ -39,7 +38,6 @@ export function RoseIA() {
 
   const dernierMotif = [...roseMessages].reverse().find((m) => m.sender === "rose")?.motif;
   const etat = isOffline ? "hors_ligne" : MODE_REEL && estInvitee(currentUser) ? "non_connectee" : dernierMotif;
-  const langue = LIBELLES_LANGUES[appLanguage];
 
   const puces = (vertical?: boolean) => (
     <div className={vertical ? "flex flex-col gap-2" : "defilement-discret flex gap-2 overflow-x-auto"}>
@@ -84,15 +82,10 @@ export function RoseIA() {
         <ol className="mt-4 space-y-4 pb-48 md:pb-6" aria-label="Discussion avec Rose IA" aria-live="polite">
           {roseMessages.map((msg, i) => {
             const utilisatrice = msg.sender === "user";
-            const texte = utilisatrice
-              ? msg.text
-              : appLanguage === "moore" && msg.mooreText
-                ? msg.mooreText
-                : appLanguage === "dioula" && msg.dioulaText
-                  ? msg.dioulaText
-                  : appLanguage === "en" && msg.englishText
-                    ? msg.englishText
-                    : msg.text;
+            const locale = appLanguage === "moore" ? msg.mooreText : appLanguage === "dioula" ? msg.dioulaText : appLanguage === "en" ? msg.englishText : undefined;
+            const texte = utilisatrice ? msg.text : (locale ?? msg.text);
+            const langueTexte = locale ? appLanguage : (msg.langueTexte ?? "fr");
+            const traductionManquante = !utilisatrice && appLanguage !== "fr" && langueTexte !== appLanguage;
             const video = !utilisatrice && /palpation|geste|boule|sein|nodule/i.test(msg.text);
 
             return (
@@ -160,18 +153,15 @@ export function RoseIA() {
                         onClick={() => setShowAutopalpationVideoModal(true)}
                         className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-bouton border-[1.5px] border-action px-3 text-petit font-semibold text-action"
                       >
-                        <Play size={16} aria-hidden /> Voir la démonstration vidéo
+                        <Play size={16} aria-hidden /> Voir le guide des 4 gestes
                       </button>
                     )}
                   </div>
                   {!utilisatrice && (
-                    <button
-                      type="button"
-                      onClick={() => handlePlayAudio(texte, appLanguage)}
-                      className="mt-1 inline-flex min-h-11 items-center gap-1.5 px-1 text-petit font-semibold text-action"
-                    >
-                      <Volume2 size={18} aria-hidden /> Écouter ({langue})
-                    </button>
+                    <div className="mt-1 space-y-1">
+                      {traductionManquante && <MentionTraduction langue={appLanguage} />}
+                      <BoutonEcouter texte={texte} langue={langueTexte} url={appLanguage === "moore" ? msg.audioUrlMoore : appLanguage === "dioula" ? msg.audioUrlDioula : undefined} />
+                    </div>
                   )}
                 </div>
               </li>

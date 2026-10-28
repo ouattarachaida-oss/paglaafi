@@ -192,6 +192,8 @@ export interface MessageRose extends AudiosLanguesLocales {
   origine?: "ia" | "sans_source" | "faq";
   /** Raison d'un repli sur la FAQ (hors ligne, non connectée, limite du jour, service indisponible) */
   motif?: "hors_ligne" | "non_connectee" | "quota" | "indisponible";
+  /** Langue du texte principal (réponses du mode réel : français ou anglais) */
+  langueTexte?: "fr" | "en";
   alerte?: boolean;
 }
 

@@ -69,6 +69,16 @@ export function pwa() {
           },
         },
         {
+          // Audios MP3 validés (mooré, dioula) : gardés pour l'écoute hors ligne
+          urlPattern: ({ url, sameOrigin }) => sameOrigin && (url.pathname.startsWith("/audio/") || url.pathname.endsWith(".mp3")),
+          handler: "CacheFirst",
+          options: {
+            cacheName: "paglaafi-audio",
+            expiration: { maxEntries: 200, maxAgeSeconds: 90 * JOUR },
+            cacheableResponse: { statuses: [0, 200] },
+          },
+        },
+        {
           // Affiches, illustrations et autres images, au fil de la consultation
           urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith("/images/"),
           handler: "CacheFirst",

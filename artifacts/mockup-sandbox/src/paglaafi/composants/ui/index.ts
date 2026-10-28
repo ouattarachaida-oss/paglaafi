@@ -4,3 +4,4 @@ export * from "./Champs";
 export * from "./Navigation";
 export * from "./Surfaces";
 export * from "./Badges";
+export * from "./Langue";

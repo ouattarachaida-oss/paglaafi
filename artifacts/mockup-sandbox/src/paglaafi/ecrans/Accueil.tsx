@@ -1,12 +1,12 @@
-import { Bell, BellRing, CalendarDays, Gift, LocateFixed, Navigation, Hand, MapPin, Megaphone, RefreshCw, Sparkles, UserPlus, Volume2 } from "lucide-react";
+import { Bell, BellRing, CalendarDays, Gift, LocateFixed, Navigation, Hand, MapPin, Megaphone, RefreshCw, Sparkles, UserPlus } from "lucide-react";
 import type { ReactNode } from "react";
 import { roseDailyTips } from "../donnees/conseilsRose";
-import { useUi, useAuth, useAudio, useCentres, useSante, useRose, useAnnonces, useDons } from "../etat/contextes";
+import { useUi, useAuth, useLangue, useCentres, useSante, useRose, useAnnonces, useDons } from "../etat/contextes";
 import { BadgeSimulation } from "../composants/BadgeSimulation";
 import { estInvitee } from "../composants/entreesMenu";
 import { sansEmoji } from "../lib/texte";
 import { formaterDistance, urlItineraire } from "../lib/proximite";
-import { BadgeStatutCentre, Bouton, Carte, EnTeteSection, EtatVide, PucesLangue } from "../composants/ui";
+import { BadgeStatutCentre, Bouton, BoutonEcouter, Carte, choisirTexte, EnTeteSection, EtatVide, MentionTraduction, PucesLangue } from "../composants/ui";
 
 /** Date du jour : « mercredi 28/10/2026 » (convention JJ/MM/AAAA). */
 function dateDuJour() {
@@ -39,16 +39,16 @@ function Raccourci({ icone, titre, texte, onClick }: { icone: ReactNode; titre: 
 export function Accueil() {
   const { setSection } = useUi();
   const { currentUser } = useAuth();
-  const { handlePlayAudio } = useAudio();
+  const { handleSelectAppLanguage } = useLangue();
+  const { appLanguage } = useUi();
   const { setViewMode, plusProche, position, ville, trouverCentreProche, setSelectedCenter } = useCentres();
   const { cycleInfo } = useSante();
-  const { dailyTipIndex, dailyTipLang, handleRequestNotification, notificationEnabled, setDailyTipIndex, setDailyTipLang } = useRose();
+  const { dailyTipIndex, handleRequestNotification, notificationEnabled, setDailyTipIndex } = useRose();
   const { announcements } = useAnnonces();
   const { setShowDonationModal } = useDons();
 
   const conseil = roseDailyTips[dailyTipIndex];
-  const texteConseil =
-    dailyTipLang === "moore" ? conseil.moore : dailyTipLang === "dioula" ? conseil.dioula : dailyTipLang === "en" ? conseil.en : conseil.fr;
+  const corpsConseil = choisirTexte({ fr: conseil.fr, en: conseil.en, moore: conseil.moore, dioula: conseil.dioula }, appLanguage);
   const recentes = announcements.filter((a) => a.status === "approved").slice(0, 3);
   const prenom = currentUser && !estInvitee(currentUser) ? currentUser.prenom : "";
 
@@ -156,13 +156,14 @@ export function Accueil() {
               </button>
             </div>
             <div className="mt-3">
-              <PucesLangue valeur={dailyTipLang} onChange={setDailyTipLang} libelle="Langue du conseil" />
+              <PucesLangue valeur={appLanguage} onChange={handleSelectAppLanguage} libelle="Langue des contenus" />
             </div>
-            <p className="mt-3 text-corps text-texte">{texteConseil}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Bouton variante="secondaire" taille="petit" icone={<Volume2 size={18} aria-hidden />} onClick={() => handlePlayAudio(texteConseil, dailyTipLang)}>
-                Écouter
-              </Bouton>
+            <p className="mt-3 text-corps text-texte" data-langue-contenu={corpsConseil.langue}>
+              {corpsConseil.texte}
+            </p>
+            {appLanguage !== "fr" && <MentionTraduction langue={appLanguage} partie={corpsConseil.manquante ? undefined : "Titre"} />}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <BoutonEcouter texte={corpsConseil.texte} langue={corpsConseil.langue} />
               <Bouton
                 variante="secondaire"
                 taille="petit"

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { BookOpen, Check, ChevronLeft, ChevronRight, Circle, Pause, Play, PlayCircle, RotateCcw } from "lucide-react";
+import { BookOpen, Check, ChevronLeft, ChevronRight, Circle, Hand, Play } from "lucide-react";
 import { lessons } from "../donnees/lecons";
-import { useAudio, useEducation } from "../etat/contextes";
-import { BadgeSimulation } from "../composants/BadgeSimulation";
-import { Badge, Bouton, Carte, EnTeteSection, LIBELLES_LANGUES, PucesLangue } from "../composants/ui";
+import { useEducation, useLangue, useUi } from "../etat/contextes";
+import type { Lecon } from "../types";
+import { Badge, Bouton, BoutonEcouter, Carte, choisirTexte, EnTeteSection, MentionTraduction, PucesLangue } from "../composants/ui";
+import type { Langue } from "../lib/voix";
 
 const CLE_VUES = "paglaafi_lecons_vues";
 function lireVues(): number[] {
@@ -15,13 +16,19 @@ function lireVues(): number[] {
   }
 }
 
+/** Textes d'une leçon selon la langue (le titre n'existe qu'en français, le texte détaillé en français et en anglais). */
+const resume = (l: Lecon, langue: Langue) => choisirTexte({ fr: l.summary, en: l.englishSummary, moore: l.mooreSummary, dioula: l.dioulaSummary }, langue);
+const detail = (l: Lecon, langue: Langue) => choisirTexte({ fr: l.fullText, en: l.englishFullText }, langue);
+const urlAudio = (l: Lecon, langue: Langue) => (langue === "moore" ? l.audioUrlMoore : langue === "dioula" ? l.audioUrlDioula : undefined);
+
 /**
- * Comprendre : leçon en cours (étape x sur n, texte, lecteur audio, précédent / suivant),
- * vidéo de démonstration (badge Simulation) et liste des leçons
- * (« consultée » = déjà ouverte sur cet appareil).
+ * Comprendre : leçon en cours (étape x sur n), texte et audio dans la langue choisie
+ * (mémorisée sur l'appareil, partagée par tous les contenus), guide des 4 gestes et
+ * liste des leçons (« consultée » = déjà ouverte sur cet appareil).
  */
 export function Comprendre() {
-  const { audioProgress, handlePlayAudio, isPlaying, setAudioProgress, setIsPlaying, setSpeechLanguage, speechLanguage } = useAudio();
+  const { appLanguage } = useUi();
+  const { handleSelectAppLanguage } = useLangue();
   const { activeLesson, setActiveLesson, setShowAutopalpationVideoModal } = useEducation();
   const [vues, setVues] = useState<number[]>(lireVues);
   const lecon = lessons[activeLesson];
@@ -39,21 +46,15 @@ export function Comprendre() {
     });
   }, [lecon.id]);
 
-  const resume =
-    speechLanguage === "en" ? lecon.englishSummary : speechLanguage === "moore" ? lecon.mooreSummary : speechLanguage === "dioula" ? lecon.dioulaSummary : lecon.summary;
-  const texteAudio = (l = lecon) =>
-    speechLanguage === "en" ? l.englishFullText : speechLanguage === "moore" ? l.mooreSummary : speechLanguage === "dioula" ? l.dioulaSummary : l.fullText;
-  const changer = (i: number) => {
-    setActiveLesson(i);
-    if (isPlaying) handlePlayAudio(texteAudio(lessons[i]), speechLanguage);
-  };
+  const r = resume(lecon, appLanguage);
+  const d = detail(lecon, appLanguage);
 
   return (
     <section className="anim-apparition">
       <h1 className="text-display text-prune-900">Comprendre, pas à pas</h1>
       <p className="mt-1 text-corps text-texte-2">Des repères simples, à lire ou à écouter.</p>
       <div className="mt-4">
-        <PucesLangue valeur={speechLanguage} onChange={setSpeechLanguage} libelle="Langue de la leçon" />
+        <PucesLangue valeur={appLanguage} onChange={handleSelectAppLanguage} libelle="Langue des contenus" />
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -71,73 +72,44 @@ export function Comprendre() {
               </span>
               <h2 className="text-titre text-prune-900">{lecon.title}</h2>
             </div>
-            <p className="mt-3 text-corps text-texte">{resume}</p>
-
-            {/* Lecteur audio */}
-            <div className="mt-4 flex items-center gap-3 rounded-carte bg-surface-2 p-3">
-              <button
-                type="button"
-                onClick={() => handlePlayAudio(texteAudio(), speechLanguage)}
-                aria-label={isPlaying ? "Mettre en pause" : `Écouter en ${LIBELLES_LANGUES[speechLanguage]}`}
-                className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-action text-sur-action shadow-carte"
-              >
-                {isPlaying ? <Pause size={26} fill="currentColor" aria-hidden /> : <Play size={26} fill="currentColor" aria-hidden className="ml-1" />}
-              </button>
-              <div className="min-w-0 flex-1">
-                <p className="text-petit font-semibold text-prune-900">{isPlaying ? `Lecture en cours (${LIBELLES_LANGUES[speechLanguage]})` : "Prêt à écouter"}</p>
-                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-rose-200" role="progressbar" aria-label="Progression de la lecture" aria-valuenow={Math.round(audioProgress)} aria-valuemin={0} aria-valuemax={100}>
-                  <div className="h-full rounded-full bg-action transition-all duration-200" style={{ width: `${audioProgress}%` }} />
-                </div>
-                <p className="mt-1 text-petit text-texte-2">{lecon.duration}</p>
-              </div>
-              <button
-                type="button"
-                aria-label="Recommencer la lecture"
-                onClick={() => {
-                  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-                  setIsPlaying(false);
-                  setAudioProgress(0);
-                }}
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-texte-2 active:bg-rose-200"
-              >
-                <RotateCcw size={20} aria-hidden />
-              </button>
+            <p className="mt-3 text-corps text-texte" data-langue-contenu={r.langue}>
+              {r.texte}
+            </p>
+            {appLanguage !== "fr" && <MentionTraduction langue={appLanguage} partie={r.manquante ? undefined : "Titre"} />}
+            <div className="mt-4">
+              <BoutonEcouter texte={r.texte} langue={r.langue} url={urlAudio(lecon, appLanguage)} />
             </div>
 
             <div className="mt-4 flex gap-3">
-              <Bouton variante="secondaire" className="flex-1" icone={<ChevronLeft size={20} aria-hidden />} disabled={activeLesson === 0} onClick={() => changer(activeLesson - 1)}>
+              <Bouton variante="secondaire" className="flex-1" icone={<ChevronLeft size={20} aria-hidden />} disabled={activeLesson === 0} onClick={() => setActiveLesson(activeLesson - 1)}>
                 Précédent
               </Bouton>
-              <Bouton className="flex-1" disabled={activeLesson === lessons.length - 1} onClick={() => changer(activeLesson + 1)}>
+              <Bouton className="flex-1" disabled={activeLesson === lessons.length - 1} onClick={() => setActiveLesson(activeLesson + 1)}>
                 Suivant <ChevronRight size={20} aria-hidden />
               </Bouton>
             </div>
           </Carte>
 
           <Carte>
-            <h3 className="text-corps font-semibold text-prune-900">Explication détaillée ({speechLanguage === "en" ? "English" : "Français"})</h3>
-            <p className="mt-2 text-corps text-texte">{speechLanguage === "en" ? lecon.englishFullText : lecon.fullText}</p>
+            <h3 className="text-corps font-semibold text-prune-900">Explication détaillée</h3>
+            <p className="mt-2 text-corps text-texte">{d.texte}</p>
+            {d.manquante && <MentionTraduction langue={appLanguage} />}
+            <div className="mt-3">
+              <BoutonEcouter texte={d.texte} langue={d.langue} />
+            </div>
           </Carte>
         </div>
 
         <div className="space-y-4">
-          <Carte className="overflow-hidden p-0">
-            <div className="relative">
-              <img src="/images/autopalpation-afrique-demo.webp" alt="" loading="lazy" className="aspect-video w-full object-cover" width={640} height={360} />
-              <span className="absolute inset-0 grid place-items-center bg-[#2b1420]/35" aria-hidden>
-                <PlayCircle size={52} className="text-white" />
-              </span>
-            </div>
-            <div className="p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-corps font-semibold text-prune-900">Vidéo des 4 gestes d'autopalpation</h3>
-                <BadgeSimulation detail="Démonstration par images animées : la vidéo réelle reste à produire et à valider." />
-              </div>
-              <p className="mt-1 text-petit text-texte-2">Démonstration guidée (2:45 min)</p>
-              <Bouton className="mt-3" pleineLargeur icone={<Play size={18} aria-hidden />} onClick={() => setShowAutopalpationVideoModal(true)}>
-                Regarder la vidéo démonstrative
-              </Bouton>
-            </div>
+          <Carte className="space-y-3">
+            <span className="grid h-12 w-12 place-items-center rounded-full bg-rose-100 text-rose-500" aria-hidden>
+              <Hand size={24} />
+            </span>
+            <h3 className="text-sous-titre text-prune-900">Guide des 4 gestes d'autopalpation</h3>
+            <p className="text-petit text-texte-2">4 étapes illustrées, à suivre au doigt ou à écouter.</p>
+            <Bouton pleineLargeur icone={<Play size={18} aria-hidden />} onClick={() => setShowAutopalpationVideoModal(true)}>
+              Ouvrir le guide des 4 gestes
+            </Bouton>
           </Carte>
 
           <section aria-labelledby="titre-lecons">
@@ -150,7 +122,7 @@ export function Comprendre() {
                   <li key={l.id}>
                     <button
                       type="button"
-                      onClick={() => changer(i)}
+                      onClick={() => setActiveLesson(i)}
                       aria-current={enCours ? "step" : undefined}
                       className={`flex w-full items-center gap-3 rounded-carte border p-3 text-left ${enCours ? "border-action bg-rose-100" : "border-bordure bg-surface"}`}
                     >
