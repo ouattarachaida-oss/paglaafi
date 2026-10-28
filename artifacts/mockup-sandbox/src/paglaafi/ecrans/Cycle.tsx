@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bell, CalendarClock, Check, ChevronLeft, ChevronRight, Clock, Hand, Plus, RotateCcw, Sparkles } from "lucide-react";
+import { Bell, CalendarClock, Check, ChevronLeft, ChevronRight, Clock, Hand, Pencil, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import { useUi, useSante } from "../etat/contextes";
 import { Bandeau, Bouton, Carte, Champ, EnTeteSection, EtatVide, Interrupteur, ListeDeroulante } from "../composants/ui";
 import type { Rappel } from "../depot/rappels";
@@ -22,15 +22,16 @@ const NOMS_JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi",
  * Calendrier mensuel : premier jour des règles noté (case pleine), fenêtre
  * d'autopalpation J+7 à J+11 (pointillés) et début prévu des prochaines règles
  * (bordure prune). Aucune durée de règles n'est supposée. Légende textuelle.
+ * Sans date notée (debutRegles null), seul « aujourd'hui » est marqué.
  */
-function CalendrierCycle({ debutRegles, dureeCycle }: { debutRegles: string; dureeCycle: number }) {
-  const debut = depuisIso(debutRegles);
+function CalendrierCycle({ debutRegles, dureeCycle }: { debutRegles: string | null; dureeCycle: number }) {
+  const debut = depuisIso(debutRegles ?? "1900-01-01");
   const [mois, setMois] = useState(() => {
     const t = new Date();
     return new Date(t.getFullYear(), t.getMonth(), 1);
   });
-  const fenetre = new Set(Array.from({ length: 5 }, (_, i) => iso(decaler(debut, 7 + i))));
-  const prevision = iso(decaler(debut, dureeCycle));
+  const fenetre = new Set(debutRegles ? Array.from({ length: 5 }, (_, i) => iso(decaler(debut, 7 + i))) : []);
+  const prevision = debutRegles ? iso(decaler(debut, dureeCycle)) : "";
   const aujourdhui = iso(new Date());
 
   const cases = useMemo(() => {
@@ -139,7 +140,19 @@ export function Cycle() {
     showCycleHistory,
     showNewReminderForm,
     showRecalibrateBox,
+    reglesNotees,
+    derniereCorrigeable,
+    modifierDerniereSaisie,
+    supprimerDerniereSaisie,
   } = useSante();
+  // Correction de la dernière saisie : même formulaire de date, autre action
+  const [correction, setCorrection] = useState(false);
+  const ouvrirSaisie = (corriger: boolean) => {
+    setCorrection(corriger);
+    if (corriger && cycleHistory[0]?.debut) setRealPeriodDateInput(cycleHistory[0].debut);
+    setShowRecalibrateBox(true);
+  };
+  const aujourdhui = iso(new Date());
 
   const ecart = Math.round((depuisIso(realPeriodDateInput).getTime() - depuisIso(lastPeriodDate).getTime()) / 86400000);
   const jours = cycleInfo.daysUntilNextPeriod;
@@ -151,8 +164,13 @@ export function Cycle() {
 
       <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="space-y-4">
-          <CalendrierCycle debutRegles={lastPeriodDate} dureeCycle={cycleLengthDays} />
+          <CalendrierCycle debutRegles={reglesNotees ? lastPeriodDate : null} dureeCycle={cycleLengthDays} />
 
+          {!reglesNotees ? (
+            <Bandeau ton="info" role="status">
+              Notez le premier jour de vos dernières règles : PagLaafi calculera vos prochaines règles et le bon moment pour l'autopalpation.
+            </Bandeau>
+          ) : (
           <div className="grid grid-cols-2 gap-3">
             <Carte>
               <p className="text-petit text-texte-2">Prochaines règles</p>
@@ -177,6 +195,7 @@ export function Cycle() {
               <p className="mt-1 text-petit text-texte-2">{cycleInfo.isOptimalWindow ? "C'est le bon moment" : `Cycle de ${cycleLengthDays} jours`}</p>
             </Carte>
           </div>
+          )}
 
           {recalibrationFeedback && (
             <Bandeau ton={recalibrationFeedback.type === "success" ? "succes" : recalibrationFeedback.type === "warning" ? "horsLigne" : "info"} role="status">
@@ -187,18 +206,21 @@ export function Cycle() {
 
           {/* Recalibrage */}
           <Carte>
-            <h2 className="text-sous-titre text-prune-900">Vos règles sont là ?</h2>
-            <p className="mt-1 text-petit text-texte-2">Enregistrez la date réelle pour recalibrer la prédiction si elle n'est pas exacte.</p>
+            <h2 className="text-sous-titre text-prune-900">{reglesNotees ? "Vos règles sont là ?" : "Quand ont commencé vos dernières règles ?"}</h2>
+            <p className="mt-1 text-petit text-texte-2">
+              {reglesNotees ? "Enregistrez la date réelle pour recalibrer la prédiction si elle n'est pas exacte." : "Indiquez le premier jour. Vous pourrez le modifier ensuite."}
+            </p>
             <div className="mt-3 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
               <Bouton icone={<Check size={20} aria-hidden />} onClick={() => handleRecalibratePeriod(iso(new Date()))}>
                 Règles débutées aujourd'hui
               </Bouton>
-              <Bouton variante="secondaire" icone={<RotateCcw size={18} aria-hidden />} aria-expanded={showRecalibrateBox} onClick={() => setShowRecalibrateBox(!showRecalibrateBox)}>
-                {showRecalibrateBox ? "Masquer" : "Autre date"}
+              <Bouton variante="secondaire" icone={<RotateCcw size={18} aria-hidden />} aria-expanded={showRecalibrateBox && !correction} onClick={() => (showRecalibrateBox && !correction ? setShowRecalibrateBox(false) : ouvrirSaisie(false))}>
+                {showRecalibrateBox && !correction ? "Masquer" : "Autre date"}
               </Bouton>
             </div>
             {showRecalibrateBox && (
               <div className="mt-4 space-y-3 border-t border-bordure pt-4">
+                {correction && <p className="text-corps font-semibold text-prune-900">Modifier la date du {cycleHistory[0]?.date}</p>}
                 <div className="flex flex-wrap gap-2" role="group" aria-label="Raccourcis de date">
                   {[
                     ["Aujourd'hui", 0],
@@ -219,14 +241,29 @@ export function Cycle() {
                     );
                   })}
                 </div>
-                <Champ libelle="Date précise du premier jour" type="date" value={realPeriodDateInput} onChange={(e) => setRealPeriodDateInput(e.target.value)} />
-                <p className="flex justify-between rounded-bouton bg-surface-2 px-3 py-2 text-petit text-texte">
-                  <span>Écart depuis le cycle précédent</span>
-                  <strong className="text-prune-900">{ecart > 0 ? `${ecart} jours` : "Date invalide"}</strong>
-                </p>
-                <Bouton pleineLargeur onClick={() => handleRecalibratePeriod(realPeriodDateInput)}>
-                  Enregistrer et recalibrer
-                </Bouton>
+                <Champ libelle="Date précise du premier jour" type="date" max={aujourdhui} value={realPeriodDateInput} onChange={(e) => setRealPeriodDateInput(e.target.value)} />
+                {reglesNotees && !correction && (
+                  <p className="flex justify-between rounded-bouton bg-surface-2 px-3 py-2 text-petit text-texte">
+                    <span>Écart depuis le cycle précédent</span>
+                    <strong className="text-prune-900">{ecart > 0 ? `${ecart} jours` : "Date invalide"}</strong>
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  {correction && (
+                    <Bouton variante="secondaire" className="flex-1" onClick={() => setShowRecalibrateBox(false)}>
+                      Annuler
+                    </Bouton>
+                  )}
+                  <Bouton
+                    className="flex-1"
+                    onClick={() => {
+                      const ok = correction ? modifierDerniereSaisie(realPeriodDateInput) : handleRecalibratePeriod(realPeriodDateInput);
+                      if (ok) setCorrection(false);
+                    }}
+                  >
+                    {correction ? "Enregistrer la modification" : reglesNotees ? "Enregistrer et recalibrer" : "Enregistrer"}
+                  </Bouton>
+                </div>
               </div>
             )}
 
@@ -236,13 +273,25 @@ export function Cycle() {
               </Bouton>
               {showCycleHistory && (
                 <ul className="mt-2 space-y-2">
-                  {cycleHistory.map((item) => (
-                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-bouton bg-surface-2 px-3 py-2">
-                      <span className="min-w-0">
-                        <span className="block text-petit font-semibold text-prune-900">Cycle du {item.date}</span>
-                        <span className="block text-petit text-texte-2">{item.note}</span>
-                      </span>
-                      <span className="shrink-0 text-petit font-semibold text-texte">{item.duration} jours</span>
+                  {cycleHistory.map((item, i) => (
+                    <li key={item.id} className="rounded-bouton bg-surface-2 px-3 py-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="min-w-0">
+                          <span className="block text-petit font-semibold text-prune-900">Cycle du {item.date}</span>
+                          <span className="block text-petit text-texte-2">{item.note}</span>
+                        </span>
+                        <span className="shrink-0 text-petit font-semibold text-texte">{item.duration > 0 ? `${item.duration} jours` : "1er relevé"}</span>
+                      </div>
+                      {i === 0 && derniereCorrigeable && (
+                        <div className="mt-2 flex gap-2">
+                          <Bouton variante="secondaire" taille="petit" icone={<Pencil size={16} aria-hidden />} onClick={() => ouvrirSaisie(true)}>
+                            Modifier
+                          </Bouton>
+                          <Bouton variante="discret" taille="petit" icone={<Trash2 size={16} aria-hidden />} onClick={supprimerDerniereSaisie}>
+                            Supprimer
+                          </Bouton>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

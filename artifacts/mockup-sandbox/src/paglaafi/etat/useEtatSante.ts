@@ -22,7 +22,70 @@ interface DonneesCycle {
   cycleLengthDays: number;
   autopalpationDoneThisMonth: boolean;
   lastAutopalpationDate: string;
-  cycleHistory: Array<{ id: number; date: string; duration: number; diff: number; note: string }>;
+  cycleHistory: EntreeCycle[];
+}
+
+/**
+ * Une saisie de règles. debut / debutPrecedent / cyclePrecedent mémorisent l'état
+ * d'avant la saisie, pour pouvoir la modifier ou la supprimer ensuite
+ * (absents sur les anciennes entrées : celles-ci ne sont pas corrigeables).
+ */
+export interface EntreeCycle {
+  id: number;
+  date: string;
+  duration: number;
+  diff: number;
+  note: string;
+  debut?: string;
+  debutPrecedent?: string | null;
+  cyclePrecedent?: number;
+}
+
+const isoDuJour = () => VALEURS_REELLES().lastPeriodDate;
+const depuisIso = (t: string) => {
+  const [a, m, j] = t.split("-").map((x) => parseInt(x, 10));
+  return new Date(a, (m || 1) - 1, j || 1);
+};
+
+/**
+ * Calcule l'effet d'une date de règles à partir d'un état de départ
+ * (début précédent, ou null pour une première saisie). Fonction pure.
+ */
+function calculerSaisie(base: { debut: string | null; cycle: number }, date: string) {
+  const reelle = depuisIso(date);
+  if (date > isoDuJour()) return { erreur: "La date ne peut pas être dans le futur." } as const;
+  const entreeCommune = { id: Date.now(), date: reelle.toLocaleDateString("fr-FR"), debut: date, debutPrecedent: base.debut, cyclePrecedent: base.cycle };
+  if (base.debut === null) {
+    const note = `Premier jour des règles noté au ${reelle.toLocaleDateString("fr-FR")}. Prédiction sur un cycle de ${base.cycle} jours, ajustée dès vos prochaines règles.`;
+    return { cycle: base.cycle, texte: note, type: "success" as const, entree: { ...entreeCommune, duration: 0, diff: 0, note } };
+  }
+  // Écart réel en jours entre les deux débuts de règles
+  const diffDays = Math.round((reelle.getTime() - depuisIso(base.debut).getTime()) / 86400000);
+  if (diffDays <= 0)
+    return { erreur: `Cette date doit être après vos dernières règles notées (${depuisIso(base.debut).toLocaleDateString("fr-FR")}). Pour corriger une date, utilisez « Modifier » dans l'historique.` } as const;
+  let cycle = base.cycle;
+  let texte = "";
+  let type: "success" | "info" | "warning" = "success";
+  // Analyse physiologique de l'intervalle constaté
+  if (diffDays >= 21 && diffDays <= 42) {
+    // Intervalle physiologique régulier : mise à jour directe du cycle
+    cycle = diffDays;
+    const variation = diffDays - base.cycle;
+    if (variation === 0) texte = `Règles confirmées au ${reelle.toLocaleDateString("fr-FR")} : prédiction 100% exacte (cycle régulier de ${diffDays} jours).`;
+    else if (variation > 0) texte = `Règles notées avec +${variation} j de décalage. Votre cycle a été automatiquement recalibré à ${diffDays} jours. Prochaine prédiction et autopalpation réajustées.`;
+    else texte = `Règles arrivées ${Math.abs(variation)} j plus tôt que prévu. Votre cycle a été recalibré à ${diffDays} jours. Prédictions réalignées.`;
+  } else if (diffDays < 21) {
+    // Cycle très court
+    cycle = 24;
+    type = "warning";
+    texte = `Règles déclarées ${diffDays} jours après le dernier cycle (intervalle court). Date enregistrée. Si ce rythme persiste, demandez conseil à une sage-femme.`;
+  } else {
+    // Décalage supérieur à 42 jours
+    cycle = 32;
+    type = "info";
+    texte = `Règles constatées après ${diffDays} jours. Date enregistrée et nouveau cycle réinitialisé avec succès.`;
+  }
+  return { cycle, texte, type, entree: { ...entreeCommune, duration: diffDays, diff: diffDays - base.cycle, note: texte } };
 }
 
 /** Valeurs neutres d'un nouveau compte (aucune date fictive). */
@@ -90,15 +153,7 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     type: "success" | "info" | "warning";
   } | null>(null);
 
-  const [cycleHistory, setCycleHistory] = useState<
-    Array<{
-      id: number;
-      date: string;
-      duration: number;
-      diff: number;
-      note: string;
-    }>
-  >(() => {
+  const [cycleHistory, setCycleHistory] = useState<EntreeCycle[]>(() => {
     const initialHist = [
       {
         id: 1,
@@ -325,75 +380,53 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
    * la date réelle constatée. L'application recalcule l'intervalle réel, recalibre
    * la durée moyenne du cycle, réajuste la prédiction suivante et recadre la fenêtre d'autopalpation.
    */
-  const handleRecalibratePeriod = (chosenDate?: string) => {
-    const targetDateStr = chosenDate || realPeriodDateInput;
-    if (!targetDateStr) {
-      notify("Veuillez indiquer une date pour recalibrer.");
-      return;
+  // Mode réel : tant qu'aucune date n'a été saisie, rien n'est affiché comme « noté »
+  const reglesNotees = !MODE_REEL || cycleHistory.length > 0;
+
+  const appliquer = (resultat: ReturnType<typeof calculerSaisie>, reste: EntreeCycle[], message: string) => {
+    if (resultat.erreur !== undefined) {
+      notify(resultat.erreur);
+      return false;
     }
-
-    // Récupération de l'ancienne date et de la nouvelle date déclarée
-    const prevParts = lastPeriodDate.split("-");
-    const prevDate = new Date(parseInt(prevParts[0], 10), parseInt(prevParts[1], 10) - 1, parseInt(prevParts[2], 10));
-
-    const realParts = targetDateStr.split("-");
-    const realDate = new Date(parseInt(realParts[0], 10), parseInt(realParts[1], 10) - 1, parseInt(realParts[2], 10));
-
-    // Calcul de l'écart réel en jours entre les deux débuts de règles
-    const diffDays = Math.round((realDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (diffDays <= 0) {
-      notify("La date réelle doit être postérieure au cycle précédent.");
-      return;
-    }
-
-    let calculatedCycleLength = cycleLengthDays;
-    let feedbackMsg = "";
-    let alertType: "success" | "info" | "warning" = "success";
-
-    // Analyse physiologique de l'intervalle constaté
-    if (diffDays >= 21 && diffDays <= 42) {
-      // Intervalle physiologique régulier : mise à jour directe du cycle
-      calculatedCycleLength = diffDays;
-      const variation = diffDays - cycleLengthDays;
-      if (variation === 0) {
-        feedbackMsg = `Règles confirmées au ${realDate.toLocaleDateString("fr-FR")} : prédiction 100% exacte (cycle régulier de ${diffDays} jours).`;
-      } else if (variation > 0) {
-        feedbackMsg = `Règles notées avec +${variation} j de décalage. Votre cycle a été automatiquement recalibré à ${diffDays} jours. Prochaine prédiction et autopalpation réajustées.`;
-      } else {
-        feedbackMsg = `Règles arrivées ${Math.abs(variation)} j plus tôt que prévu. Votre cycle a été recalibré à ${diffDays} jours. Prédictions réalignées.`;
-      }
-    } else if (diffDays < 21) {
-      // Cycle très court
-      calculatedCycleLength = 24;
-      alertType = "warning";
-      feedbackMsg = `Règles déclarées ${diffDays} jours après le dernier cycle (intervalle court). Date enregistrée. Si ce rythme persiste, demandez conseil à une sage-femme.`;
-    } else {
-      // Décalage supérieur à 42 jours
-      calculatedCycleLength = 32;
-      alertType = "info";
-      feedbackMsg = `Règles constatées après ${diffDays} jours. Date enregistrée et nouveau cycle réinitialisé avec succès.`;
-    }
-
-    // Mise à jour des états locaux réactifs
-    setCycleLengthDays(calculatedCycleLength);
-    setLastPeriodDate(targetDateStr);
-    setRecalibrationFeedback({ text: feedbackMsg, type: alertType });
+    setCycleLengthDays(resultat.cycle);
+    setLastPeriodDate(resultat.entree.debut);
+    setRecalibrationFeedback({ text: resultat.texte, type: resultat.type });
     setShowRecalibrateBox(false);
+    // Historique local (5 dernières saisies) pour visualiser l'apprentissage
+    setCycleHistory([resultat.entree, ...reste.slice(0, 4)]);
+    notify(message);
+    return true;
+  };
 
-    // Ajout à l'historique local pour visualiser l'apprentissage
-    setCycleHistory((prev) => [
-      {
-        id: Date.now(),
-        date: realDate.toLocaleDateString("fr-FR"),
-        duration: diffDays,
-        diff: diffDays - cycleLengthDays,
-        note: feedbackMsg,
-      },
-      ...prev.slice(0, 4),
-    ]);
+  const handleRecalibratePeriod = (chosenDate?: string) => {
+    const date = chosenDate || realPeriodDateInput;
+    if (!date) {
+      notify("Veuillez indiquer une date pour recalibrer.");
+      return false;
+    }
+    const base = { debut: reglesNotees ? lastPeriodDate : null, cycle: cycleLengthDays };
+    return appliquer(calculerSaisie(base, date), cycleHistory, reglesNotees ? "Cycle et fenêtre d'autopalpation recalibrés avec succès !" : "Premier jour des règles enregistré.");
+  };
 
-    notify("Cycle et fenêtre d'autopalpation recalibrés avec succès !");
+  /** La dernière saisie peut être corrigée (elle garde l'état d'avant). */
+  const derniereCorrigeable = cycleHistory.length > 0 && cycleHistory[0].debutPrecedent !== undefined;
+
+  /** Remplace la date de la dernière saisie, en repartant de l'état d'avant cette saisie. */
+  const modifierDerniereSaisie = (date: string) => {
+    const e = cycleHistory[0];
+    if (!derniereCorrigeable || !e) return false;
+    return appliquer(calculerSaisie({ debut: e.debutPrecedent ?? null, cycle: e.cyclePrecedent ?? cycleLengthDays }, date), cycleHistory.slice(1), "Date des règles modifiée.");
+  };
+
+  /** Supprime la dernière saisie et revient à l'état d'avant. */
+  const supprimerDerniereSaisie = () => {
+    const e = cycleHistory[0];
+    if (!derniereCorrigeable || !e) return;
+    setLastPeriodDate(e.debutPrecedent ?? isoDuJour());
+    setCycleLengthDays(e.cyclePrecedent ?? cycleLengthDays);
+    setCycleHistory(cycleHistory.slice(1));
+    setRecalibrationFeedback(null);
+    notify("Saisie supprimée.");
   };
 
   /**
@@ -498,6 +531,10 @@ export function useEtatSante({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
     setNewReminderType,
     cycleInfo,
     handleRecalibratePeriod,
+    reglesNotees,
+    derniereCorrigeable,
+    modifierDerniereSaisie,
+    supprimerDerniereSaisie,
     handleSavePrivacySettings,
     handleClearAllLocalData,
   };
