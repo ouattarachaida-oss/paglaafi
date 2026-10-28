@@ -113,6 +113,7 @@ export async function traiterQuestion(requete: Request, env: Env, f: Fetch = fet
     // Génération avec un modèle de secours si le principal est saturé, limité ou trop lent
     // (délais choisis pour tenir dans les 25 s accordées par l'application, repli FAQ au-delà)
     const generer = async (message: string) => {
+      const debut = Date.now();
       const appel = (modele: string, delaiMs: number) =>
         genererReponse(f, config.geminiCle, modele, message, config.reflexion, delaiMs);
       try {
@@ -120,7 +121,9 @@ export async function traiterQuestion(requete: Request, env: Env, f: Fetch = fet
       } catch (e) {
         const saturation = e instanceof ErreurGemini && [429, 503, 504].includes(e.statut);
         if (!saturation || !config.modeleSecours || config.modeleSecours === config.modele) throw e;
-        return await appel(config.modeleSecours, 5000);
+        // Le secours reçoit le temps restant (budget de 18 s, au moins 5 s) : utile quand
+        // le principal échoue vite (quota atteint) sur un réseau lent
+        return await appel(config.modeleSecours, Math.max(5000, 18000 - (Date.now() - debut)));
       }
     };
 
