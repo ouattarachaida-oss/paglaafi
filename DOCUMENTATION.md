@@ -30,7 +30,8 @@ artifacts/mockup-sandbox/
 │   ├── donnees/              Données statiques typées (démo), politique de confidentialité, réponses de Rose (démo)
 │   ├── depot/                Accès aux données Supabase (mode réel)
 │   ├── etat/                 État partagé par domaine (contextes React : useAuth, useCentres, useSante, useRose…)
-│   ├── composants/           Coquille, en-tête, menu, navigation, consentement, politique, badges
+│   ├── composants/           Coquille responsive, en-tête, menu, navigation, consentement, politique
+│   │   └── ui/               Composants du design system (boutons, champs, badges, feuilles…)
 │   ├── ecrans/               Un fichier par onglet
 │   ├── modales/              Modales et espaces professionnels (superadmin, admin, docteur…)
 │   └── lib/                  Utilitaires (Supabase, Rose IA, FAQ hors-ligne, stockage chiffré, sécurité)
@@ -178,15 +179,74 @@ Signalé par un badge « Simulation » en mode réel :
 - **Confidentialité** : contact à renseigner, région d'hébergement Supabase, conditions en vigueur
   de l'offre gratuite de Gemini et nom du modèle.
 
-## 12. Conventions
+## 12. Design system (interface)
+
+Jetons dans `artifacts/mockup-sandbox/src/index.css` (Tailwind 4, `@theme`) ; composants partagés dans
+`src/paglaafi/composants/ui/`. Les couleurs sont des variables CSS : la même classe s'adapte au mode
+clair ou sombre (préférence du système, ou réglage « Auto / Clair / Sombre » du menu du profil).
+**Ne pas écrire de couleur en dur** dans les écrans : utiliser les classes ci-dessous.
+
+| Jeton (classe) | Clair | Sombre | Usage |
+|---|---|---|---|
+| `fond` / `rose-50` | #fffafc | #1f1018 | fond de page |
+| `surface` | #ffffff | #2b1420 | cartes, feuilles |
+| `surface-2` / `rose-100` | #faeff2 | #3a1d2c | cartes douces |
+| `rose-200` | #f2e1e6 | #4a2838 | puces, sélection, fond des onglets |
+| `rose-500` | #ea2d6d | #ff6f9f | décor seulement (jamais texte courant ni bouton rempli) |
+| `action` / `rose-600` | #d41e5c | #ff6f9f | boutons principaux, liens, onglet actif |
+| `action-appui` / `rose-700` | #a8164a | #ff9dbe | état appuyé |
+| `sur-action` | #ffffff | #2b1420 | texte sur `action` |
+| `prune-900` | #580e36 | #f6e8ee | titres, texte fort |
+| `carte-prune` | #580e36 | #5c1a3b | encarts forts, puce active (texte blanc) |
+| `texte` / `texte-2` | #563746 / #734059 | #f6e8ee / #d9b9c7 | texte courant / secondaire |
+| `indicatif` | #916b7c | #c9a3b5 | indications et éléments désactivés, **sur surface blanche uniquement** |
+| `bordure` / `bordure-2` | #ebd6dc / #e4cfd6 | #4a2838 / #5a3346 | bordures |
+| `succes`, `attention`, `alerte`, `info` (+ `-fond`) | #1d7a4a, #8f5b00, #b42318, #475467 | #6fd39f, #f2c46b, #ff9b91, #c3cbd8 | états |
+| `simulation` (+ `-fond`, `bordure-simulation`) | #5b3ea6 / #f0ebfa | #c9b6ff / #2a2140 | badge Simulation (bordure pointillée) |
+| `pro` (+ `-fond`) | #1e4f91 / #e8f0fb | #9cc2f5 / #1b2a40 | badge de rôle professionnel |
+| `orange-money` / `sur-orange-money` | #f16e00 / #1a1a1a | idem | réservé à Orange Money |
+| `nuit`, `demo-point`, `theme-pwa` | #2b1420, #ff5c93, #9c3d61 | idem | démarrage, pastille Démo, thème PWA |
+
+Tous les couples texte / fond utilisés sont au moins AA (4,5:1). Deux règles d'usage en découlent :
+`indicatif` seulement sur fond blanc, et jamais de texte `action` sur `rose-200`.
+
+- **Typographie** : DM Sans seule (400 à 700). `text-display` 28/34 gras, `text-titre` 22/28 gras,
+  `text-sous-titre` 18/24 demi-gras, `text-corps` 16/24, `text-petit` 14/20 (minimum de lecture),
+  `text-badge` 13/16 gras, `text-nav` 12 (barre du bas).
+- **Espacements** (base 4 px) : 4, 8, 12, 16, 24, 32, 48. Marges d'écran 16 / 24 / 32 px ; 12 px entre
+  cartes ; 16 px dans une carte.
+- **Rayons** : `rounded-champ` 8, `rounded-bouton` 12, `rounded-carte` 16, `rounded-feuille` 24, puces `rounded-full`.
+- **Ombres** : `shadow-carte` (cartes), `shadow-flottant` (feuilles, toasts, popups).
+- **Icônes** : lucide, toujours avec libellé visible ou `aria-label`. Aucun emoji dans l'interface
+  (`lib/texte.ts` les retire à l'affichage des données).
+
+**Composants** (`composants/ui`) : `Bouton` (principal, secondaire, danger, discret, orangeMoney ; 48 px,
+52 px en taille « grand ») et `BoutonIcone` ; `Champ`, `ChampMotDePasse`, `ListeDeroulante`,
+`ZoneTexte`, `Case`, `Interrupteur` (role="switch") ; `PucesLangue`, `OngletsSegmentes`,
+`OngletsSoulignes`, `Accordeon` ; `Carte` (et `douce`), `EnTeteSection` ; badges (`BadgeStatutCentre`,
+`BadgeSimulationUi`, `BadgeDemo`, `BadgeOSM`, `BadgeOrigineRose`, `BadgeRole`) ; `Bandeau` (rose,
+hors-ligne, alerte, info, succès) ; `Feuille` (feuille du bas sur mobile, modale centrée dès 768 px) ;
+`EtatVide`, `Squelette`, `ErreurReseau`. Notifications : `notify(message, action?)` (toast sombre,
+action facultative comme « Annuler »).
+
+**Points de rupture** (`composants/Coquille.tsx`, `BarreNavigation.tsx`, `MenuLateral.tsx`) :
+- moins de 768 px : en-tête 64 px, barre du bas 88 px (Rose IA au centre), contenu pleine largeur ;
+- 768 à 1023 px : rail vertical de 88 px à gauche, contenu centré de 720 px maximum ;
+- 1024 px et plus : menu latéral fixe de 264 px, contenu de 1120 px maximum, écrans sur deux colonnes
+  (accueil, carte et liste, fiche centre et mini-carte, Rose IA et suggestions, espaces pros).
+
+Aucun défilement horizontal de page entre 320 et 1920 px ; les tableaux larges défilent dans leur boîte.
+
+## 13. Conventions
 
 UTF-8 sans BOM ; commentaires en français ; dates JJ/MM/AAAA ; montants en FCFA ; fuseau GMT ;
 TypeScript uniquement (jamais de Python) ; aucune clé secrète dans le code ni dans une variable `VITE_`.
 
-## 13. Historique
+## 14. Historique
 
 La première version (maquette Replit) tenait dans un seul fichier de 8 300 lignes, avec des
 fonctions simulées présentées comme réelles. La refonte d'octobre 2026 a découpé l'application
 (phase 1), ajouté Supabase (phase 2), Rose IA réelle par RAG (phase 3), l'honnêteté et la
-confidentialité (phase 4), puis la PWA hors-ligne et le nettoyage (phase 5). Les étiquettes Git
+confidentialité (phase 4), puis la PWA hors-ligne et le nettoyage (phase 5). Le front-end a ensuite été refondu
+(design system, interface responsive, mode sombre, accessibilité AA). Les étiquettes Git
 `backup-*` conservent les états antérieurs.

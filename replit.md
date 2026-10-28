@@ -13,7 +13,7 @@ Application web mobile (PWA) francophone d'information, d'orientation et de soli
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- Application : React 19 + Vite 7, Tailwind, wouter, Leaflet, vite-plugin-pwa
+- Application : React 19 + Vite 7, Tailwind 4 (design system : DOCUMENTATION.md §12, police DM Sans, mode sombre), wouter, Leaflet + leaflet.markercluster, vite-plugin-pwa
 - Backend : Supabase (Auth, Postgres, RLS, pgvector) ; fonctions serverless Vercel (`api/`)
 - Rose IA : RAG sur fiches validées, API Gemini (clé côté serveur uniquement)
 
