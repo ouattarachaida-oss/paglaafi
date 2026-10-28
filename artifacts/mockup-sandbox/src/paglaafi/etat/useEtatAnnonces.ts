@@ -32,7 +32,7 @@ const formulaireVide = () => ({
   badgeColor: "bg-pink-100 text-pink-800",
   content: "",
   contact: "",
-  imageUrl: MODE_DEMO ? "/images/affiche-evenement-beneere.jpg" : "",
+  imageUrl: MODE_DEMO ? "/images/affiche-evenement-beneere.webp" : "",
   imageCaption: "",
 });
 export function useEtatAnnonces({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
@@ -223,7 +223,7 @@ export function useEtatAnnonces({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
       badgeColor: "bg-pink-100 text-pink-800",
       content: "",
       contact: "",
-      imageUrl: "/images/affiche-evenement-beneere.jpg",
+      imageUrl: "/images/affiche-evenement-beneere.webp",
       imageCaption: "",
     });
     notify("Annonce avec affiche soumise ! Elle sera diffusée dès validation par le Superadmin.");

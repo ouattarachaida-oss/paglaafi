@@ -92,7 +92,7 @@ export function ModaleVideoAutopalpation() {
     >
       <div className="space-y-4">
         <div className="relative overflow-hidden rounded-carte bg-nuit">
-          <img src="/images/autopalpation-afrique-demo.jpg" alt="Illustration de la démonstration d'autopalpation" className="aspect-video w-full object-cover" width={720} height={405} />
+          <img src="/images/autopalpation-afrique-demo.webp" alt="Illustration de la démonstration d'autopalpation" className="aspect-video w-full object-cover" width={720} height={405} />
           <button
             type="button"
             onClick={() => setVideoIsPlaying(!videoIsPlaying)}

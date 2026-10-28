@@ -79,7 +79,7 @@ export function EcranConnexion() {
   return (
     <section className="anim-apparition space-y-5 py-2">
       <div className="flex flex-col items-center text-center">
-        <img src="/images/pinkhub-mvp-paglaafi.png" alt="" className="h-16 w-16 object-contain" width={64} height={64} />
+        <img src="/images/pinkhub-mvp-paglaafi.webp" alt="" className="h-16 w-16 object-contain" width={64} height={64} />
         <h1 className="mt-2 text-display text-prune-900">PagLaafi</h1>
         <p className="mt-1 text-corps text-texte-2">Information, orientation et solidarité autour du cancer du sein</p>
       </div>

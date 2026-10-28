@@ -3,9 +3,9 @@ import { Bandeau, Bouton, Champ, Feuille, ListeDeroulante, ZoneTexte } from "../
 
 // Affiches des partenaires proposées en un appui
 const AFFICHES = [
-  { url: "/images/affiche-evenement-beneere.jpg", legende: "Affiche Caravane BE NEERE FOR CAUSE", nom: "BE NEERE" },
-  { url: "/images/affiche-wtm-odc.jpg", legende: "Affiche Hackathon WTM & Orange Digital Center", nom: "WTM / ODC" },
-  { url: "/images/affiche-genit-care.jpg", legende: "Affiche Clinique GENIT CARE", nom: "GENIT CARE" },
+  { url: "/images/affiche-evenement-beneere.webp", legende: "Affiche Caravane BE NEERE FOR CAUSE", nom: "BE NEERE" },
+  { url: "/images/affiche-wtm-odc.webp", legende: "Affiche Hackathon WTM & Orange Digital Center", nom: "WTM / ODC" },
+  { url: "/images/affiche-genit-care.webp", legende: "Affiche Clinique GENIT CARE", nom: "GENIT CARE" },
 ];
 
 /** Publication d'une annonce par une structure : elle part toujours en attente de validation. */

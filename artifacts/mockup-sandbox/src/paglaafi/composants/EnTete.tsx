@@ -38,7 +38,7 @@ export function EnTete() {
         className={`flex min-h-11 items-center gap-2 rounded-bouton pr-2 ${currentUser ? "lg:hidden" : "pl-2"}`}
         aria-label="PagLaafi, retour à l'accueil"
       >
-        <img src="/images/pinkhub-mvp-paglaafi.png" alt="" className="h-9 w-9 object-contain" width={36} height={36} />
+        <img src="/images/pinkhub-mvp-paglaafi.webp" alt="" className="h-9 w-9 object-contain" width={36} height={36} />
         <span className="text-sous-titre font-bold text-prune-900">PagLaafi</span>
       </button>
       {MODE_DEMO && <BadgeDemo />}

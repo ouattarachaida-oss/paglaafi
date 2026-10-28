@@ -34,16 +34,16 @@ export function EcranDemarrage() {
         </div>
 
         <img
-          src="/images/splash-paglaafi-heroines.jpg"
+          src="/images/splash-paglaafi-heroines.webp"
           alt="Des femmes et une soignante réunies autour du ruban rose de la lutte contre le cancer du sein"
           className="mt-4 aspect-[4/5] w-full rounded-[28px] object-cover object-top"
-          width={720}
-          height={900}
+          width={576}
+          height={1024}
         />
 
         <div className="mt-6 flex items-center gap-3">
           <span className="grid h-14 w-14 shrink-0 place-items-center rounded-carte bg-white p-1.5">
-            <img src="/images/pinkhub-mvp-paglaafi.png" alt="" className="h-full w-full object-contain" width={48} height={48} />
+            <img src="/images/pinkhub-mvp-paglaafi.webp" alt="" className="h-full w-full object-contain" width={48} height={48} />
           </span>
           <h1 className="text-display text-white">PagLaafi</h1>
         </div>

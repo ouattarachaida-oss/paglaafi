@@ -123,7 +123,7 @@ export function Comprendre() {
         <div className="space-y-4">
           <Carte className="overflow-hidden p-0">
             <div className="relative">
-              <img src="/images/autopalpation-afrique-demo.jpg" alt="" loading="lazy" className="aspect-video w-full object-cover" width={640} height={360} />
+              <img src="/images/autopalpation-afrique-demo.webp" alt="" loading="lazy" className="aspect-video w-full object-cover" width={640} height={360} />
               <span className="absolute inset-0 grid place-items-center bg-[#2b1420]/35" aria-hidden>
                 <PlayCircle size={52} className="text-white" />
               </span>

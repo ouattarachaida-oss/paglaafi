@@ -38,7 +38,7 @@ function ContenuMenu({ fermer }: { fermer?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 shrink-0 items-center gap-2 border-b border-bordure px-4">
-        <img src="/images/pinkhub-mvp-paglaafi.png" alt="" className="h-9 w-9 object-contain" width={36} height={36} />
+        <img src="/images/pinkhub-mvp-paglaafi.webp" alt="" className="h-9 w-9 object-contain" width={36} height={36} />
         <div className="min-w-0 flex-1">
           <p className="text-sous-titre font-bold text-prune-900">PagLaafi</p>
         </div>

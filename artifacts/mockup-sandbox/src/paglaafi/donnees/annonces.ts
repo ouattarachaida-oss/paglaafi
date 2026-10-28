@@ -20,7 +20,7 @@ export const initialAnnouncements: PartnerAnnouncement[] = [
     month: "Octobre 2026",
     badge: "Campagne Officielle (0 FCFA)",
     badgeColor: "bg-emerald-100 text-emerald-800",
-    imageUrl: "/images/affiche-evenement-beneere.jpg",
+    imageUrl: "/images/affiche-evenement-beneere.webp",
     imageCaption: "Affiche officielle de la Caravane Santé BE NEERE FOR CAUSE déployée au Burkina Faso",
     content:
       "L'organisation BE NEERE FOR CAUSE déploie ses unités mobiles de santé : dépistage gratuit du cancer du sein et du col de l'utérus, ateliers d'autopalpation guidée, conseils nutritionnels et orientation médicale immédiate pour toutes les femmes.",
@@ -40,7 +40,7 @@ export const initialAnnouncements: PartnerAnnouncement[] = [
     month: "Octobre 2026",
     badge: "Tech & E-Santé",
     badgeColor: "bg-purple-100 text-purple-900 border border-purple-200",
-    imageUrl: "/images/affiche-wtm-odc.jpg",
+    imageUrl: "/images/affiche-wtm-odc.webp",
     imageCaption: "Affiche WomenTechmakers & Orange Digital Center Burkina Faso : Innovating for Women's Health",
     content:
       "Women Techmakers et Orange Digital Center Burkina Faso mobilisent les développeuses, soignantes et innovatrices pour concevoir des outils numériques d'impact : apprentissage de l'autopalpation sur mobile, diffusion d'alertes en langues locales et inclusion numérique des femmes.",
@@ -60,7 +60,7 @@ export const initialAnnouncements: PartnerAnnouncement[] = [
     month: "Octobre 2026",
     badge: "Santé de la Femme",
     badgeColor: "bg-teal-100 text-teal-900 border border-teal-200",
-    imageUrl: "/images/affiche-genit-care.jpg",
+    imageUrl: "/images/affiche-genit-care.webp",
     imageCaption:
       "Affiche Clinique GENIT CARE Burkina : Votre partenaire d'excellence pour la santé gynécologique et le dépistage précoce",
     content:

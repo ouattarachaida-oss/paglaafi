@@ -45,8 +45,8 @@ export function pwa() {
         // (le manifeste et ses icônes sont ajoutés par le plugin)
         "**/*.{js,css,html}",
         "icons/apple-touch-icon-180.png",
-        "images/pinkhub-mvp-paglaafi.png",
-        "images/splash-paglaafi-heroines.jpg",
+        "images/pinkhub-mvp-paglaafi.webp",
+        "images/splash-paglaafi-heroines.webp",
         "faq-rose.json",
       ],
       globIgnores: ["__mockup/**"],
