@@ -6,6 +6,7 @@ import { initialCenters } from "../donnees/centres";
 import { MODE_DEMO, MODE_REEL } from "../config";
 import { messageErreur } from "../lib/supabase";
 import { useDerniereRequete } from "../lib/derniereRequete";
+import { NIVEAUX, niveauAttente } from "../lib/attente";
 import { aCoordonnees, trierParProximite, urlItineraire, type Position } from "../lib/proximite";
 import { chargerCentreGere, chargerCentresVerifies, enregistrerDisponibilites } from "../depot/centres";
 import type { EtatUi } from "./useEtatUi";
@@ -269,10 +270,7 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   const plusProche = useMemo(() => trierParProximite(centers, position, ville)[0] ?? null, [centers, position, ville]);
 
   // Carte : centres de la vue active (« Près de moi » ou carte filtrée), avec coordonnées
-  const centresCarte = useMemo(
-    () => (viewMode === "proches" ? centresProches.map((p) => p.centre) : filteredCenters).filter(aCoordonnees),
-    [viewMode, centresProches, filteredCenters],
-  );
+  const centresCarte = useMemo(() => centresProches.map((p) => p.centre).filter(aCoordonnees), [centresProches]);
 
   /**
    * Carte OpenStreetMap (Leaflet, chargé à la demande) : marqueurs ronds colorés
@@ -281,7 +279,7 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
    * suivent la vue active ; la position (si connue) est affichée et centre la carte.
    */
   useEffect(() => {
-    if (section !== "Centres" || (viewMode !== "carte" && !grandEcran) || selectedCenter !== null) return;
+    if (section !== "Centres" || selectedCenter !== null) return;
     let actif = true;
 
     const initialiser = async () => {
@@ -316,17 +314,20 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
       });
 
       centresCarte.forEach((center) => {
-        const { couleur, glyphe } = ICONES_STATUT[center.status] ?? ICONES_STATUT.outdated;
+        // Couleur selon l'attente, halo qui clignote, icône du statut au centre
+        const niveau = niveauAttente(center);
+        const couleur = NIVEAUX[niveau].couleur;
+        const { glyphe } = ICONES_STATUT[center.status] ?? ICONES_STATUT.outdated;
         const icone = L.divIcon({
           className: "pl-marqueur",
-          html: `<span style="display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:${couleur};border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">${glyphe}</span>`,
+          html: `<span style="position:relative;display:grid;place-items:center;width:32px;height:32px"><span class="${niveau === "ferme" ? "" : "pl-pulsation"}" style="position:absolute;inset:0;border-radius:50%;background:${couleur}"></span><span style="position:relative;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:${couleur};border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">${glyphe}</span></span>`,
           iconSize: [32, 32],
           iconAnchor: [16, 16],
         });
         const marqueur = L.marker([center.lat, center.lng], {
           icon: icone,
           title: center.shortName,
-          alt: `${center.shortName} : ${LIBELLES_STATUT[center.status] ?? ""}`,
+          alt: `${center.shortName} : ${NIVEAUX[niveau].libelle}`,
           keyboard: true,
         });
         marqueur.on("click", () => setCentreApercu(center));
@@ -362,7 +363,7 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
         mapInstanceRef.current = null;
       }
     };
-  }, [section, viewMode, grandEcran, centresCarte, position, selectedCenter, currentUser]);
+  }, [section, centresCarte, position, selectedCenter, currentUser]);
 
   /** Centre la carte sur un centre et ouvre son aperçu (synchronisation liste ↔ carte). */
   const focaliser = (c: HealthCenter) => {

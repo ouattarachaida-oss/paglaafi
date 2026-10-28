@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import { ArrowLeft, Clock, MapPin, Navigation, Phone, ScanLine, Users, UsersRound } from "lucide-react";
 import { useCentres } from "../etat/contextes";
-import { BadgeOSM, Bouton, Carte, EtatVide, STATUTS_CENTRE } from "../composants/ui";
-import { estOSM } from "./Centres";
+import { Bouton, Carte, EtatVide, STATUTS_CENTRE } from "../composants/ui";
+import { NIVEAUX, niveauAttente, resumeAttente } from "../lib/attente";
 
 const FOND_STATUT: Record<string, string> = {
   succes: "bg-succes-fond text-succes",
@@ -27,7 +27,7 @@ function Info({ icone, titre, valeur, detail }: { icone: React.ReactNode; titre:
 /**
  * Fiche d'un centre : statut du jour avec l'heure de mise à jour, Appeler et Itinéraire,
  * équipement, personnel, file et attente, consigne du jour, examens et tarifs,
- * mention OpenStreetMap si applicable. Aucune traduction sur les centres.
+ * niveau d'attente (même couleur que sur la carte). Aucune traduction sur les centres.
  * Ordinateur : informations et mini-carte côte à côte.
  */
 export function FicheCentre() {
@@ -67,7 +67,7 @@ export function FicheCentre() {
           setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150);
         }}
       >
-        <ArrowLeft size={18} aria-hidden /> Retour à la carte des centres
+        <ArrowLeft size={18} aria-hidden /> Retour aux centres
       </Bouton>
 
       <div className="mt-2 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
@@ -77,11 +77,6 @@ export function FicheCentre() {
             <p className="mt-1 flex items-start gap-1.5 text-corps text-texte-2">
               <MapPin size={20} aria-hidden className="mt-0.5 shrink-0" /> {c.address ? `${c.address} (${c.place})` : c.place}
             </p>
-            {estOSM(c) && (
-              <div className="mt-2">
-                <BadgeOSM />
-              </div>
-            )}
           </div>
 
           <div className={`flex items-center gap-3 rounded-carte p-4 ${FOND_STATUT[statut.ton] ?? FOND_STATUT.neutre}`} role="status">
@@ -113,7 +108,7 @@ export function FicheCentre() {
           <div className="grid grid-cols-2 gap-3">
             <Info icone={<ScanLine size={16} aria-hidden />} titre="Mammographe" valeur={c.apparatus} detail={c.isApparatusWorking ? "Fonctionnel" : "Non fonctionnel ou non renseigné"} />
             <Info icone={<UsersRound size={16} aria-hidden />} titre="Personnel" valeur={`${c.agentsPresent} présent(s)`} detail={c.staffDescription || undefined} />
-            <Info icone={<Users size={16} aria-hidden />} titre="File d'attente" valeur={`${c.queueCount} personne(s)`} />
+            <Info icone={<Users size={16} aria-hidden />} titre="File d'attente" valeur={NIVEAUX[niveauAttente(c)].libelle} detail={resumeAttente(c)} />
             <Info icone={<Clock size={16} aria-hidden />} titre="Attente estimée" valeur={c.estimatedWait || "Non renseignée"} />
           </div>
 

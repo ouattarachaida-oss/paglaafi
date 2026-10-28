@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type HTMLAttributes, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, CloudOff, Info, RefreshCw, WifiOff, X } from "lucide-react";
 import { Bouton } from "./Bouton";
 
@@ -78,6 +79,7 @@ export function Bandeau({
 /**
  * Feuille du bas sur mobile (poignée, rayon 24 px) ; modale centrée à partir de 768 px.
  * Fond assombri, fermeture par Échap ou en touchant le fond, focus placé dans la feuille.
+ * Rendue dans <body> (portail) : un parent animé (transform) ne la décale pas.
  */
 export function Feuille({
   ouverte,
@@ -88,6 +90,7 @@ export function Feuille({
   pied,
   large,
   enTete,
+  centree,
 }: {
   ouverte: boolean;
   onFermer: () => void;
@@ -98,6 +101,8 @@ export function Feuille({
   large?: boolean;
   /** Éléments affichés à côté du titre (badge…) */
   enTete?: ReactNode;
+  /** Au milieu de l'écran sur tous les appareils (au lieu d'une feuille du bas sur mobile) */
+  centree?: boolean;
 }) {
   const idTitre = useId();
   const ref = useRef<HTMLDivElement>(null);
@@ -114,8 +119,8 @@ export function Feuille({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ouverte]);
   if (!ouverte) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center md:p-6">
+  return createPortal(
+    <div className={`fixed inset-0 z-50 flex justify-center ${centree ? "items-center p-4" : "items-end md:items-center md:p-6"}`}>
       <div className="absolute inset-0 bg-[#2b1420]/55" onClick={onFermer} aria-hidden />
       <div
         ref={ref}
@@ -123,11 +128,11 @@ export function Feuille({
         aria-modal="true"
         aria-labelledby={idTitre}
         tabIndex={-1}
-        className={`anim-feuille relative flex max-h-[92dvh] w-full flex-col rounded-t-feuille bg-surface shadow-flottant outline-none md:rounded-feuille ${
+        className={`anim-feuille relative flex max-h-[92dvh] w-full flex-col bg-surface shadow-flottant outline-none ${centree ? "rounded-feuille" : "rounded-t-feuille md:rounded-feuille"} ${
           large ? "md:max-w-3xl" : "md:max-w-lg"
         }`}
       >
-        <div className="mx-auto mt-2 h-1.5 w-10 rounded-full bg-bordure-2 md:hidden" aria-hidden />
+        {!centree && <div className="mx-auto mt-2 h-1.5 w-10 rounded-full bg-bordure-2 md:hidden" aria-hidden />}
         <div className="flex items-start gap-3 border-b border-bordure px-4 pb-3 pt-3 md:px-6 md:pt-5">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -150,7 +155,8 @@ export function Feuille({
         <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6">{children}</div>
         {pied && <div className="pb-securite border-t border-bordure px-4 py-3 md:px-6">{pied}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
