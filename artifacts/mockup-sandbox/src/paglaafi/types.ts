@@ -186,7 +186,7 @@ export interface MessageRose extends AudiosLanguesLocales {
   dioulaText?: string;
   // Mode réel : sources citées, origine de la réponse et signe d'alerte détecté
   sources?: SourceRose[];
-  origine?: "ia" | "sans_source" | "faq";
+  origine?: "ia" | "ia_libre" | "sans_source" | "faq";
   alerte?: boolean;
 }
 

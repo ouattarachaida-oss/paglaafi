@@ -15,11 +15,12 @@ export interface ResultatRose {
   texte: string;
   textesLocaux: { moore?: string; dioula?: string };
   sources: SourceRose[];
-  origine: "ia" | "sans_source" | "faq";
+  origine: "ia" | "ia_libre" | "sans_source" | "faq";
   alerte: boolean;
 }
 
-const DELAI_MS = 15000;
+// Large : avec un modèle saturé, le serveur peut essayer le modèle de secours (repli FAQ au-delà)
+const DELAI_MS = 25000;
 
 async function repli(question: string, langue: LangueRose, note?: string): Promise<ResultatRose> {
   const faq = await repondreDepuisFaq(question, langue, note);
@@ -73,7 +74,7 @@ export async function demanderARose(question: string, langue: LangueRose): Promi
         source: s.source,
         url: s.url,
       })),
-      origine: corps.mode === "ia" ? "ia" : "sans_source",
+      origine: corps.mode === "ia" || corps.mode === "ia_libre" ? corps.mode : "sans_source",
       alerte: corps.alerte === true,
     };
   } catch {

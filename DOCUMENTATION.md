@@ -100,7 +100,10 @@ Sans `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`, l'application repass
   données personnelles, détecte les signes d'alerte, cherche dans les **fiches validées**
   (pgvector), fait générer une réponse contrainte par Gemini, la contrôle (sources
   existantes, aucun diagnostic ni posologie) et construit lui-même les citations.
-  Sans fiche validée pertinente, Gemini n'est pas appelé.
+  Sans fiche validée pertinente, Gemini n'est pas appelé, sauf en **mode démonstration**
+  (`ROSE_REPONSE_LIBRE=true`, côté serveur) : réponse générale avec les mêmes garde-fous, références
+  limitées à une liste fixe d'organismes (OMS, UNFPA ; `serveur/rose/reponseLibre.ts`) et badge
+  « Réponse IA non validée par un soignant ». À désactiver pour un usage réel.
 - **Repli** : FAQ locale (`public/faq-rose.json`, fiches validées seulement) hors connexion,
   sans compte, quota atteint ou service indisponible.
 - **Mooré / Dioula** : pas de génération automatique ; fiche validée dans la langue si elle existe.
