@@ -1,72 +1,79 @@
-import { Heart } from "lucide-react";
+import { Gift, HeartHandshake } from "lucide-react";
 import { partnerAssociations } from "../donnees/associations";
-import { useUi, useDons } from "../etat/contextes";
-import { BadgeSimulation } from "../composants/BadgeSimulation";
+import { useDons } from "../etat/contextes";
+import { BadgeSimulationUi, Bouton, Carte, EnTeteSection } from "../composants/ui";
 
 /**
- * Onglet Faire un don : associations partenaires.
+ * Faire un don : rappel « Simulation » (dans les deux modes : le paiement n'est jamais réel),
+ * choix « Offrir un examen » ou « Soutenir une association », puis parcours en 4 étapes
+ * dans la feuille du don (montants, don anonyme, Orange Money).
  */
 export function Dons() {
-  const { section } = useUi();
   const { setSelectedAssociation, setShowDonationModal } = useDons();
 
   return (
-    <section className="ph-enter px-5 pt-4">
-      <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">Solidarité · Burkina Faso</span>
-      <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">Faire un don</h1>
-      <BadgeSimulation bloc detail="Paiement Orange Money simulé : aucun argent n'est prélevé." />
-      <p className="mt-1 text-xs text-[#795f6d]">
+    <section className="anim-apparition">
+      <h1 className="text-display text-prune-900">Faire un don</h1>
+      <div className="bordure-simulation mt-3 flex flex-wrap items-center gap-2 rounded-bouton bg-simulation-fond px-3 py-2 text-petit text-simulation">
+        <BadgeSimulationUi /> <span>Simulation : aucun argent n'est prélevé.</span>
+      </div>
+      <p className="mt-3 text-corps text-texte-2">
         Votre contribution finance directement le dépistage et les soins de femmes sans revenus au Burkina Faso.
       </p>
 
-      <div className="mt-3.5 rounded-[26px] border-2 border-rose-300 bg-gradient-to-br from-[#fff7f9] to-[#ffedf3] p-5 shadow-sm">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ea2d6d] px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
-          <Heart size={13} className="fill-white" /> 100% Solidaire & Sécurisé
-        </span>
-
-        <h3 className="ph-display mt-2 text-lg font-bold text-[#3d2430]">Offrir un examen de dépistage</h3>
-        <p className="mt-1 text-xs text-[#684a58] leading-relaxed">
-          Grâce à votre don de <strong>2 500 à 5 000 FCFA</strong>, une mère de famille vulnérable bénéficie
-          immédiatement d'une consultation et d'une mammographie complète.
-        </p>
-
-        <div className="mt-4">
-          <button
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <Carte className="flex flex-col gap-3">
+          <span className="grid h-11 w-11 place-items-center rounded-full bg-rose-100 text-rose-500" aria-hidden>
+            <Gift size={22} />
+          </span>
+          <h2 className="text-sous-titre text-prune-900">Offrir un examen de dépistage</h2>
+          <p className="text-corps text-texte">
+            Grâce à votre don de <strong>2 500 à 5 000 FCFA</strong>, une mère de famille vulnérable bénéficie immédiatement d'une consultation et
+            d'une mammographie complète.
+          </p>
+          <Bouton
+            className="mt-auto"
             onClick={() => setShowDonationModal(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ea2d6d] py-3 text-xs font-bold text-white shadow hover:bg-[#d81f5c] transition"
           >
-            <Heart size={15} className="fill-white" /> Commencer mon don maintenant
-          </button>
-        </div>
+            Offrir un examen
+          </Bouton>
+        </Carte>
+        <Carte className="flex flex-col gap-3">
+          <span className="grid h-11 w-11 place-items-center rounded-full bg-rose-100 text-rose-500" aria-hidden>
+            <HeartHandshake size={22} />
+          </span>
+          <h2 className="text-sous-titre text-prune-900">Soutenir une association</h2>
+          <p className="text-corps text-texte">Choisissez une association partenaire dans la liste ci-dessous.</p>
+          <Bouton variante="secondaire" className="mt-auto" onClick={() => document.getElementById("associations")?.scrollIntoView({ behavior: "smooth" })}>
+            Voir les associations
+          </Bouton>
+        </Carte>
       </div>
 
-      <div className="mt-4">
-        <h3 className="ph-display text-sm font-bold text-[#580e36]">Associations partenaires éligibles</h3>
-        <div className="mt-2 space-y-2">
-          {partnerAssociations.map((assoc) => (
-            <div key={assoc.id} className="rounded-2xl border border-[#eedde2] bg-white p-3 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-[#580e36]">
-                  {assoc.name} ({assoc.acronym})
-                </span>
-                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800">
-                  Vérifié
-                </span>
-              </div>
-              <p className="mt-1 text-[11px] text-[#785b6a]">{assoc.mission}</p>
-              <button
+      <section className="mt-6 scroll-mt-20" id="associations" aria-labelledby="titre-associations">
+        <EnTeteSection id="titre-associations" titre="Associations partenaires" />
+        <ul className="grid gap-3 md:grid-cols-2">
+          {partnerAssociations.map((a) => (
+            <li key={a.id} className="flex flex-col gap-2 rounded-carte border border-bordure bg-surface p-4 shadow-carte">
+              <h3 className="text-corps font-semibold text-prune-900">
+                {a.name} ({a.acronym})
+              </h3>
+              <p className="text-petit text-texte">{a.mission}</p>
+              <Bouton
+                variante="secondaire"
+                taille="petit"
+                className="mt-auto self-start"
                 onClick={() => {
-                  setSelectedAssociation(assoc);
+                  setSelectedAssociation(a);
                   setShowDonationModal(true);
                 }}
-                className="mt-2 font-bold text-[#ea2d6d] hover:underline block text-[10.5px]"
               >
-                Faire un don à {assoc.acronym} →
-              </button>
-            </div>
+                Faire un don à {a.acronym}
+              </Bouton>
+            </li>
           ))}
-        </div>
-      </div>
+        </ul>
+      </section>
     </section>
   );
 }
