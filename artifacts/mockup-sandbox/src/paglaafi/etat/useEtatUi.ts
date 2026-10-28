@@ -11,6 +11,12 @@ const CLE_CONSENTEMENT = "paglaafi_consentement";
  * Interface générale : onglet actif (porté par l'URL), menus, notifications (toast),
  * langue choisie, installation PWA et détection du mode hors-ligne.
  */
+export type Theme = "auto" | "clair" | "sombre";
+export interface ActionToast {
+  libelle: string;
+  faire: () => void;
+}
+
 export function useEtatUi() {
   // 2. Navigation & État global
   // L'onglet actif est déduit de l'adresse (routage wouter) : voir routes.ts.
@@ -130,10 +136,41 @@ export function useEtatUi() {
     };
   }, []);
 
-  // Helper Toast
-  const notify = (msg: string) => {
+  // Thème d'affichage : automatique (préférence du système), clair ou sombre (menu du profil)
+  const [theme, setThemeEtat] = useState<Theme>(() => {
+    try {
+      const t = localStorage.getItem("paglaafi_theme");
+      return t === "clair" || t === "sombre" ? t : "auto";
+    } catch {
+      return "auto";
+    }
+  });
+  const setTheme = (t: Theme) => {
+    setThemeEtat(t);
+    try {
+      if (t === "auto") localStorage.removeItem("paglaafi_theme");
+      else localStorage.setItem("paglaafi_theme", t);
+    } catch {
+      // stockage indisponible : le choix vaut pour la session
+    }
+  };
+  useEffect(() => {
+    const racine = document.documentElement;
+    if (theme === "auto") delete racine.dataset.theme;
+    else racine.dataset.theme = theme === "sombre" ? "dark" : "light";
+  }, [theme]);
+
+  // Notification passagère, avec une action facultative (ex. « Annuler »)
+  const [toastAction, setToastAction] = useState<ActionToast | null>(null);
+  const minuteurToast = useRef<number | undefined>(undefined);
+  const notify = (msg: string, action?: ActionToast) => {
     setToast(msg);
-    window.setTimeout(() => setToast(""), 3500);
+    setToastAction(action ?? null);
+    window.clearTimeout(minuteurToast.current);
+    minuteurToast.current = window.setTimeout(() => {
+      setToast("");
+      setToastAction(null);
+    }, action ? 6000 : 3500);
   };
 
   return {
@@ -163,6 +200,9 @@ export function useEtatUi() {
     isOffline,
     setIsOffline,
     notify,
+    toastAction,
+    theme,
+    setTheme,
     consentementAccepte,
     accepterConsentement,
     showPolitique,

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="fr" style="height: 100%">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- Configuration Application Mobile Native (PWA Standalone) -->
@@ -33,23 +33,32 @@
     <meta name="twitter:title" content="PagLaafi - Santé & Solidarité Féminine au Burkina Faso" />
     <meta name="twitter:description" content="Orientation en temps réel des centres de soins et suivi du cycle avec Rose IA au Burkina Faso." />
 
-    <!-- Favicon Officiel PagLaafi (Ruban Rose) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎗️</text></svg>" />
+    <!-- Favicon PagLaafi -->
+    <link rel="icon" type="image/png" href="/icons/icone-192.png" />
 
     <!-- Manifeste PWA : généré et injecté au build par vite-plugin-pwa (serveur/pwa.ts) -->
     <!-- Feuille de style Leaflet : importée depuis le paquet npm (src/paglaafi/etat/useEtatCentres.ts) -->
 
-    <!-- Polices Google Fonts non bloquantes pour le rendu rapide -->
+    <!-- Police unique : DM Sans (4 graisses), chargement non bloquant -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" />
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" />
     <noscript>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" />
     </noscript>
+
+    <!-- Thème choisi dans le menu du profil (clair / sombre), appliqué avant l'affichage -->
+    <script>
+      try {
+        var t = localStorage.getItem("paglaafi_theme");
+        if (t === "clair") document.documentElement.dataset.theme = "light";
+        else if (t === "sombre") document.documentElement.dataset.theme = "dark";
+      } catch (e) {}
+    </script>
   </head>
-  <body style="height: 100%; margin: 0; background-color: #2b1420;">
-    <div id="root" style="height: 100%"></div>
+  <body style="margin: 0">
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <!-- L'enregistrement du Service Worker se fait dans src/main.tsx (production uniquement) -->
   </body>
