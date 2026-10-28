@@ -184,6 +184,7 @@ async function tester({ comptes, centreA, centreB, asso }) {
   // --- Admin centre ------------------------------------------------------------
   await autorise("admin centre", "lire son centre (même non vérifié)", ac.from("centres").select("id").eq("id", centreA.id));
   await autorise("admin centre", "mettre à jour les disponibilités de son centre", ac.from("centres").update({ file_attente: 4, statut: "busy", attente_estimee: "~30 min" }).eq("id", centreA.id).select());
+  await autorise("admin centre", "indiquer son centre « Fermé » et ses examens et tarifs", ac.from("centres").update({ statut: "closed", examens: [{ name: "Échographie", price: 5000, free: false, notes: "" }] }).eq("id", centreA.id).select());
   const { data: majA } = await admin.from("centres").select("maj_par").eq("id", centreA.id).single();
   verifier("admin centre", "autorisé", "auteur de la mise à jour enregistré automatiquement", majA?.maj_par === comptes.adminCentre.id);
   await refuse("admin centre", "marquer son centre comme vérifié", ac.from("centres").update({ verifie: true }).eq("id", centreA.id).select());
