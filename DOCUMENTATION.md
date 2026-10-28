@@ -160,12 +160,22 @@ Signalé par un badge « Simulation » en mode réel :
 - paiement Orange Money et tableau de bord des dons ;
 - orientations d'urgence (docteur → centre) ;
 - statistiques du superadmin ;
-- vidéo d'autopalpation (images animées, vidéo à produire et valider).
+
+L'ancienne « vidéo d'autopalpation » (faux lecteur) est remplacée par le **Guide des 4 gestes**
+(`composants/GuideGestes.tsx`, textes existants, schémas SVG « à valider par un soignant »). Un vrai
+lecteur vidéo n'apparaît que si `VIDEO_AUTOPALPATION.videoUrl` (`donnees/guideGestes.ts`) est renseigné.
+
+**Langues des contenus** : le choix (menu, Comprendre, accueil, Accompagnant) est global et mémorisé
+sur l'appareil ; les textes sont inclus dans l'application (aucune traduction réseau). Texte absent :
+français + « Traduction en … à venir ». Audio (`lib/voix.ts`) : MP3 `audioUrlMoore` / `audioUrlDioula`
+quand ils existent (mis en cache), sinon voix de l'appareil en français et en anglais ; sinon bouton
+Écouter désactivé (« Audio indisponible pour cette langue »).
 
 ## 11. À valider avant toute publication
 
 - **Numéros** : numéro vert « 80 00 11 22 », téléphones des centres, associations et annonces,
   numéros des comptes de démonstration (certains pourraient appartenir à de vraies personnes).
+- **Schémas du guide des 4 gestes** : à faire relire par un soignant (`SCHEMAS_VALIDES` dans `donnees/guideGestes.ts`).
 - **Centres** : statuts, files d'attente, tarifs, horaires, coordonnées (à confirmer auprès des
   structures, puis « vérifier » dans le panneau superadmin). Les 94 structures importées d'OpenStreetMap
   le 28/10/2026 (statut « Données OpenStreetMap · à vérifier ») ont été marquées vérifiées **pour la

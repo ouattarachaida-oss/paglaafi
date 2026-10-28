@@ -33,7 +33,7 @@ Application web mobile (PWA) francophone d'information, d'orientation et de soli
 
 ## Product
 
-Onglets : Accueil, Centres (carte), Cycle, Comprendre, Rose IA, Dons, Annonces, Accompagnant. Espaces professionnels : centre, docteur (fiches Rose IA), association, superadmin. Ce qui reste simulé porte un badge « Simulation » en mode réel (dons Orange Money, orientations, statistiques, vidéo).
+Onglets : Accueil, Centres (carte), Cycle, Comprendre, Rose IA, Dons, Annonces, Accompagnant. Espaces professionnels : centre, docteur (fiches Rose IA), association, superadmin. Ce qui reste simulé porte un badge « Simulation » en mode réel (dons Orange Money, orientations, statistiques). Guide des 4 gestes à la place de l'ancienne fausse vidéo.
 
 ## User preferences
 
