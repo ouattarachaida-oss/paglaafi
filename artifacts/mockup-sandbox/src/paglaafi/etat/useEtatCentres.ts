@@ -28,6 +28,16 @@ const LIBELLES_STATUT: Record<string, string> = {
   closed: "Fermé",
 };
 
+const CLE_CACHE_CENTRES = "paglaafi_centres_verifies";
+function lireCentresEnCache(): HealthCenter[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(CLE_CACHE_CENTRES) ?? "[]");
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Centres de santé : liste, filtres, carte OpenStreetMap (Leaflet), fiche et mise à jour par un admin.
  *
@@ -40,7 +50,9 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
   const { currentUser, sessionReelle } = auth;
 
   // 6. Centres de santé & Carte OpenStreetMap Leaflet (démo : données locales ; réel : base Supabase)
-  const [centers, setCenters] = useState<HealthCenter[]>(MODE_DEMO ? initialCenters : []);
+  // Mode réel : dernière liste des centres vérifiés gardée sur l'appareil (données publiques)
+  // pour un affichage immédiat et hors connexion
+  const [centers, setCenters] = useState<HealthCenter[]>(() => (MODE_DEMO ? initialCenters : lireCentresEnCache()));
 
   // Mode réel : centre rattaché au compte connecté (admin centre ou docteur), même non vérifié
   const [centreGere, setCentreGere] = useState<HealthCenter | null>(null);
@@ -55,8 +67,15 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
       const gere = sessionReelle?.centreId ? await chargerCentreGere(sessionReelle.centreId) : null;
       if (!estActuelle()) return; // une requête plus récente a déjà répondu
       setCenters(verifies);
+      try {
+        localStorage.setItem(CLE_CACHE_CENTRES, JSON.stringify(verifies));
+      } catch {
+        // stockage plein ou indisponible : pas de copie hors connexion
+      }
       setCentreGere(gere);
     } catch (erreur) {
+      // Hors connexion : la copie locale reste affichée, sans message d'erreur
+      if (typeof navigator !== "undefined" && !navigator.onLine) return;
       notify(messageErreur(erreur as Error));
     }
   };
