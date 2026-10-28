@@ -298,6 +298,11 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
       notify(`Les données de ${centre.shortName} sont enregistrées.`);
       setShowCenterUpdateModal(false);
     } catch (erreur) {
+      // Statut « Fermé » refusé tant que la migration 20261028000005 n'est pas appliquée
+      if (centre.status === "closed" && /statut_centre|closed/.test((erreur as Error).message)) {
+        notify("Le statut « Fermé » n'est pas encore activé sur le serveur : choisissez un autre statut pour l'instant.");
+        return;
+      }
       notify(messageErreur(erreur as Error));
     }
   };
