@@ -11,8 +11,8 @@ export function useEtatDefilement({ ui, centres }: { ui: EtatUi; centres: EtatCe
 
   // Réinitialisation automatique du défilement lors de tout changement de page ou sélection de centre
   useEffect(() => {
-    if (mainScrollRef.current) {
-      mainScrollRef.current.scrollTop = 0;
-    }
+    // La page entière défile (mise en page responsive) ; l'ancien conteneur reste pris en charge
+    if (mainScrollRef.current) mainScrollRef.current.scrollTop = 0;
+    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
   }, [section, selectedCenter]);
 }

@@ -1,7 +1,6 @@
 import { Route, Switch } from "wouter";
-import { useAuth, useCentres, useUi } from "../etat/contextes";
+import { useAuth, useCentres } from "../etat/contextes";
 import { CHEMINS } from "../routes";
-import { BandeauDemo } from "./BandeauDemo";
 import { BandeauHorsLigne } from "./BandeauHorsLigne";
 import { BarreNavigation } from "./BarreNavigation";
 import { EcranConsentement } from "./EcranConsentement";
@@ -34,87 +33,79 @@ import { ModaleVideoAutopalpation } from "../modales/ModaleVideoAutopalpation";
 import { TableauDeBordAdmin } from "../modales/TableauDeBordAdmin";
 import { MODE_REEL } from "../config";
 
-// Polices et animations communes à toute l'application
-const STYLES_GLOBAUX = `
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap');
-        .ph-display { font-family: 'Fraunces', Georgia, serif; }
-        .ph-scroll::-webkit-scrollbar { display:none; }
-        .ph-scroll { scrollbar-width:none; }
-        @keyframes ph-rise { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-        .ph-enter { animation: ph-rise .26s ease-out both; }
-        @keyframes ph-pulse-glow {
-          0%, 100% { transform: scale(1); opacity: 0.9; }
-          50% { transform: scale(1.4); opacity: 0.3; }
-        }
-        .ph-pulse { animation: ph-pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-      `;
-
 /**
- * Coquille de l'application : cadre smartphone, en-tête, contenu de l'onglet
- * courant (routage wouter), barre de navigation, modales et notifications.
+ * Coquille responsive de l'application (mobile d'abord) :
+ * - moins de 768 px : en-tête, contenu pleine largeur (marges 16 px), barre du bas ;
+ * - 768 à 1023 px : rail vertical à gauche, contenu centré de 720 px maximum (marges 24 px) ;
+ * - 1024 px et plus : menu latéral fixe de 264 px, contenu de 1120 px maximum (marges 32 px).
+ * La page entière défile ; les modales et espaces professionnels gèrent leur propre visibilité.
  */
 export function Coquille() {
-  const { mainScrollRef } = useUi();
   const { currentUser } = useAuth();
   const { selectedCenter } = useCentres();
 
   return (
-    <main
-      className="min-h-screen w-full bg-[#f6ecef] text-[#331c28] antialiased"
-      style={{ fontFamily: "'DM Sans', ui-sans-serif, system-ui, sans-serif" }}
-    >
-      <style>{STYLES_GLOBAUX}</style>
+    <div className="min-h-dvh bg-fond text-texte">
+      <a
+        href="#contenu"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-bouton focus:bg-surface focus:px-4 focus:py-3 focus:text-action focus:shadow-flottant"
+      >
+        Aller au contenu
+      </a>
+      <EcranDemarrage />
+      <EcranConsentement />
+      <PolitiqueConfidentialite />
+      <MenuLateral />
 
-      {/* Cadre smartphone (mobile-first) */}
-      <div className="relative mx-auto flex h-[100dvh] w-full max-w-[440px] flex-col overflow-hidden bg-[#fffbfa] shadow-[0_28px_80px_rgba(93,39,61,.18)] sm:h-[min(900px,96dvh)] sm:rounded-[36px] sm:border sm:border-white/90">
-        <EcranDemarrage />
-        <EcranConsentement />
-        <PolitiqueConfidentialite />
-        <MenuLateral />
+      <div className={currentUser ? "lg:pl-[264px]" : ""}>
         <EnTete />
-        <BandeauDemo />
-        <BandeauHorsLigne />
-
-        {/* Contenu principal : connexion si aucun profil, sinon l'onglet courant */}
-        <div ref={mainScrollRef} className="ph-scroll flex-1 overflow-y-auto pb-10">
-          {!currentUser ? (
-            <EcranConnexion />
-          ) : selectedCenter ? (
-            // La fiche d'un centre s'affiche par-dessus l'onglet courant
-            <FicheCentre />
-          ) : (
-            <Switch>
-              <Route path={CHEMINS.Centres} component={Centres} />
-              <Route path={CHEMINS.Calendrier} component={Cycle} />
-              <Route path={CHEMINS.Comprendre} component={Comprendre} />
-              <Route path={CHEMINS.RoseIA} component={RoseIA} />
-              <Route path={CHEMINS.FaireUnDon} component={Dons} />
-              <Route path={CHEMINS.Annonces} component={Annonces} />
-              <Route path={CHEMINS.Accompagnant} component={Accompagnant} />
-              {/* Accueil : "/" et toute adresse inconnue */}
-              <Route component={Accueil} />
-            </Switch>
-          )}
+        <div className={currentUser ? "md:pl-[88px] lg:pl-0" : ""}>
+          <BandeauHorsLigne />
+          <main
+            id="contenu"
+            className={`mx-auto w-full px-4 pt-4 md:px-6 md:pt-6 lg:px-8 ${
+              currentUser ? "max-w-[720px] pb-[calc(112px+env(safe-area-inset-bottom))] md:pb-10 lg:max-w-[1120px]" : "max-w-[480px] pb-10"
+            }`}
+          >
+            {!currentUser ? (
+              <EcranConnexion />
+            ) : selectedCenter ? (
+              // La fiche d'un centre s'affiche à la place de l'onglet courant
+              <FicheCentre />
+            ) : (
+              <Switch>
+                <Route path={CHEMINS.Centres} component={Centres} />
+                <Route path={CHEMINS.Calendrier} component={Cycle} />
+                <Route path={CHEMINS.Comprendre} component={Comprendre} />
+                <Route path={CHEMINS.RoseIA} component={RoseIA} />
+                <Route path={CHEMINS.FaireUnDon} component={Dons} />
+                <Route path={CHEMINS.Annonces} component={Annonces} />
+                <Route path={CHEMINS.Accompagnant} component={Accompagnant} />
+                {/* Accueil : "/" et toute adresse inconnue */}
+                <Route component={Accueil} />
+              </Switch>
+            )}
+          </main>
         </div>
-
-        <BarreNavigation />
-
-        {/* Modales et espaces professionnels (chacun gère sa propre visibilité) */}
-        <ModaleNouvelleAnnonce />
-        <EspaceSuperadmin />
-        <TableauDeBordAdmin />
-        <ModaleDon />
-        <ModaleMiseAJourCentre />
-        <ModaleOrientation />
-        <ModaleInstallationPwa />
-        <ModaleConfidentialite />
-        {/* Mode réel : fiches de connaissance réelles ; démo : parcours d'entraînement simulé */}
-        {MODE_REEL ? <EspaceFichesDocteur /> : <EspaceEntrainementDocteur />}
-        <ModaleVideoAutopalpation />
-        <ModaleAffiche />
-
-        <Toast />
       </div>
-    </main>
+
+      <BarreNavigation />
+
+      {/* Modales et espaces professionnels (chacun gère sa propre visibilité) */}
+      <ModaleNouvelleAnnonce />
+      <EspaceSuperadmin />
+      <TableauDeBordAdmin />
+      <ModaleDon />
+      <ModaleMiseAJourCentre />
+      <ModaleOrientation />
+      <ModaleInstallationPwa />
+      <ModaleConfidentialite />
+      {/* Mode réel : fiches de connaissance réelles ; démo : parcours d'entraînement simulé */}
+      {MODE_REEL ? <EspaceFichesDocteur /> : <EspaceEntrainementDocteur />}
+      <ModaleVideoAutopalpation />
+      <ModaleAffiche />
+
+      <Toast />
+    </div>
   );
 }
