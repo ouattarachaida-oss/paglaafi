@@ -114,6 +114,7 @@ export async function enregistrerDisponibilites(c: HealthCenter): Promise<boolea
       file_attente: c.queueCount,
       attente_estimee: c.estimatedWait,
       message_audio_fr: c.audioMessageFr,
+      examens: c.exams.map((e) => ({ name: e.name, price: e.price, free: e.free, notes: e.notes ?? "" })),
     })
     .eq("id", c.id)
     .select("id");
