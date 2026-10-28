@@ -21,7 +21,7 @@ export function Dons() {
         Votre contribution finance directement le dépistage et les soins de femmes sans revenus au Burkina Faso.
       </p>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
         <Carte className="flex flex-col gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-full bg-rose-100 text-rose-500" aria-hidden>
             <Gift size={22} />
@@ -52,7 +52,7 @@ export function Dons() {
 
       <section className="mt-6 scroll-mt-20" id="associations" aria-labelledby="titre-associations">
         <EnTeteSection id="titre-associations" titre="Associations partenaires" />
-        <ul className="grid gap-3 md:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {partnerAssociations.map((a) => (
             <li key={a.id} className="flex flex-col gap-2 rounded-carte border border-bordure bg-surface p-4 shadow-carte">
               <h3 className="text-corps font-semibold text-prune-900">

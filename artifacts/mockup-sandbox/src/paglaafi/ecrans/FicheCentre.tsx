@@ -46,7 +46,7 @@ export function FicheCentre() {
       carte.attributionControl.setPrefix(false);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© contributeurs OpenStreetMap" }).addTo(carte);
       L.circleMarker([c.lat, c.lng], { radius: 10, color: "#fff", weight: 3, fillColor: "#d41e5c", fillOpacity: 1 }).addTo(carte);
-      setTimeout(() => carte?.invalidateSize(), 150);
+      setTimeout(() => actif && carte?.invalidateSize(), 150);
     });
     return () => {
       actif = false;
@@ -70,7 +70,7 @@ export function FicheCentre() {
         <ArrowLeft size={18} aria-hidden /> Retour à la carte des centres
       </Bouton>
 
-      <div className="mt-2 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="mt-2 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-4">
           <div>
             <h1 className="text-titre text-prune-900">{c.name}</h1>
@@ -94,7 +94,7 @@ export function FicheCentre() {
             </div>
           </div>
 
-          <div className="grid gap-3 min-[400px]:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
             {telephone ? (
               <a
                 href={`tel:${telephone}`}

@@ -59,7 +59,7 @@ export function Annonces() {
           <EtatVide icone={<Megaphone size={24} />} titre="Aucune annonce dans cette catégorie" texte="Les événements validés apparaîtront ici." />
         </div>
       ) : (
-        <ul className="mt-4 grid gap-4 md:grid-cols-2">
+        <ul className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           {displayedAnnouncements.map((a) => (
             <li key={a.id} className="flex flex-col overflow-hidden rounded-carte border border-bordure bg-surface shadow-carte">
               {a.imageUrl && (

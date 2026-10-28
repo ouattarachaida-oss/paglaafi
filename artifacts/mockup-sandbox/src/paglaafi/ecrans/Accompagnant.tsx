@@ -25,7 +25,7 @@ export function Accompagnant() {
         Aller faire son dépistage, c'est plus facile à deux. Invitez une proche par WhatsApp ou par SMS simple (sans connexion internet).
       </p>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Carte className="space-y-4">
           <div>
             <p className="mb-2 text-petit font-semibold text-prune-900">Langue du message</p>

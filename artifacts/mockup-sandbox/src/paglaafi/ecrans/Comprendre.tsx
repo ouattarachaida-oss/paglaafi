@@ -56,7 +56,7 @@ export function Comprendre() {
         <PucesLangue valeur={speechLanguage} onChange={setSpeechLanguage} libelle="Langue de la leçon" />
       </div>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-4">
           <Carte>
             <p className="text-petit font-semibold text-texte-2">

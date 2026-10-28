@@ -88,7 +88,7 @@ function CalendrierCycle({ debutRegles, dureeCycle }: { debutRegles: string; dur
         })}
       </div>
 
-      <ul className="mt-4 grid gap-2 text-petit text-texte min-[420px]:grid-cols-2" aria-label="Légende">
+      <ul className="mt-4 grid grid-cols-1 gap-2 text-petit text-texte min-[420px]:grid-cols-2" aria-label="Légende">
         <li className="flex items-center gap-2">
           <span className="h-5 w-5 shrink-0 rounded-full bg-action" aria-hidden /> Début des règles noté (case pleine)
         </li>
@@ -149,7 +149,7 @@ export function Cycle() {
       <h1 className="text-display text-prune-900">Cycle & Autopalpation</h1>
       <p className="mt-1 text-corps text-texte-2">Vos règles, le bon moment pour observer vos seins et vos rappels.</p>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="space-y-4">
           <CalendrierCycle debutRegles={lastPeriodDate} dureeCycle={cycleLengthDays} />
 
@@ -189,7 +189,7 @@ export function Cycle() {
           <Carte>
             <h2 className="text-sous-titre text-prune-900">Vos règles sont là ?</h2>
             <p className="mt-1 text-petit text-texte-2">Enregistrez la date réelle pour recalibrer la prédiction si elle n'est pas exacte.</p>
-            <div className="mt-3 grid gap-2 min-[420px]:grid-cols-2">
+            <div className="mt-3 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
               <Bouton icone={<Check size={20} aria-hidden />} onClick={() => handleRecalibratePeriod(iso(new Date()))}>
                 Règles débutées aujourd'hui
               </Bouton>

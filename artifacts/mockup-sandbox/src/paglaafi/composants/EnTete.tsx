@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ClipboardList, LogOut, MapPin, Menu, Phone, ShieldCheck, Smartphone } from "lucide-react";
 import { MODE_DEMO, MODE_REEL } from "../config";
 import { useUi, useAuth, useSante, useDocteur } from "../etat/contextes";
@@ -19,6 +20,14 @@ export function EnTete() {
   const { setShowDoctorTrainModal } = useDocteur();
   const estPro = currentUser?.role === "admin" || currentUser?.role === "superadmin";
   const fermer = () => setShowProfileMenu(false);
+
+  // Échap ferme le menu du profil
+  useEffect(() => {
+    if (!showProfileMenu) return;
+    const touche = (ev: KeyboardEvent) => ev.key === "Escape" && setShowProfileMenu(false);
+    document.addEventListener("keydown", touche);
+    return () => document.removeEventListener("keydown", touche);
+  }, [showProfileMenu, setShowProfileMenu]);
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-bordure bg-surface/95 px-2 backdrop-blur md:px-4 lg:px-8">

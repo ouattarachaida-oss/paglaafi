@@ -205,7 +205,7 @@ export function EcranConnexion() {
             </>
           )}
 
-          <div className="grid gap-4 min-[400px]:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 min-[400px]:grid-cols-2">
             <Champ
               libelle="Prénom"
               required

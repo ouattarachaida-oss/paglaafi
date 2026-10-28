@@ -131,7 +131,7 @@ export function EspaceFichesDocteur() {
         {actif === "proposer" && estDocteur && (
           <form onSubmit={soumettreFiche} className="space-y-4">
             <Champ id="fiche-titre" libelle="Titre" required value={ff.titre} onChange={(e) => setFormulaireFiche({ ...ff, titre: e.target.value })} placeholder="Ex : Quand consulter pour une boule au sein" />
-            <div className="grid gap-4 min-[420px]:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
               <ListeDeroulante id="fiche-langue" libelle="Langue" value={ff.langue} onChange={(e) => setFormulaireFiche({ ...ff, langue: e.target.value as LangueFiche })}>
                 {Object.entries(LANGUES).map(([code, nom]) => (
                   <option key={code} value={code}>

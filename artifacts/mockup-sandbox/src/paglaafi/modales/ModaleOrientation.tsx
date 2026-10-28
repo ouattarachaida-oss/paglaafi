@@ -73,7 +73,7 @@ export function ModaleOrientation() {
               <dd className="text-right font-semibold text-prune-900">{f.recommendedExam}</dd>
             </div>
           </dl>
-          <div className="grid gap-3 min-[400px]:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
             <Bouton
               variante="secondaire"
               icone={<Share2 size={18} aria-hidden />}
@@ -133,7 +133,7 @@ export function ModaleOrientation() {
               </option>
             ))}
           </ListeDeroulante>
-          <div className="grid gap-4 min-[420px]:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
             <Champ libelle="Nom de la patiente" required placeholder="Ex : K. Fatoumata" value={f.patientName} onChange={(e) => setOrientationForm({ ...f, patientName: e.target.value })} />
             <Champ libelle="Téléphone" type="tel" required placeholder="Ex : 70 88 99 00" value={f.patientPhone} onChange={(e) => setOrientationForm({ ...f, patientPhone: e.target.value })} />
           </div>

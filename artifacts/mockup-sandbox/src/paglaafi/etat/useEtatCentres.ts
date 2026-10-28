@@ -193,8 +193,8 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
       map.addLayer(groupe);
 
       // Cadrage sur les centres affichés (une ville choisie, une recherche…)
-      if (filteredCenters.length > 1) map.fitBounds(groupe.getBounds(), { padding: [32, 32], maxZoom: 13 });
-      else if (filteredCenters.length === 1) map.setView([filteredCenters[0].lat, filteredCenters[0].lng], 14);
+      if (filteredCenters.length > 1) map.fitBounds(groupe.getBounds(), { padding: [32, 32], maxZoom: 13, animate: false });
+      else if (filteredCenters.length === 1) map.setView([filteredCenters[0].lat, filteredCenters[0].lng], 14, { animate: false });
 
       if (positionRef.current) {
         L.circleMarker(positionRef.current, { radius: 9, color: "#fff", weight: 3, fillColor: "#1e4f91", fillOpacity: 1 }).addTo(map);
@@ -213,6 +213,9 @@ export function useEtatCentres({ ui, auth }: { ui: EtatUi; auth: EtatAuth }) {
       actif = false;
       window.removeEventListener("resize", redimensionner);
       if (mapInstanceRef.current) {
+        // Arrête toute animation en cours avant de retirer la carte (évite l'erreur _leaflet_pos)
+        mapInstanceRef.current.stop?.();
+        mapInstanceRef.current.off();
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }

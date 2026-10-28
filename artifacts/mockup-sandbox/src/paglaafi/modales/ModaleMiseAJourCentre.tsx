@@ -74,7 +74,7 @@ export function ModaleMiseAJourCentre() {
           <Champ libelle="Appareil" value={c.apparatus} onChange={(e) => maj({ apparatus: e.target.value })} />
         </div>
 
-        <div className="grid gap-4 min-[420px]:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
           <Champ libelle="Agents présents" type="number" min={0} inputMode="numeric" value={c.agentsPresent} onChange={(e) => maj({ agentsPresent: Math.max(0, Number(e.target.value) || 0) })} />
           <Champ libelle="Patientes dans la file" type="number" min={0} inputMode="numeric" value={c.queueCount} onChange={(e) => maj({ queueCount: Math.max(0, Number(e.target.value) || 0) })} />
         </div>
@@ -98,7 +98,7 @@ export function ModaleMiseAJourCentre() {
                   <Trash2 size={20} aria-hidden />
                 </button>
               </div>
-              <div className="grid items-end gap-3 min-[420px]:grid-cols-2">
+              <div className="grid grid-cols-1 items-end gap-3 min-[420px]:grid-cols-2">
                 <Champ
                   libelle="Tarif (FCFA)"
                   type="number"

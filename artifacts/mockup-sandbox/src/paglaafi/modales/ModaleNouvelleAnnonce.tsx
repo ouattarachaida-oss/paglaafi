@@ -27,7 +27,7 @@ export function ModaleNouvelleAnnonce() {
     >
       <form id="form-nouvelle-annonce" onSubmit={handlePublishAnnouncementSubmit} className="space-y-4">
         <Champ libelle="Titre de l'événement" required placeholder="Ex : Dépistage gratuit au marché…" value={n.title} onChange={(e) => maj({ title: e.target.value })} />
-        <div className="grid gap-4 min-[420px]:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
           <Champ libelle="Ville ou localité" value={n.city} onChange={(e) => maj({ city: e.target.value })} />
           <ListeDeroulante libelle="Mois concerné" value={n.month} onChange={(e) => maj({ month: e.target.value })}>
             <option value="Octobre 2026">Octobre 2026 (en cours)</option>

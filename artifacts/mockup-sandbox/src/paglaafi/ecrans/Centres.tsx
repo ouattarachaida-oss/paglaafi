@@ -113,7 +113,7 @@ export function Centres() {
       </div>
 
       {/* Recherche et filtres */}
-      <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
         <div className="relative">
           <label htmlFor="recherche-centre" className="sr-only">
             Rechercher un centre, une ville
@@ -169,7 +169,7 @@ export function Centres() {
         </div>
       )}
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
         {afficherCarte && (
           <div className="space-y-3 lg:sticky lg:top-20 lg:self-start">
             <div className="relative h-[340px] overflow-hidden rounded-carte border border-bordure md:h-[440px] lg:h-[calc(100dvh-220px)] lg:min-h-[420px]">

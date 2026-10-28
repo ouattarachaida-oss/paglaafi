@@ -118,7 +118,7 @@ export function Accueil() {
       <p className="text-petit text-texte-2">{dateDuJour()}</p>
       <h1 className="mt-1 text-display text-prune-900">Bonjour{prenom ? ` ${prenom}` : ""}</h1>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
           {/* Mon autopalpation */}
           <div className="rounded-carte bg-carte-prune p-5 text-white shadow-carte">
