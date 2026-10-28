@@ -121,15 +121,19 @@ function verifier(question, statut, corps) {
   if (a.modeIa && corps.mode !== "ia") problemes.push(`mode ${corps.mode} au lieu de « ia »`);
   if (a.anglais && !/\b(the|breast|your|and)\b/i.test(texte)) problemes.push("réponse non anglaise");
   if (a.ficheLocale && !corps.ficheLangueLocale) problemes.push("fiche Mooré validée non renvoyée");
-  if (corps.mode === "ia" && (!corps.sources?.length || corps.sources.some((s) => !s.titre?.startsWith(P)))) {
-    problemes.push("sources absentes ou étrangères aux fiches fournies");
+  // Sources : fiches validées existantes (fiches de test ou vraies fiches validées et indexées)
+  if (corps.mode === "ia" && (!corps.sources?.length || corps.sources.some((s) => !titresValides.has(s.titre)))) {
+    problemes.push("sources absentes ou étrangères aux fiches validées");
   }
   if (!corps.horsSujet && !/ne remplace pas un soignant|does not replace a health worker/.test(texte)) problemes.push("rappel « ne remplace pas un soignant » absent");
   return problemes;
 }
 
 const db = await clientPostgres();
+// Coupure réseau pendant le test : signalée sans faire planter le nettoyage
+db.on("error", (e) => console.error(`[base] connexion interrompue : ${e.message}`));
 let utilisateurId = null;
+let titresValides = new Set();
 const resultats = [];
 try {
   // Préparation : fiches de test validées (connexion d'administration) puis indexées
@@ -152,6 +156,9 @@ try {
     ]);
     await db.query("update public.fiches_connaissance set indexe_le = now() where id = $1", [id]);
   }
+
+  const { rows: validees } = await db.query("select titre from public.fiches_connaissance where statut = 'validee'");
+  titresValides = new Set(validees.map((r) => r.titre));
 
   // Compte de test connecté (jeton réel)
   const email = `${P.toLowerCase()}@example.com`;
@@ -180,11 +187,14 @@ try {
     }
   }
 } finally {
-  await db.query("delete from public.fiches_connaissance where titre like $1", [`${P}%`]);
+  // Nouvelle connexion pour le nettoyage (la première a pu être coupée)
+  await db.end().catch(() => {});
+  const nettoyage = await clientPostgres();
+  await nettoyage.query("delete from public.fiches_connaissance where titre like $1", [`${P}%`]);
   if (utilisateurId) await admin.auth.admin.deleteUser(utilisateurId);
-  const { rows } = await db.query("select count(*)::int n from public.fiches_connaissance where titre like $1", [`${P}%`]);
+  const { rows } = await nettoyage.query("select count(*)::int n from public.fiches_connaissance where titre like $1", [`${P}%`]);
   console.log(rows[0].n === 0 ? "\nNettoyage : aucune donnée de test restante." : "\n⚠️ Nettoyage incomplet.");
-  await db.end();
+  await nettoyage.end();
 }
 
 const echecs = resultats.filter((r) => !r.ok);
