@@ -15,6 +15,7 @@
     "db:superadmin": "node supabase/scripts/promouvoir-superadmin.mjs",
     "db:test-rls": "node supabase/tests/rls.test.mjs",
     "test:rose": "node --import tsx --test \"artifacts/mockup-sandbox/serveur/rose/tests/*.test.ts\"",
+    "db:centres-osm": "node supabase/scripts/importer-centres-osm.mjs",
     "rag:indexer": "node --import tsx supabase/scripts/indexer-fiches.mjs",
     "rag:calibrer": "node --import tsx supabase/scripts/calibrer-seuil.mjs",
     "rag:faq": "node --import tsx supabase/scripts/indexer-fiches.mjs --faq",

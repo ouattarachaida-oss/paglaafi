@@ -144,6 +144,7 @@ Leaflet est installé via npm (plus d'unpkg).
 | `pnpm run typecheck` | Vérification TypeScript (bibliothèques + application) |
 | `pnpm run db:migrer [-- --seed]` | Appliquer les migrations Supabase (via le session pooler) |
 | `pnpm run db:superadmin -- <email>` | Nommer un superadmin |
+| `pnpm run db:centres-osm [-- --appliquer [--verifier]]` | Importer les structures de santé de référence depuis OpenStreetMap (aperçu par défaut) |
 | `pnpm run db:test-rls` | Tests des règles d'accès (comptes de test créés puis supprimés) |
 | `pnpm run rag:indexer [-- --tout]` | Indexer les fiches validées et exporter la FAQ |
 | `pnpm run rag:faq` | Exporter seulement la FAQ hors-ligne |
@@ -168,7 +169,9 @@ Signalé par un badge « Simulation » en mode réel :
 - **Numéros** : numéro vert « 80 00 11 22 », téléphones des centres, associations et annonces,
   numéros des comptes de démonstration (certains pourraient appartenir à de vraies personnes).
 - **Centres** : statuts, files d'attente, tarifs, horaires, coordonnées (à confirmer auprès des
-  structures, puis « vérifier » dans le panneau superadmin).
+  structures, puis « vérifier » dans le panneau superadmin). Les 94 structures importées d'OpenStreetMap
+  le 28/10/2026 (statut « Données OpenStreetMap · à vérifier ») ont été marquées vérifiées **pour la
+  présentation seulement** : position, nom et ville (ville OSM la plus proche) restent à contrôler.
 - **Associations** : missions et chiffres d'impact.
 - **Traductions mooré et dioula** : à faire relire par des locuteurs (incohérence repérée dans
   le message de Schiphra).
