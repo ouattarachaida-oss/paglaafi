@@ -56,7 +56,8 @@ export interface PendingRegistration {
 }
 
 // Statuts en direct de la Carte Vivante
-export type CenterStatus = "available" | "busy" | "maintenance" | "outdated";
+// closed : « Fermé » (migration 20261028000005)
+export type CenterStatus = "available" | "busy" | "maintenance" | "outdated" | "closed";
 
 export interface ExamPrice {
   name: string;
@@ -71,7 +72,8 @@ export interface HealthCenter extends AudiosLanguesLocales {
   name: string;
   shortName: string;
   place: string;
-  city: "Ouagadougou" | "Bobo-Dioulasso" | "Koudougou";
+  /** Ville (centres de démonstration, centres en base et structures importées d'OpenStreetMap) */
+  city: string;
   status: CenterStatus;
   statusLabel: string;
   statusColor: string;

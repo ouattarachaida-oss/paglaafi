@@ -38,6 +38,7 @@ const COULEUR_STATUT: Record<CenterStatus, string> = {
   busy: "bg-amber-500",
   maintenance: "bg-rose-500",
   outdated: "bg-slate-400",
+  closed: "bg-stone-500",
 };
 
 const LIBELLE_STATUT: Record<CenterStatus, string> = {
@@ -45,6 +46,7 @@ const LIBELLE_STATUT: Record<CenterStatus, string> = {
   busy: "Affluence",
   maintenance: "Maintenance",
   outdated: "Non actualisé",
+  closed: "Fermé",
 };
 
 function versCentre(c: LigneCentre): HealthCenter {
@@ -53,7 +55,7 @@ function versCentre(c: LigneCentre): HealthCenter {
     name: c.nom,
     shortName: c.nom_court,
     place: c.lieu ?? c.ville,
-    city: c.ville as HealthCenter["city"],
+    city: c.ville,
     status: c.statut,
     statusLabel: c.statut_libelle ?? LIBELLE_STATUT[c.statut],
     statusColor: COULEUR_STATUT[c.statut],
