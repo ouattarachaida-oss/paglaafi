@@ -2,6 +2,7 @@ import { CalendarDays, Clock, Expand, Megaphone, Phone, Plus, Sparkles } from "l
 import { useAuth, useAnnonces } from "../etat/contextes";
 import { Badge, Bouton, EtatVide, OngletsSoulignes } from "../composants/ui";
 import type { PartnerAnnouncement } from "../types";
+import { CarrouselAffiches } from "../composants/CarrouselAffiches";
 
 type Filtre = "all" | "month" | "my";
 
@@ -42,6 +43,10 @@ export function Annonces() {
       </div>
 
       <div className="mt-4">
+        <CarrouselAffiches />
+      </div>
+
+      <div className="mt-6">
         <OngletsSoulignes<Filtre>
           libelle="Filtrer les annonces"
           valeur={filtre}

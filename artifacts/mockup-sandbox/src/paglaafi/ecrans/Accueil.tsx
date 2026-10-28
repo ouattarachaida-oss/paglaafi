@@ -1,12 +1,12 @@
-import { Bell, BellRing, CalendarDays, Gift, LocateFixed, Navigation, Hand, MapPin, Megaphone, RefreshCw, Sparkles, UserPlus } from "lucide-react";
-import type { ReactNode } from "react";
+import { Bell, BellRing, CalendarDays, ChevronRight, LocateFixed, Navigation, Hand, MapPin, RefreshCw, UserPlus } from "lucide-react";
 import { roseDailyTips } from "../donnees/conseilsRose";
-import { useUi, useAuth, useLangue, useCentres, useSante, useRose, useAnnonces, useDons } from "../etat/contextes";
-import { BadgeSimulation } from "../composants/BadgeSimulation";
+import { useUi, useAuth, useCentres, useSante, useRose } from "../etat/contextes";
 import { estInvitee } from "../composants/entreesMenu";
+import { CarrouselAffiches } from "../composants/CarrouselAffiches";
 import { sansEmoji } from "../lib/texte";
 import { formaterDistance, urlItineraire } from "../lib/proximite";
-import { BadgeStatutCentre, Bouton, BoutonEcouter, Carte, choisirTexte, EnTeteSection, EtatVide, MentionTraduction, PucesLangue } from "../composants/ui";
+import { NIVEAUX, niveauAttente, resumeAttente } from "../lib/attente";
+import { Bouton, BoutonEcouter, Carte, choisirTexte, EnTeteSection, MentionTraduction } from "../composants/ui";
 
 /** Date du jour : « mercredi 28/10/2026 » (convention JJ/MM/AAAA). */
 function dateDuJour() {
@@ -16,102 +16,36 @@ function dateDuJour() {
   return `${jour.charAt(0).toUpperCase()}${jour.slice(1)} ${date}`;
 }
 
-function Raccourci({ icone, titre, texte, onClick }: { icone: ReactNode; titre: string; texte: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex min-h-[120px] flex-col items-start gap-2 rounded-carte border border-bordure bg-surface p-4 text-left shadow-carte transition-colors duration-200 active:bg-rose-100"
-    >
-      <span className="grid h-10 w-10 place-items-center rounded-full bg-rose-100 text-rose-500" aria-hidden>
-        {icone}
-      </span>
-      <span className="text-corps font-semibold text-prune-900">{titre}</span>
-      <span className="text-petit text-texte-2">{texte}</span>
-    </button>
-  );
-}
-
 /**
- * Accueil : salutation, carte « Mon autopalpation », conseil du jour, raccourcis,
- * carte « Offrir un dépistage » et annonces récentes (deux colonnes sur ordinateur).
+ * Accueil allégé : salutation, « Mon autopalpation », centre le plus proche,
+ * conseil du jour et affiches d'événements défilantes (le don et Rose IA sont dans la barre du bas,
+ * la langue se choisit dans Comprendre ou le menu).
  */
 export function Accueil() {
   const { setSection } = useUi();
   const { currentUser } = useAuth();
-  const { handleSelectAppLanguage } = useLangue();
   const { appLanguage } = useUi();
-  const { setViewMode, plusProche, position, ville, trouverCentreProche, setSelectedCenter } = useCentres();
-  const { cycleInfo } = useSante();
+  const { setViewMode, plusProche, position, ville, trouverCentreProche, setCentreApercu } = useCentres();
+  const { cycleInfo, reglesNotees } = useSante();
   const { dailyTipIndex, handleRequestNotification, notificationEnabled, setDailyTipIndex } = useRose();
-  const { announcements } = useAnnonces();
-  const { setShowDonationModal } = useDons();
 
   const conseil = roseDailyTips[dailyTipIndex];
   const corpsConseil = choisirTexte({ fr: conseil.fr, en: conseil.en, moore: conseil.moore, dioula: conseil.dioula }, appLanguage);
-  const recentes = announcements.filter((a) => a.status === "approved").slice(0, 3);
   const prenom = currentUser && !estInvitee(currentUser) ? currentUser.prenom : "";
 
   const annonces = (
     <section aria-labelledby="titre-annonces">
       <EnTeteSection
         id="titre-annonces"
-        titre="Annonces récentes"
+        titre="Événements"
         action={
           <Bouton variante="discret" onClick={() => setSection("Annonces")}>
             Tout voir
           </Bouton>
         }
       />
-      {recentes.length === 0 ? (
-        <EtatVide icone={<Megaphone size={24} />} titre="Aucune annonce pour le moment" texte="Les événements validés des partenaires apparaîtront ici." />
-      ) : (
-        <ul className="space-y-3">
-          {recentes.map((a) => (
-            <li key={a.id}>
-              <button
-                type="button"
-                onClick={() => setSection("Annonces")}
-                className="flex w-full gap-3 rounded-carte border border-bordure bg-surface p-3 text-left shadow-carte active:bg-rose-100"
-              >
-                {a.imageUrl ? (
-                  <img src={a.imageUrl} alt="" loading="lazy" className="h-16 w-16 shrink-0 rounded-bouton object-cover" width={64} height={64} />
-                ) : (
-                  <span className="grid h-16 w-16 shrink-0 place-items-center rounded-bouton bg-rose-100 text-rose-500" aria-hidden>
-                    <Megaphone size={24} />
-                  </span>
-                )}
-                <span className="min-w-0">
-                  <span className="line-clamp-2 text-corps font-semibold text-prune-900">{a.title}</span>
-                  <span className="block truncate text-petit text-texte-2">
-                    {a.author} · {a.city}
-                  </span>
-                  <span className="block text-petit font-semibold text-action">{a.date}</span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <CarrouselAffiches />
     </section>
-  );
-
-  const don = (
-    <Carte className="flex flex-col gap-3">
-      <div className="flex items-start gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-rose-100 text-rose-500" aria-hidden>
-          <Gift size={22} />
-        </span>
-        <div className="min-w-0">
-          <h2 className="text-sous-titre text-prune-900">Offrir un dépistage</h2>
-          <p className="text-petit text-texte-2">Offrir une mammographie, en don anonyme si vous le souhaitez.</p>
-          <BadgeSimulation detail="paiement Orange Money simulé : aucun argent n'est prélevé" />
-        </div>
-      </div>
-      <Bouton variante="secondaire" onClick={() => setShowDonationModal(true)}>
-        Faire un don
-      </Bouton>
-    </Carte>
   );
 
   return (
@@ -119,22 +53,28 @@ export function Accueil() {
       <p className="text-petit text-texte-2">{dateDuJour()}</p>
       <h1 className="mt-1 text-display text-prune-900">Bonjour{prenom ? ` ${prenom}` : ""}</h1>
 
-      <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-6">
+      <div className="mt-5 space-y-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
           {/* Mon autopalpation */}
           <div className="rounded-carte bg-carte-prune p-5 text-white shadow-carte">
             <p className="flex items-center gap-2 text-petit font-semibold text-white/85">
               <Hand size={18} aria-hidden /> Mon autopalpation
             </p>
-            <p className="mt-2 text-petit text-white/85">Fenêtre idéale ce mois-ci</p>
-            <p className="text-titre text-white">{cycleInfo.autopalpWindowStr}</p>
-            <p className="mt-1 text-petit text-white/85">Prochaines règles : {cycleInfo.nextPeriodStr}</p>
+            {reglesNotees ? (
+              <>
+                <p className="mt-2 text-petit text-white/85">Fenêtre idéale ce mois-ci</p>
+                <p className="text-titre text-white">{cycleInfo.autopalpWindowStr}</p>
+                <p className="mt-1 text-petit text-white/85">Prochaines règles : {cycleInfo.nextPeriodStr}</p>
+              </>
+            ) : (
+              <p className="mt-2 text-corps text-white">Notez le premier jour de vos règles pour connaître le bon moment.</p>
+            )}
             <button
               type="button"
               onClick={() => setSection("Calendrier")}
               className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-bouton bg-white px-4 text-corps font-semibold text-[#580e36] active:bg-[#faeff2]"
             >
-              <CalendarDays size={20} aria-hidden /> Ouvrir mon calendrier
+              <CalendarDays size={20} aria-hidden /> {reglesNotees ? "Mes règles et mon calendrier" : "Noter mes règles"}
             </button>
           </div>
 
@@ -154,9 +94,6 @@ export function Accueil() {
               >
                 {notificationEnabled ? <BellRing size={20} aria-hidden /> : <Bell size={20} aria-hidden />}
               </button>
-            </div>
-            <div className="mt-3">
-              <PucesLangue valeur={appLanguage} onChange={handleSelectAppLanguage} libelle="Langue des contenus" />
             </div>
             <p className="mt-3 text-corps text-texte" data-langue-contenu={corpsConseil.langue}>
               {corpsConseil.texte}
@@ -186,18 +123,18 @@ export function Accueil() {
                   type="button"
                   onClick={() => {
                     setSection("Centres");
-                    setSelectedCenter(plusProche.centre);
+                    setCentreApercu(plusProche.centre);
                   }}
                   className="text-left text-sous-titre text-prune-900 underline-offset-4 hover:underline"
                 >
                   {plusProche.centre.name}
                 </button>
-                <div className="flex flex-wrap items-center gap-2">
-                  <BadgeStatutCentre statut={plusProche.centre.status} />
-                  <span className="text-petit text-texte-2">
-                    {plusProche.distance !== null ? formaterDistance(plusProche.distance) : plusProche.centre.city}
-                  </span>
-                </div>
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-petit text-texte-2">
+                  <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: NIVEAUX[niveauAttente(plusProche.centre)].couleur }} aria-hidden />
+                  <span className="font-semibold text-prune-900">{NIVEAUX[niveauAttente(plusProche.centre)].libelle}</span>
+                  <span>· {resumeAttente(plusProche.centre)}</span>
+                  <span>· {plusProche.distance !== null ? formaterDistance(plusProche.distance) : plusProche.centre.city}</span>
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {plusProche.centre.lat !== null && plusProche.centre.lng !== null && (
                     <a
@@ -231,27 +168,21 @@ export function Accueil() {
             )}
           </Carte>
 
-          {/* Raccourcis */}
-          <section aria-labelledby="titre-raccourcis">
-            <h2 id="titre-raccourcis" className="sr-only">
-              Raccourcis
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              <Raccourci icone={<Sparkles size={22} />} titre="Rose IA" texte="Poser une question" onClick={() => setSection("RoseIA")} />
-              <Raccourci icone={<Hand size={22} />} titre="Autopalpation" texte="Mon calendrier" onClick={() => setSection("Calendrier")} />
-              <div className="col-span-2">
-                <Raccourci icone={<UserPlus size={22} />} titre="Accompagnant·e" texte="Inviter un proche" onClick={() => setSection("Accompagnant")} />
-              </div>
-            </div>
-          </section>
-
+          <button
+            type="button"
+            onClick={() => setSection("Accompagnant")}
+            className="flex min-h-12 w-full items-center gap-3 rounded-carte border border-bordure bg-surface px-4 text-left active:bg-rose-100"
+          >
+            <UserPlus size={20} aria-hidden className="text-rose-500" />
+            <span className="flex-1 text-corps font-semibold text-prune-900">Accompagnant·e : inviter un proche</span>
+            <ChevronRight size={20} aria-hidden className="text-texte-2" />
+          </button>
         </div>
 
-        {/* Colonne latérale sur ordinateur ; à la suite sur mobile */}
-        <aside className="space-y-6">
-          {don}
+        {/* Affiches défilantes, sur toute la largeur */}
+        <div className="min-w-0">
           {annonces}
-        </aside>
+        </div>
       </div>
 
     </section>
