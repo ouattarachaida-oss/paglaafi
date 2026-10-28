@@ -1,10 +1,27 @@
-import { CheckCircle2, Phone, ShieldCheck, X } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle2, Phone } from "lucide-react";
 import { partnerAssociations } from "../donnees/associations";
 import { useAuth, useDons } from "../etat/contextes";
-import { BadgeSimulation } from "../composants/BadgeSimulation";
+import { BadgeSimulationUi, Bouton, Champ, Feuille, Interrupteur, ListeDeroulante, OngletsSegmentes } from "../composants/ui";
+
+const ETAPES = ["form", "confirm", "otp", "success"] as const;
+const LIBELLES_ETAPES = ["Montant", "Vérification", "Autorisation", "Reçu"];
+const MONTANTS = [1000, 2500, 5000, 10000, 25000];
+
+/** Ligne d'un récapitulatif (libellé / valeur). */
+function Ligne({ libelle, valeur }: { libelle: string; valeur: React.ReactNode }) {
+  return (
+    <div className="flex justify-between gap-3 py-1.5 text-corps">
+      <dt className="text-texte-2">{libelle}</dt>
+      <dd className="text-right font-semibold text-prune-900">{valeur}</dd>
+    </div>
+  );
+}
 
 /**
- * Parcours de don Orange Money (simulé) en 4 étapes.
+ * Parcours de don Orange Money (SIMULÉ, aucun argent n'est prélevé) en 4 étapes :
+ * choix et montant, vérification, autorisation, reçu. Don anonyme : nom et numéro
+ * masqués à l'affichage (aucun chiffrement n'est revendiqué).
  */
 export function ModaleDon() {
   const { currentUser } = useAuth();
@@ -30,270 +47,161 @@ export function ModaleDon() {
     setShowDonationModal,
     showDonationModal,
   } = useDons();
+  const [objet, setObjet] = useState<"examen" | "association">("examen");
 
-  if (!showDonationModal) return null;
+  const fermer = () => {
+    setShowDonationModal(false);
+    setDonationStep("form");
+  };
+  const montant = (customDonationAmount ? Number(customDonationAmount) : donationAmount).toLocaleString("fr-FR");
+  const donateur = isAnonymousDonation ? "Donatrice anonyme" : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`;
+  const indice = Math.max(0, ETAPES.indexOf(donationStep as (typeof ETAPES)[number]));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm sm:absolute sm:rounded-[36px]">
-      <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-2xl border border-orange-200">
-        <div className="flex items-center justify-between border-b border-[#f2e1e6] pb-3">
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#f16e00] text-white font-black text-xs">
-              OM
-            </span>
-            <div>
-              <h3 className="ph-display text-sm font-bold text-[#3d2430]">Faire un don solidaire</h3>
-              <BadgeSimulation
-                bloc
-                detail="Paiement simulé : aucun paiement Orange Money n'est effectué, aucun argent n'est prélevé."
-              />
-              <p className="text-[10px] text-orange-950 font-semibold">Orange Money Burkina Faso (#144#)</p>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              setShowDonationModal(false);
-              setDonationStep("form");
-            }}
-            className="grid h-8 w-8 place-items-center rounded-full text-[#8a5b70] hover:bg-[#faedf1]"
-          >
-            <X size={18} />
-          </button>
+    <Feuille ouverte={showDonationModal} onFermer={fermer} titre="Faire un don" sousTitre="Orange Money Burkina Faso">
+      <div className="space-y-4">
+        <div className="bordure-simulation flex flex-wrap items-center gap-2 rounded-bouton bg-simulation-fond px-3 py-2 text-petit text-simulation">
+          <BadgeSimulationUi /> <span>Simulation : aucun argent n'est prélevé.</span>
         </div>
 
-        {/* ÉTAPE 1 : Choix de l'association, montant et option anonyme */}
+        {/* Progression des 4 étapes */}
+        <ol className="grid grid-cols-4 gap-2" aria-label={`Étape ${indice + 1} sur 4 : ${LIBELLES_ETAPES[indice]}`}>
+          {LIBELLES_ETAPES.map((l, i) => (
+            <li key={l} className="space-y-1">
+              <span className={`block h-1.5 rounded-full ${i <= indice ? "bg-action" : "bg-rose-200"}`} aria-hidden />
+              <span className={`block text-center text-nav ${i === indice ? "font-bold text-prune-900" : "text-texte-2"}`}>{l}</span>
+            </li>
+          ))}
+        </ol>
+
         {donationStep === "form" && (
-          <div className="mt-3 space-y-3 text-xs">
-            <div>
-              <label className="block font-bold text-[#563746]">1. Choisir l'association partenaire :</label>
-              <select
-                value={selectedAssociation.id}
-                onChange={(e) => {
-                  const found = partnerAssociations.find((a) => a.id === Number(e.target.value));
-                  if (found) setSelectedAssociation(found);
-                }}
-                className="mt-1 w-full rounded-xl border border-[#e4cfd6] p-2 font-semibold text-[#580e36]"
-              >
-                {partnerAssociations.map((assoc) => (
-                  <option key={assoc.id} value={assoc.id}>
-                    {assoc.acronym} — {assoc.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-bold text-[#563746]">2. Montant du don solidaire (FCFA) :</label>
-              <div className="mt-1.5 grid grid-cols-3 gap-1.5">
-                {[1000, 2500, 5000, 10000, 25000].map((amt) => (
-                  <button
-                    key={amt}
-                    type="button"
-                    onClick={() => {
-                      setDonationAmount(amt);
-                      setCustomDonationAmount("");
-                    }}
-                    className={`rounded-xl py-2 font-bold transition text-xs ${donationAmount === amt && !customDonationAmount ? "bg-[#f16e00] text-white shadow-sm" : "border border-[#e7d5dc] bg-[#fffaf8] text-[#563746]"}`}
-                  >
-                    {amt.toLocaleString("fr-FR")} F
-                  </button>
-                ))}
-                <input
-                  type="number"
-                  placeholder="Autre..."
-                  value={customDonationAmount}
-                  onChange={(e) => setCustomDonationAmount(e.target.value)}
-                  className={`rounded-xl p-1.5 text-center text-xs font-bold border ${customDonationAmount ? "border-[#f16e00] bg-orange-50 text-orange-900" : "border-[#e7d5dc]"}`}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block font-bold text-[#563746]">3. Numéro de téléphone débiteur :</label>
-              <div className="relative mt-1">
-                <span className="absolute left-3 top-2.5 font-bold text-[#8c6778]">+226</span>
-                <input
-                  type="tel"
-                  value={orangeMoneyPhone}
-                  onChange={(e) => setOrangeMoneyPhone(e.target.value)}
-                  placeholder="70 12 34 56"
-                  className="w-full rounded-xl border border-[#e4cfd6] py-2 pl-14 pr-3 font-bold text-[#580e36] focus:border-[#f16e00] focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* OPTION DON ANONYME : nom et numéro masqués à l'affichage (aucun chiffrement n'est revendiqué) */}
-            <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50/60 p-3">
-              <label className="flex items-start gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isAnonymousDonation}
-                  onChange={(e) => setIsAnonymousDonation(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500"
-                />
-                <div>
-                  <span className="font-bold text-[#20432f] text-xs flex items-center gap-1.5">
-                    <ShieldCheck size={14} className="text-emerald-700" /> Don anonyme
-                  </span>
-                  <p className="text-[10px] text-[#476a56] leading-tight mt-0.5">
-                    Votre nom et votre numéro sont masqués à l'affichage : le reçu et l'association voient « Donatrice
-                    anonyme ».
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <button
-              onClick={handleStartDonationProcess}
-              className="mt-2 w-full rounded-2xl bg-[#f16e00] py-3 text-xs font-bold text-white shadow-md hover:bg-orange-600 transition"
+          <div className="space-y-4">
+            <OngletsSegmentes<"examen" | "association">
+              libelle="Objet du don"
+              valeur={objet}
+              onChange={setObjet}
+              onglets={[
+                { id: "examen", libelle: "Offrir un examen" },
+                { id: "association", libelle: "Soutenir une association" },
+              ]}
+            />
+            <ListeDeroulante
+              libelle="Association bénéficiaire"
+              value={selectedAssociation.id}
+              onChange={(e) => {
+                const a = partnerAssociations.find((x) => x.id === Number(e.target.value));
+                if (a) setSelectedAssociation(a);
+              }}
             >
-              Valider le don de{" "}
-              {customDonationAmount
-                ? Number(customDonationAmount).toLocaleString("fr-FR")
-                : donationAmount.toLocaleString("fr-FR")}{" "}
-              FCFA →
-            </button>
-          </div>
-        )}
+              {partnerAssociations.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.acronym} — {a.name}
+                </option>
+              ))}
+            </ListeDeroulante>
 
-        {/* ÉTAPE 2 : Confirmation */}
-        {donationStep === "confirm" && (
-          <div className="mt-3 space-y-3 text-xs">
-            <div className="rounded-2xl bg-[#fff7f2] border border-orange-200 p-3.5 space-y-2">
-              <div className="flex justify-between">
-                <span className="text-[#7c5b6b]">Bénéficiaire :</span>
-                <span className="font-bold text-[#580e36]">{selectedAssociation.name}</span>
+            <fieldset>
+              <legend className="mb-2 text-petit font-semibold text-prune-900">Montant (FCFA)</legend>
+              <div className="grid grid-cols-3 gap-2">
+                {MONTANTS.map((m) => {
+                  const actif = donationAmount === m && !customDonationAmount;
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      aria-pressed={actif}
+                      onClick={() => {
+                        setDonationAmount(m);
+                        setCustomDonationAmount("");
+                      }}
+                      className={`min-h-12 rounded-bouton text-corps font-semibold ${actif ? "bg-carte-prune text-white" : "border border-bordure bg-surface text-texte"}`}
+                    >
+                      {m.toLocaleString("fr-FR")} F
+                    </button>
+                  );
+                })}
+                <Champ libelle="Autre montant" libelleMasque type="number" min={0} inputMode="numeric" placeholder="Autre…" value={customDonationAmount} onChange={(e) => setCustomDonationAmount(e.target.value)} className="text-center" />
               </div>
-              <div className="flex justify-between">
-                <span className="text-[#7c5b6b]">Montant :</span>
-                <span className="font-extrabold text-[#f16e00] text-sm">
-                  {customDonationAmount
-                    ? Number(customDonationAmount).toLocaleString("fr-FR")
-                    : donationAmount.toLocaleString("fr-FR")}{" "}
-                  FCFA
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#7c5b6b]">Donateur :</span>
-                <span className="font-bold text-[#580e36]">
-                  {isAnonymousDonation
-                    ? "Donatrice anonyme"
-                    : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#7c5b6b]">Numéro débité :</span>
-                <span className="font-bold text-[#580e36]">
-                  {isAnonymousDonation ? `+226 70 ** ** ${orangeMoneyPhone.slice(-2)}` : `+226 ${orangeMoneyPhone}`}
-                </span>
-              </div>
-            </div>
+            </fieldset>
 
-            <div className="flex gap-2">
-              <button
-                onClick={() => setDonationStep("form")}
-                className="flex-1 rounded-xl border border-[#e5ced6] py-2.5 font-bold text-[#725261]"
-              >
-                Modifier
-              </button>
-              <button
-                onClick={handleConfirmOrangeMoney}
-                className="flex-1 rounded-xl bg-[#f16e00] py-2.5 font-bold text-white shadow hover:bg-orange-600"
-              >
-                Autoriser le paiement
-              </button>
-            </div>
-          </div>
-        )}
+            <Champ libelle="Numéro Orange Money (+226)" type="tel" value={orangeMoneyPhone} onChange={(e) => setOrangeMoneyPhone(e.target.value)} placeholder="70 12 34 56" />
 
-        {/* ÉTAPE 3 : OTP Orange Money */}
-        {donationStep === "otp" && (
-          <div className="mt-3 space-y-3 text-xs text-center">
-            <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-orange-100 text-[#f16e00] ph-pulse">
-              <Phone size={24} />
-            </div>
-            <div>
-              <h4 className="font-bold text-[#580e36]">Autorisation Orange Money (#144*4*6#)</h4>
-              <p className="text-[11px] text-[#7c5b6b] mt-1">
-                Composez <strong>#144*4*6#</strong> sur votre mobile ou saisissez votre code OTP reçu par SMS :
-              </p>
-            </div>
-
-            <div className="mx-auto max-w-[180px]">
-              <input
-                type="text"
-                maxLength={6}
-                value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value)}
-                placeholder="Code OTP"
-                className="w-full rounded-xl border-2 border-orange-400 p-2 text-center text-sm font-extrabold tracking-widest text-[#580e36]"
+            <div className="rounded-carte border border-bordure p-3">
+              <Interrupteur
+                libelle="Don anonyme"
+                description="Votre nom et votre numéro sont masqués à l'affichage : le reçu et l'association voient « Donatrice anonyme »."
+                actif={isAnonymousDonation}
+                onChange={setIsAnonymousDonation}
               />
             </div>
 
-            <button
-              onClick={handleValidateOrangeMoneyOTP}
-              className="w-full rounded-2xl bg-[#f16e00] py-2.5 font-bold text-white shadow"
-            >
-              Confirmer le don
-            </button>
+            <Bouton variante="orangeMoney" taille="grand" pleineLargeur onClick={handleStartDonationProcess}>
+              Valider le don de {montant} FCFA
+            </Bouton>
           </div>
         )}
 
-        {/* ÉTAPE 4 : Reçu officiel de don */}
-        {donationStep === "success" && (
-          <div className="mt-3 space-y-3 text-xs text-center">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-sm">
-              <CheckCircle2 size={32} />
+        {donationStep === "confirm" && (
+          <div className="space-y-4">
+            <dl className="divide-y divide-bordure rounded-carte border border-bordure px-4 py-2">
+              <Ligne libelle="Objet" valeur={objet === "examen" ? "Examen de dépistage" : "Soutien à l'association"} />
+              <Ligne libelle="Bénéficiaire" valeur={selectedAssociation.name} />
+              <Ligne libelle="Montant" valeur={`${montant} FCFA`} />
+              <Ligne libelle="Donateur" valeur={donateur} />
+              <Ligne libelle="Numéro débité" valeur={isAnonymousDonation ? `+226 70 ** ** ${orangeMoneyPhone.slice(-2)}` : `+226 ${orangeMoneyPhone}`} />
+            </dl>
+            <div className="flex gap-3">
+              <Bouton variante="secondaire" className="flex-1" onClick={() => setDonationStep("form")}>
+                Modifier
+              </Bouton>
+              <Bouton variante="orangeMoney" className="flex-1" onClick={handleConfirmOrangeMoney}>
+                Autoriser le paiement
+              </Bouton>
             </div>
+          </div>
+        )}
 
+        {donationStep === "otp" && (
+          <div className="space-y-4 text-center">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#fdebdc] text-[#8f3f00]" aria-hidden>
+              <Phone size={26} />
+            </span>
             <div>
-              <h4 className="ph-display text-lg font-bold text-[#580e36]">Merci pour votre générosité !</h4>
-              <p className="text-[11px] text-[#7c5b6b] mt-0.5">
-                Votre don est intégralement alloué à <strong>{selectedAssociation.acronym}</strong> pour soutenir le
-                dépistage au Burkina Faso.
+              <h3 className="text-sous-titre text-prune-900">Autorisation Orange Money (#144*4*6#)</h3>
+              <p className="mt-1 text-corps text-texte">Composez #144*4*6# sur votre mobile ou saisissez le code reçu par SMS.</p>
+            </div>
+            <div className="mx-auto max-w-[220px]">
+              <Champ libelle="Code reçu par SMS" maxLength={6} inputMode="numeric" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} className="text-center tracking-[0.3em]" />
+            </div>
+            <Bouton variante="orangeMoney" taille="grand" pleineLargeur onClick={handleValidateOrangeMoneyOTP}>
+              Confirmer le don
+            </Bouton>
+          </div>
+        )}
+
+        {donationStep === "success" && (
+          <div className="space-y-4 text-center">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-succes-fond text-succes" aria-hidden>
+              <CheckCircle2 size={30} />
+            </span>
+            <div>
+              <h3 className="text-titre text-prune-900">Merci pour votre générosité</h3>
+              <p className="mt-1 text-corps text-texte">
+                Votre don est alloué à <strong>{selectedAssociation.acronym}</strong> pour soutenir le dépistage au Burkina Faso.
               </p>
             </div>
-
-            <div className="rounded-xl bg-[#f8f9fa] border border-[#e9ecef] p-3 text-left space-y-1 text-[11px]">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Réf Transaction :</span>
-                <span className="font-mono font-bold text-gray-800">{lastDonationId}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Donateur :</span>
-                <span className="font-semibold text-gray-700">
-                  {isAnonymousDonation
-                    ? "Donatrice anonyme"
-                    : `${currentUser?.prenom || "Donateur"} ${currentUser?.nom || ""}`}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Montant :</span>
-                <span className="font-bold text-[#f16e00]">
-                  {customDonationAmount
-                    ? Number(customDonationAmount).toLocaleString("fr-FR")
-                    : donationAmount.toLocaleString("fr-FR")}{" "}
-                  FCFA
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Opérateur :</span>
-                <span className="font-semibold text-gray-700">Orange Money Burkina</span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                setShowDonationModal(false);
-                setDonationStep("form");
-              }}
-              className="w-full rounded-2xl bg-[#ea2d6d] py-2.5 font-bold text-white shadow"
-            >
+            <dl className="divide-y divide-bordure rounded-carte border border-bordure px-4 py-2 text-left">
+              <Ligne libelle="Référence (simulation)" valeur={<span className="font-mono">{lastDonationId}</span>} />
+              <Ligne libelle="Donateur" valeur={donateur} />
+              <Ligne libelle="Montant" valeur={`${montant} FCFA`} />
+              <Ligne libelle="Opérateur" valeur="Orange Money Burkina" />
+            </dl>
+            <Bouton pleineLargeur onClick={fermer}>
               Fermer le reçu
-            </button>
+            </Bouton>
           </div>
         )}
       </div>
-    </div>
+    </Feuille>
   );
 }
