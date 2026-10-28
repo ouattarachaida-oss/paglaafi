@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { ClipboardList, LogOut, MapPin, Menu, Phone, ShieldCheck, Smartphone } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ClipboardList, LogOut, MapPin, Menu, Phone, ShieldCheck, Smartphone, X } from "lucide-react";
 import { MODE_DEMO, MODE_REEL } from "../config";
 import { useUi, useAuth, useSante, useDocteur } from "../etat/contextes";
 import { BadgeDemo, BadgeRole, OngletsSegmentes } from "./ui";
@@ -79,11 +80,16 @@ export function EnTete() {
               {initiales(currentUser.prenom, currentUser.nom)}
             </button>
 
-            {showProfileMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={fermer} aria-hidden />
-                <div className="anim-apparition absolute right-0 top-14 z-50 w-[min(20rem,calc(100vw-1rem))] rounded-carte border border-bordure bg-surface p-4 shadow-flottant">
-                  <div className="flex items-center gap-3 border-b border-bordure pb-3">
+            {/* Menu du profil au milieu de l'écran, rendu dans <body> (l'en-tête ne le décale pas) */}
+            {showProfileMenu &&
+              createPortal(
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="absolute inset-0 bg-[#2b1420]/55" onClick={fermer} aria-hidden />
+                <div role="dialog" aria-modal="true" aria-label="Mon profil" className="anim-feuille relative max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-feuille border border-bordure bg-surface p-4 shadow-flottant">
+                  <button type="button" onClick={fermer} aria-label="Fermer" className="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full text-texte-2 active:bg-rose-200">
+                    <X size={22} aria-hidden />
+                  </button>
+                  <div className="flex items-center gap-3 border-b border-bordure pb-3 pr-10">
                     <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-carte-prune text-corps font-bold text-white" aria-hidden>
                       {initiales(currentUser.prenom, currentUser.nom)}
                     </span>
@@ -185,7 +191,8 @@ export function EnTete() {
                     </button>
                   </div>
                 </div>
-              </>
+              </div>,
+              document.body,
             )}
           </div>
         )}
