@@ -45,8 +45,9 @@ export async function chargerDemandes(): Promise<PendingRegistration[]> {
 }
 
 /** Validation (attribution du rôle côté serveur) : réservée au superadmin. */
-export async function approuverDemande(id: number): Promise<void> {
-  const { error } = await client().rpc("approuver_demande", { p_demande: id });
+/** Approuve une demande ; rattachement à un centre ou une association existants (sinon la base en crée un). */
+export async function approuverDemande(id: number, centre: number | null = null, association: number | null = null): Promise<void> {
+  const { error } = await client().rpc("approuver_demande", { p_demande: id, p_centre: centre, p_association: association });
   if (error) throw error;
 }
 

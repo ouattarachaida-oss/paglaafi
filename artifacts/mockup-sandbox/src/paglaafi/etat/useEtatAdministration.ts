@@ -21,6 +21,13 @@ import type { EtatAnnonces } from "./useEtatAnnonces";
  * attribue le rôle côté serveur (fonction approuver_demande, réservée au superadmin).
  * Les statistiques et le tableau de bord admin restent des données de démonstration.
  */
+/** Rattachement choisi (approbation) ou motif (refus) d'une demande d'adhésion. */
+export interface OptionsDecision {
+  centre?: number | null;
+  association?: number | null;
+  motif?: string;
+}
+
 export function useEtatAdministration({
   auth,
   ui,
@@ -40,7 +47,7 @@ export function useEtatAdministration({
   const [showSuperadminModal, setShowSuperadminModal] = useState(false);
 
   const [superadminActiveTab, setSuperadminActiveTab] = useState<
-    "stats" | "announcements" | "registrations" | "verifications"
+    "stats" | "announcements" | "registrations" | "verifications" | "fiches"
   >("stats");
 
   const [superadminRegionFilter, setSuperadminRegionFilter] = useState<string>("all");
@@ -120,10 +127,10 @@ export function useEtatAdministration({
   };
 
   // Mode réel : décision transmise au serveur, puis liste rechargée
-  const traiterDemandeReel = async (id: number, decision: "approuver" | "refuser") => {
+  const traiterDemandeReel = async (id: number, decision: "approuver" | "refuser", options: OptionsDecision = {}) => {
     try {
-      if (decision === "approuver") await approuverDemande(id);
-      else await refuserDemande(id);
+      if (decision === "approuver") await approuverDemande(id, options.centre ?? null, options.association ?? null);
+      else await refuserDemande(id, options.motif);
       await rechargerDemandes();
       notify(
         decision === "approuver"
@@ -136,18 +143,18 @@ export function useEtatAdministration({
   };
 
   // Modération Superadmin : structures
-  const handleApproveRegistration = (id: number) => {
+  const handleApproveRegistration = (id: number, rattachement: OptionsDecision = {}) => {
     if (MODE_REEL) {
-      void traiterDemandeReel(id, "approuver");
+      void traiterDemandeReel(id, "approuver", rattachement);
       return;
     }
     setPendingRegistrations((prev) => prev.map((reg) => (reg.id === id ? { ...reg, status: "approved" } : reg)));
     notify("Structure validée avec succès par le Superadmin !");
   };
 
-  const handleRejectRegistration = (id: number) => {
+  const handleRejectRegistration = (id: number, motif?: string) => {
     if (MODE_REEL) {
-      void traiterDemandeReel(id, "refuser");
+      void traiterDemandeReel(id, "refuser", { motif });
       return;
     }
     setPendingRegistrations((prev) => prev.map((reg) => (reg.id === id ? { ...reg, status: "rejected" } : reg)));
