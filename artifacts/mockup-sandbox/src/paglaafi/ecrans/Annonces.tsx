@@ -1,151 +1,106 @@
-import { Eye, Sparkles } from "lucide-react";
-import { useUi, useAuth, useAnnonces } from "../etat/contextes";
+import { CalendarDays, Clock, Expand, Megaphone, Phone, Plus, Sparkles } from "lucide-react";
+import { useAuth, useAnnonces } from "../etat/contextes";
+import { Badge, Bouton, EtatVide, OngletsSoulignes } from "../composants/ui";
+import type { PartnerAnnouncement } from "../types";
+
+type Filtre = "all" | "month" | "my";
+
+/** Statut d'une annonce (la mention « en attente » rappelle qui peut la voir). */
+function StatutAnnonce({ a }: { a: PartnerAnnouncement }) {
+  if (a.status === "pending_validation")
+    return (
+      <div className="bordure-pointillee rounded-bouton bg-attention-fond px-3 py-2 text-petit text-attention">
+        <p className="flex items-center gap-1.5 font-semibold">
+          <Clock size={16} aria-hidden /> En attente de validation
+        </p>
+        <p>Visible seulement par vous jusqu'à la validation.</p>
+      </div>
+    );
+  if (a.status === "rejected") return <Badge ton="alerte">Refusée</Badge>;
+  return <Badge ton="succes">Publiée</Badge>;
+}
 
 /**
- * Onglet Annonces : filtres, affiches et publication par les partenaires.
+ * Annonces & Événements : onglets (À venir, Ce mois-ci, Mes annonces), cartes avec
+ * grande affiche (« Voir l'affiche »), date en rose et statut ; « Publier » pour les structures.
  */
 export function Annonces() {
-  const { section } = useUi();
   const { currentUser } = useAuth();
-  const {
-    announcements,
-    announcementsFilter,
-    displayedAnnouncements,
-    setAnnouncementsFilter,
-    setSelectedPosterModal,
-    setShowNewAnnouncementModal,
-  } = useAnnonces();
+  const { announcementsFilter, displayedAnnouncements, setAnnouncementsFilter, setSelectedPosterModal, setShowNewAnnouncementModal } = useAnnonces();
+  const structure = currentUser?.role === "admin" || currentUser?.role === "superadmin";
+  const filtre: Filtre = announcementsFilter === "rose_ai" ? "all" : announcementsFilter;
 
   return (
-    <section className="ph-enter px-5 pt-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#a44666]">
-            Actualités & Partenaires
-          </span>
-          <h1 className="ph-display text-[26px] leading-tight text-[#580e36]">Annonces</h1>
+    <section className="anim-apparition">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-display text-prune-900">Annonces & Événements</h1>
+        {structure && (
+          <Bouton icone={<Plus size={20} aria-hidden />} onClick={() => setShowNewAnnouncementModal(true)}>
+            Publier
+          </Bouton>
+        )}
+      </div>
+
+      <div className="mt-4">
+        <OngletsSoulignes<Filtre>
+          libelle="Filtrer les annonces"
+          valeur={filtre}
+          onChange={setAnnouncementsFilter}
+          onglets={[
+            { id: "all", libelle: "À venir" },
+            { id: "month", libelle: "Ce mois-ci" },
+            ...(structure ? [{ id: "my" as const, libelle: "Mes annonces" }] : []),
+          ]}
+        />
+      </div>
+
+      {displayedAnnouncements.length === 0 ? (
+        <div className="mt-4">
+          <EtatVide icone={<Megaphone size={24} />} titre="Aucune annonce dans cette catégorie" texte="Les événements validés apparaîtront ici." />
         </div>
-        {/* Bouton de publication pour les partenaires et soignants */}
-        {(currentUser?.role === "admin" || currentUser?.role === "superadmin") && (
-          <button
-            onClick={() => setShowNewAnnouncementModal(true)}
-            className="rounded-full bg-[#ea2d6d] px-3.5 py-1 text-xs font-bold text-white shadow hover:bg-[#8e3856]"
-          >
-            + Publier
-          </button>
-        )}
-      </div>
-
-      {/* FILTRES D'ANNONCES : MOIS EN COURS / TOUTES / VEILLE ROSE IA / MES ANNONCES */}
-      <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px]">
-        <button
-          onClick={() => setAnnouncementsFilter("month")}
-          className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "month" ? "bg-[#ea2d6d] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
-        >
-          📅 Mois en cours (Octobre 2026)
-        </button>
-        <button
-          onClick={() => setAnnouncementsFilter("rose_ai")}
-          className={`rounded-full px-3 py-1 font-bold transition inline-flex items-center gap-1 ${announcementsFilter === "rose_ai" ? "bg-purple-900 text-white shadow-xs" : "border border-purple-200 bg-purple-50 text-purple-900"}`}
-        >
-          <Sparkles size={12} className="text-amber-400" />
-          <span>
-            Veille Rose IA ({announcements.filter((a) => a.isRoseAIDetected && a.status === "approved").length})
-          </span>
-        </button>
-        <button
-          onClick={() => setAnnouncementsFilter("all")}
-          className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "all" ? "bg-[#ea2d6d] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
-        >
-          Toutes ({announcements.filter((a) => a.status === "approved").length})
-        </button>
-        {(currentUser?.role === "admin" || currentUser?.role === "superadmin") && (
-          <button
-            onClick={() => setAnnouncementsFilter("my")}
-            className={`rounded-full px-3 py-1 font-bold transition ${announcementsFilter === "my" ? "bg-[#ea2d6d] text-white shadow-xs" : "border border-[#e7d5dc] bg-white text-[#7d5d6c]"}`}
-          >
-            Mes soumissions (
-            {
-              announcements.filter(
-                (a) =>
-                  a.submittedBy === currentUser?.structureName ||
-                  a.submittedBy === `${currentUser?.prenom} ${currentUser?.nom}`,
-              ).length
-            }
-            )
-          </button>
-        )}
-      </div>
-
-      <div className="mt-3 space-y-2.5">
-        {displayedAnnouncements.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[#dfb3c1] bg-[#fffafb] p-6 text-center text-xs text-[#815569]">
-            Aucune annonce dans cette catégorie pour le moment.
-          </div>
-        ) : (
-          displayedAnnouncements.map((a) => (
-            <div
-              key={a.id}
-              className={`rounded-2xl border p-3.5 text-xs shadow-sm ${
-                a.isRoseAIDetected
-                  ? "border-purple-200 bg-gradient-to-br from-white to-purple-50/40"
-                  : "border-[#efdfe4] bg-white"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${a.badgeColor}`}>{a.badge}</span>
-                <span className="text-[10px] text-[#8e6878] font-semibold">{a.month}</span>
-              </div>
-
-              {/* Mention spéciale si repérée par Rose IA */}
-              {a.isRoseAIDetected && (
-                <div className="mt-1 flex items-center gap-1 text-[9.5px] font-bold text-purple-900 bg-purple-100/70 px-2 py-0.5 rounded-lg w-fit">
-                  <Sparkles size={11} className="text-amber-500" />
-                  <span>Veille intelligente Rose IA · {a.sourceWebUrl}</span>
-                </div>
-              )}
-
-              <h3 className="ph-display mt-1 text-sm font-bold text-[#580e36]">{a.title}</h3>
-              <p className="text-[11px] text-[#8c405c] mt-0.5 font-semibold">
-                {a.author} · {a.city}
-              </p>
-
-              {/* Affiche officielle ou photo de l'événement */}
+      ) : (
+        <ul className="mt-4 grid gap-4 md:grid-cols-2">
+          {displayedAnnouncements.map((a) => (
+            <li key={a.id} className="flex flex-col overflow-hidden rounded-carte border border-bordure bg-surface shadow-carte">
               {a.imageUrl && (
-                <div className="relative mt-2 overflow-hidden rounded-xl border border-pink-100 shadow-xs group">
-                  <img
-                    src={a.imageUrl}
-                    alt={a.title}
-                    className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-102"
-                    loading="lazy"
-                  />
+                <div className="relative">
+                  <img src={a.imageUrl} alt={a.imageCaption || `Affiche : ${a.title}`} loading="lazy" className="aspect-[4/3] w-full object-cover" width={640} height={480} />
                   <button
                     type="button"
-                    onClick={() =>
-                      setSelectedPosterModal({
-                        url: a.imageUrl!,
-                        title: a.title,
-                        author: a.author,
-                        caption: a.imageCaption,
-                      })
-                    }
-                    className="absolute bottom-2 right-2 flex items-center gap-1 rounded-lg bg-black/75 px-2 py-1 text-[9.5px] font-bold text-white backdrop-blur-xs hover:bg-black/90 transition shadow-sm"
+                    onClick={() => setSelectedPosterModal({ url: a.imageUrl!, title: a.title, author: a.author, caption: a.imageCaption })}
+                    className="absolute bottom-3 right-3 inline-flex min-h-11 items-center gap-1.5 rounded-bouton bg-nuit/85 px-3 text-petit font-semibold text-white"
                   >
-                    <Eye size={12} /> Agrandir l'affiche
+                    <Expand size={16} aria-hidden /> Voir l'affiche
                   </button>
                 </div>
               )}
-
-              <p className="mt-2 text-[#6d4f5e] leading-relaxed">{a.content}</p>
-
-              <div className="mt-2 flex items-center justify-between border-t border-[#f7e8ee] pt-2 text-[10px] text-[#8b6375]">
-                <span>📞 {a.contact}</span>
-                <span>{a.date}</span>
+              <div className="flex flex-1 flex-col gap-2 p-4">
+                <p className="flex items-center gap-1.5 text-petit font-semibold text-action">
+                  <CalendarDays size={16} aria-hidden /> {a.date}
+                </p>
+                <h2 className="text-sous-titre text-prune-900">{a.title}</h2>
+                <p className="text-petit text-texte-2">
+                  {a.author} · {a.city}
+                </p>
+                {a.isRoseAIDetected && (
+                  <p className="flex items-center gap-1.5 text-petit text-texte-2">
+                    <Sparkles size={16} aria-hidden /> Repérée par la veille Rose IA · {a.sourceWebUrl}
+                  </p>
+                )}
+                <p className="text-corps text-texte">{a.content}</p>
+                {a.contact && (
+                  <p className="flex items-center gap-1.5 text-petit text-texte-2">
+                    <Phone size={16} aria-hidden /> {a.contact}
+                  </p>
+                )}
+                <div className="mt-auto pt-2">
+                  <StatutAnnonce a={a} />
+                </div>
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
