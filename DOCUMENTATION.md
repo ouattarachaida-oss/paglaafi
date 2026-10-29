@@ -38,7 +38,9 @@ artifacts/mockup-sandbox/
 ├── serveur/                  Code serveur (Rose IA, suppression de compte, PWA, API locale Vite)
 ├── api/                      Fonctions serverless Vercel (rose-chat, supprimer-compte)
 ├── public/                   Images, icônes PWA, FAQ hors-ligne de Rose IA (faq-rose.json)
-└── vercel.json               Déploiement Vercel
+├── vercel.json               Déploiement Vercel (mode sous-dossier)
+api/                          Points d'entrée serverless racine pour Vercel (rose-chat, supprimer-compte)
+vercel.json                   Configuration Vercel à la racine du monorepo (déploiement multi-services)
 supabase/
 ├── migrations/               Schéma, fonctions, règles RLS, Rose IA (pgvector)
 ├── seed.sql                  Données initiales NON VÉRIFIÉES (centres, associations, fiches en attente)

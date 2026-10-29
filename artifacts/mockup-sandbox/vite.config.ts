@@ -54,7 +54,7 @@ export default defineConfig({
   server: {
     port,
     host,
-    ...(isReplit ? { allowedHosts: true as const } : {}),
+    allowedHosts: true,
     fs: {
       strict: true,
     },
@@ -62,6 +62,6 @@ export default defineConfig({
   preview: {
     port,
     host,
-    ...(isReplit ? { allowedHosts: true as const } : {}),
+    allowedHosts: true,
   },
 });

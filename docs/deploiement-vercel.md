@@ -14,16 +14,17 @@ Vercel héberge à la fois l'application (site Vite) et la fonction serveur de R
 | Réglage | Valeur |
 |---|---|
 | Framework Preset | **Vite** |
-| Root Directory | **`artifacts/mockup-sandbox`** (bouton « Edit ») |
-| Include files outside the Root Directory | **activé** (nécessaire pour le workspace pnpm) |
-| Install Command | laisser la valeur de `vercel.json` |
+| Root Directory | **`artifacts/mockup-sandbox`** (recommandé) ou **racine `./`** (les deux sont configurés) |
+| Include files outside the Root Directory | **activé** (si Root Directory = `artifacts/mockup-sandbox`, nécessaire pour le workspace pnpm) |
+| Install Command | `pnpm install --frozen-lockfile` (géré automatiquement par `vercel.json`) |
 | Build Command | `pnpm run build` (déjà dans `vercel.json`) |
-| Output Directory | `dist` (déjà dans `vercel.json`) |
+| Output Directory | `dist` (si sous-dossier) ou `artifacts/mockup-sandbox/dist` (si racine) |
 | Production Branch | `main` ; la branche `refonte/socle` obtient une URL de prévisualisation |
 
-Le fichier `artifacts/mockup-sandbox/vercel.json` fixe aussi :
-- la **région** de la fonction (`iad1`, États-Unis) : l'API Gemini n'est pas disponible partout, et l'offre gratuite de Gemini a des restrictions dans certaines régions (UE, Royaume-Uni, Suisse) — à vérifier dans les conditions de Google avant de changer de région ;
-- la durée maximale de la fonction Rose IA (30 s) ;
+Les fichiers de configuration `vercel.json` (à la racine et dans `artifacts/mockup-sandbox`) fixent :
+- la **région** des fonctions (`iad1`, États-Unis) : l'API Gemini n'est pas disponible partout, et l'offre gratuite de Gemini a des restrictions dans certaines régions (UE, Royaume-Uni, Suisse) ;
+- la durée maximale des fonctions Rose IA et suppression de compte (30 s) ;
+- les fonctions serverless (`/api/rose-chat` et `/api/supprimer-compte`) ;
 - la redirection de toutes les adresses de l'application vers `index.html` (routage par onglets), sauf `/api/…`.
 
 4. Saisir les variables d'environnement (section 2), puis **Deploy**.
