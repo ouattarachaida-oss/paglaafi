@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "pnpm install --frozen-lockfile --filter \"@workspace/mockup-sandbox...\" --filter workspace",
+  "installCommand": "pnpm install --frozen-lockfile --filter @workspace/mockup-sandbox... --filter workspace",
   "buildCommand": "pnpm run build",
   "outputDirectory": "artifacts/mockup-sandbox/dist",
   "regions": ["iad1"],
