@@ -238,7 +238,7 @@ Tous les couples texte / fond utilisés sont au moins AA (4,5:1). Deux règles d
 `OngletsSoulignes`, `Accordeon` ; `Carte` (et `douce`), `EnTeteSection` ; badges (`BadgeStatutCentre`,
 `BadgeSimulationUi`, `BadgeDemo`, `BadgeOSM`, `BadgeOrigineRose`, `BadgeRole`) ; `Bandeau` (rose,
 hors-ligne, alerte, info, succès) ; `Feuille` (feuille du bas sur mobile, modale centrée dès 768 px) ;
-`EtatVide`, `Squelette`, `ErreurReseau`. Notifications : `notify(message, action?)` (toast sombre,
+`EtatVide`, `Squelette`, `ErreurReseau`. `EcranDemarrage` (écran de chargement de 5 secondes : affiche des héroïnes intégrant en zone blanche le logo PagLaafi, le slogan « Mieux informée · Mieux orientée · Jamais seule », la description officielle et la progression fluide). Notifications : `notify(message, action?)` (toast sombre,
 action facultative comme « Annuler »).
 
 **Points de rupture** (`composants/Coquille.tsx`, `BarreNavigation.tsx`, `MenuLateral.tsx`) :
