@@ -5,7 +5,7 @@
  * exister, une réponse sans source est refusée, et les formulations qui
  * ressemblent à un diagnostic ou à une prescription sont bloquées.
  */
-import type { LangueReponse } from "./prompt";
+import type { LangueReponse } from "./prompt.js";
 
 export interface ReponseValidee {
   ok: boolean;

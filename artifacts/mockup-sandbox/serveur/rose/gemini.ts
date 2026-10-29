@@ -2,8 +2,8 @@
  * Appels à l'API Gemini (Google AI) — côté serveur uniquement.
  * La clé est transmise dans l'en-tête x-goog-api-key, jamais dans l'URL.
  */
-import { DIMENSION_EMBEDDING } from "./config";
-import { INSTRUCTIONS_SYSTEME, SCHEMA_REPONSE } from "./prompt";
+import { DIMENSION_EMBEDDING } from "./config.js";
+import { INSTRUCTIONS_SYSTEME, SCHEMA_REPONSE } from "./prompt.js";
 
 const BASE = "https://generativelanguage.googleapis.com/v1beta";
 

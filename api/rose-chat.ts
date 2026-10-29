@@ -6,4 +6,4 @@
  * - GEMINI_API_KEY
  * - SUPABASE_SECRET_KEY
  */
-export { POST } from "../artifacts/mockup-sandbox/api/rose-chat";
+export { POST } from "../artifacts/mockup-sandbox/api/rose-chat.js";

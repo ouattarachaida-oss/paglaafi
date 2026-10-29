@@ -10,8 +10,8 @@
  *   médicaux, pas des données personnelles.
  * - Nécessite la clé secrète : uniquement côté serveur.
  */
-import type { Env } from "../rose/config";
-import type { Fetch } from "../rose/gemini";
+import type { Env } from "../rose/config.js";
+import type { Fetch } from "../rose/gemini.js";
 
 export const MOT_DE_CONFIRMATION = "SUPPRIMER";
 

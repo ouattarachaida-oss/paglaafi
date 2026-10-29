@@ -9,13 +9,13 @@
  * Confidentialité : aucune question n'est journalisée ; seul le texte masqué
  * de la question part vers le modèle, sans historique ni donnée de profil.
  */
-import { detecterSignesAlerte, messageAlerte } from "./alertes";
-import { consommerQuota, fichesEnLangue, rechercherFiches, verifierUtilisateur, type LigneRecherche } from "./base";
-import { lireConfig, LONGUEUR_MAX_QUESTION, type Env } from "./config";
-import { masquerDonneesPersonnelles } from "./confidentialite";
-import { ErreurGemini, calculerEmbeddings, genererReponse, type Fetch } from "./gemini";
-import { construireMessageUtilisateur, type LangueReponse, type SourceFiche } from "./prompt";
-import { messagePrudent, validerReponse } from "./validation";
+import { detecterSignesAlerte, messageAlerte } from "./alertes.js";
+import { consommerQuota, fichesEnLangue, rechercherFiches, verifierUtilisateur, type LigneRecherche } from "./base.js";
+import { lireConfig, LONGUEUR_MAX_QUESTION, type Env } from "./config.js";
+import { masquerDonneesPersonnelles } from "./confidentialite.js";
+import { ErreurGemini, calculerEmbeddings, genererReponse, type Fetch } from "./gemini.js";
+import { construireMessageUtilisateur, type LangueReponse, type SourceFiche } from "./prompt.js";
+import { messagePrudent, validerReponse } from "./validation.js";
 
 export type LangueApp = "fr" | "en" | "moore" | "dioula";
 

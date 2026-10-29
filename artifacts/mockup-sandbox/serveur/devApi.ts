@@ -9,8 +9,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { Plugin } from "vite";
-import { traiterQuestion } from "./rose/gestionnaire";
-import { traiterSuppression } from "./compte/suppression";
+import { traiterQuestion } from "./rose/gestionnaire.js";
+import { traiterSuppression } from "./compte/suppression.js";
 
 function lireFichierEnv(fichier: string): Record<string, string> {
   const valeurs: Record<string, string> = {};

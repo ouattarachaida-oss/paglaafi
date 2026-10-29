@@ -3,8 +3,8 @@
  * - La vérification du jeton utilise la clé publique (comme le navigateur).
  * - Quota et recherche utilisent la clé secrète (fonctions réservées au serveur).
  */
-import type { ConfigRose } from "./config";
-import type { Fetch } from "./gemini";
+import type { ConfigRose } from "./config.js";
+import type { Fetch } from "./gemini.js";
 
 export interface LigneRecherche {
   fiche_id: number;

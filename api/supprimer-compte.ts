@@ -5,4 +5,4 @@
  * Variables d'environnement requises (côté serveur Vercel uniquement) :
  * - SUPABASE_SECRET_KEY
  */
-export { POST } from "../artifacts/mockup-sandbox/api/supprimer-compte";
+export { POST } from "../artifacts/mockup-sandbox/api/supprimer-compte.js";
