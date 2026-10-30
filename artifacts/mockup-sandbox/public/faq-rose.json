@@ -23,7 +23,7 @@
     {
       "id": 25,
       "titre": "Bien-être mental et charge mentale",
-      "contenu": "Ma sœur, pose ce fardeau quelques instants et écoute ton cœur : tu passes tes journées à prendre soin des autres, de la famille et du foyer, mais qui prend soin de toi ? Ton esprit et ton corps ont besoin de douceur. Respire profondément trois fois en fermant les yeux. Tu as le droit d'être fatiguée, tu as le droit de dire non, tu as le droit de te reposer. Tu n'es pas seule, je suis là pour veiller sur toi avec toute ma tendresse.",
+      "contenu": "Ma soeur, pose ce fardeau quelques instants et écoute ton coeur : tu passes tes journées à prendre soin des autres, de la famille et du foyer, mais qui prend soin de toi ? Ton esprit et ton corps ont besoin de douceur. Respire profondément trois fois en fermant les yeux. Tu as le droit d'être fatiguée, tu as le droit de dire non, tu as le droit de te reposer. Tu n'es pas seule, je suis là pour veiller sur toi avec toute ma tendresse.",
       "langue": "fr",
       "groupe": "bien_etre_mental",
       "source": "OMS",
@@ -59,7 +59,7 @@
     {
       "id": 1,
       "titre": "J'ai senti une boule dans le sein",
-      "contenu": "Respire calmement, ma sœur, ne panique pas : dans plus de 8 cas sur 10, une boule ou un nodule n'est PAS un cancer (il s'agit très souvent de simples kystes bénins d'eau ou d'adénofibromes fréquents). Cependant, la seule façon d'en avoir le cœur net et d'être en paix est de la faire examiner rapidement par une sage-femme ou un médecin. Je t'accompagne.",
+      "contenu": "Respire calmement, ma soeur, ne panique pas : dans plus de 8 cas sur 10, une boule ou un nodule n'est PAS un cancer (il s'agit très souvent de simples kystes bénins d'eau ou d'adénofibromes fréquents). Cependant, la seule façon d'en avoir le coeur net et d'être en paix est de la faire examiner rapidement par une sage-femme ou un médecin. Je t'accompagne.",
       "langue": "fr",
       "groupe": "boule",
       "source": "France",
@@ -167,7 +167,7 @@
     {
       "id": 17,
       "titre": "Hygiène intime au quotidien",
-      "contenu": "Ma sœur, ton intimité est précieuse et délicate. La règle d'or des soignants est simple : lave uniquement la partie extérieure (la vulve) à l'eau propre ou avec un savon doux sans parfum. Ne fais JAMAIS de douche vaginale interne ni n'introduis de poudres ou produits décapants : le vagin possède son propre système d'auto-nettoyage et ces produits détruisent ses défenses naturelles. Porte des sous-vêtements en coton pour laisser respirer ta peau avec la chaleur. Si tu as des démangeaisons, une sensation de brûlure ou des pertes odorantes, viens sans aucune honte consulter une sage-femme.",
+      "contenu": "Ma soeur, ton intimité est précieuse et délicate. La règle d'or des soignants est simple : lave uniquement la partie extérieure (la vulve) à l'eau propre ou avec un savon doux sans parfum. Ne fais JAMAIS de douche vaginale interne ni n'introduis de poudres ou produits décapants : le vagin possède son propre système d'auto-nettoyage et ces produits détruisent ses défenses naturelles. Porte des sous-vêtements en coton pour laisser respirer ta peau avec la chaleur. Si tu as des démangeaisons, une sensation de brûlure ou des pertes odorantes, viens sans aucune honte consulter une sage-femme.",
       "langue": "fr",
       "groupe": "hygiene_intime",
       "source": "OMS",
@@ -239,7 +239,7 @@
     {
       "id": 21,
       "titre": "Alimentation locale et vitalité",
-      "contenu": "Pour préserver ta vitalité et ta santé au Burkina Faso, la nature nous a offert des trésors extraordinaires : les feuilles de Moringa (véritable 'arbre de vie') regorgent de fer contre la fatigue et l'anémie, la pulpe de Baobab (pain de singe) est un concentré de vitamine C et d'antioxydants, et le Soumbala traditionnel protège le cœur et la tension. Évite les bouillons cubes industriels trop salés qui fatiguent les reins, et bois au moins 2 à 3 litres d'eau propre par jour pour compenser la chaleur sahélienne.",
+      "contenu": "Pour préserver ta vitalité et ta santé au Burkina Faso, la nature nous a offert des trésors extraordinaires : les feuilles de Moringa (véritable 'arbre de vie') regorgent de fer contre la fatigue et l'anémie, la pulpe de Baobab (pain de singe) est un concentré de vitamine C et d'antioxydants, et le Soumbala traditionnel protège le coeur et la tension. Évite les bouillons cubes industriels trop salés qui fatiguent les reins, et bois au moins 2 à 3 litres d'eau propre par jour pour compenser la chaleur sahélienne.",
       "langue": "fr",
       "groupe": "nutrition_locale",
       "source": "OMS",

@@ -13,7 +13,7 @@ export const roseDailyTips: RoseDailyTip[] = [
     categoryLabel: "💧 Hydratation & Climat Sahélien",
     categoryColor: "bg-blue-100 text-blue-900 border-blue-200",
     titleFr: "Boire de l'eau en abondance",
-    fr: "Prends soin de ton corps ma sœur : avec la chaleur du Burkina, bois au moins 2 à 3 litres d'eau aujourd'hui. L'eau purifie tes reins, prévient les infections urinaires et donne de l'éclat à ta peau.",
+    fr: "Prends soin de ton corps ma soeur : avec la chaleur du Burkina, bois au moins 2 à 3 litres d'eau aujourd'hui. L'eau purifie tes reins, prévient les infections urinaires et donne de l'éclat à ta peau.",
     en: "Take care of your body my sister: in this Sahelian heat, drink at least 2 to 3 liters of clean water today. Water cleanses your kidneys, prevents urinary infections and brightens your skin.",
     moore:
       "Koom yaa vɩɩm m maaso. Ne tʋʋlgã wɛɛngẽ, nyũ koom wʋsg rũndã (litr a yiibu n ta a tãabo). Koomã sõngda fo yĩnsa la a gɩdgd bãase.",
@@ -52,7 +52,7 @@ export const roseDailyTips: RoseDailyTip[] = [
     categoryLabel: "🧘‍♀️ Sérénité & Amour de Soi",
     categoryColor: "bg-purple-100 text-purple-900 border-purple-200",
     titleFr: "Tu as le droit de te reposer",
-    fr: "Ma sœur, tu portes souvent le fardeau de toute la famille. N'oublie jamais que ton bien-être passe en premier : accorde-toi 15 minutes de calme et de repos aujourd'hui. Tu es précieuse, aimée et ton repos est légitime.",
+    fr: "Ma soeur, tu portes souvent le fardeau de toute la famille. N'oublie jamais que ton bien-être passe en premier : accorde-toi 15 minutes de calme et de repos aujourd'hui. Tu es précieuse, aimée et ton repos est légitime.",
     en: "My sister, you often carry the weight of the family. Never forget your well-being matters: take 15 minutes of calm and rest today. You are precious, loved, and rest is your right.",
     moore:
       "Yãmb tʋmda tʋʋm wʋsg zakã pʋgẽ. Da yĩm tɩ y meng laafi yaa tɩlae ye. Vʋʋsm-y bilfu rũndã. Yãmb yaa arzɛka kãsenga.",

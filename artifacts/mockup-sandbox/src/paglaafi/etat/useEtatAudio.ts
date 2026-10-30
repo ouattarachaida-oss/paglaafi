@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { EtatUi } from "./useEtatUi";
-import { normaliserTextePourVoix } from "../lib/voix";
+import { normaliserTextePourVoix, trouverVoixFeminine } from "../lib/voix";
 
 /**
  * Lecture audio par synthèse vocale du navigateur (Web Speech API).
@@ -78,13 +78,11 @@ export function useEtatAudio({ ui }: { ui: EtatUi }) {
     const texteNormalise = normaliserTextePourVoix(textToSpeak, language);
     const utterance = new SpeechSynthesisUtterance(texteNormalise);
 
-    // Attribution directe d'une voix préchargée pour éviter le délai de recherche de voix
+    // Attribution impérative d'une voix FÉMININE pour Rose IA
     try {
       const allVoices = window.speechSynthesis.getVoices();
       if (allVoices && allVoices.length > 0) {
-        const matchedVoice =
-          allVoices.find((v) => (language === "en" ? v.lang.startsWith("en") : v.lang.startsWith("fr"))) ||
-          allVoices[0];
+        const matchedVoice = trouverVoixFeminine(language, allVoices);
         if (matchedVoice) {
           utterance.voice = matchedVoice;
         }
@@ -95,17 +93,17 @@ export function useEtatAudio({ ui }: { ui: EtatUi }) {
 
     if (language === "en") {
       utterance.lang = "en-US";
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
+      utterance.rate = 0.98;
+      utterance.pitch = 1.15; // Voix féminine douce
     } else if (language === "fr") {
       utterance.lang = "fr-FR";
-      utterance.rate = 1.02; // Rythme alerte et naturel
-      utterance.pitch = 1.05;
+      utterance.rate = 0.98; // Rythme naturel et posé
+      utterance.pitch = 1.15; // Voix féminine chaleureuse
     } else {
       // Mooré et Dioula : diction claire avec prosodie soignée
       utterance.lang = "fr-FR";
       utterance.rate = 0.95;
-      utterance.pitch = 1.05;
+      utterance.pitch = 1.15;
     }
 
     // Progression visuelle fluide

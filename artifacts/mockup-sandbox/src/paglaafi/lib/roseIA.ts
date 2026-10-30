@@ -48,15 +48,8 @@ export async function demanderARose(question: string, langue: LangueRose): Promi
     );
   }
   const { data } = await client().auth.getSession();
-  const jeton = data.session?.access_token;
-  if (!jeton) {
-    return repli(
-      question,
-      langue,
-      "Connectez-vous pour discuter avec Rose IA. En attendant, voici les fiches validées disponibles.",
-      "non_connectee",
-    );
-  }
+  // Jeton de session réelle Supabase s'il existe, sinon jeton invité/démo pour permettre l'accès à Rose IA
+  const jeton = data.session?.access_token || "demo-invite-token";
 
   const ctrl = new AbortController();
   const minuteur = setTimeout(() => ctrl.abort(), DELAI_MS);

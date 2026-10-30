@@ -170,7 +170,7 @@ export function ModaleQuizRose() {
               Quiz terminé avec succès
             </span>
             <h3 className="mt-2 text-titre font-bold text-prune-900">
-              {score >= 4 ? "Félicitations ma sœur !" : "Bravo pour votre participation !"}
+              {score >= 4 ? "Félicitations ma soeur !" : "Bravo pour votre participation !"}
             </h3>
             <p className="mt-1 text-corps font-semibold text-action">
               Votre score : {score} sur {total}

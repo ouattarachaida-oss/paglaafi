@@ -49,11 +49,11 @@ export const lessons: Lecon[] = [
     title: "Accompagner une proche à son dépistage",
     category: "Pour les proches",
     duration: "5 min",
-    summary: "Comment soutenir une sœur, une amie ou une épouse sans jugement et faciliter sa démarche de santé.",
+    summary: "Comment soutenir une soeur, une amie ou une épouse sans jugement et faciliter sa démarche de santé.",
     englishSummary:
       "How to support a sister, friend or wife without judgment and encourage regular healthcare checkups.",
     fullText:
-      "Faire un dépistage peut susciter de l'inquiétude. Pour une femme, être accompagnée par une sœur, une amie, sa mère ou son conjoint transforme complètement cette expérience. Proposer un covoiturage, patienter ensemble dans la salle d'attente ou simplement lui rappeler avec douceur l'importance de ce geste sont des actes d'amour déterminants. L'application PagLaafi propose la fonction 'Aller à deux' pour envoyer une invitation chaleureuse par SMS direct ou sur WhatsApp.",
+      "Faire un dépistage peut susciter de l'inquiétude. Pour une femme, être accompagnée par une soeur, une amie, sa mère ou son conjoint transforme complètement cette expérience. Proposer un covoiturage, patienter ensemble dans la salle d'attente ou simplement lui rappeler avec douceur l'importance de ce geste sont des actes d'amour déterminants. L'application PagLaafi propose la fonction 'Aller à deux' pour envoyer une invitation chaleureuse par SMS direct ou sur WhatsApp.",
     englishFullText:
       "Undergoing a screening exam can trigger anxiety. For a woman, having a trusted sister, friend or spouse alongside makes all the difference. Offering transportation, waiting together, or gently reminding her of the appointment are true acts of care. The PagLaafi Go-Together module allows sending an invitation in one click via SMS or WhatsApp.",
     mooreSummary:

@@ -11,7 +11,7 @@ const PRESETS = [
     args: [
       "Permanence urgences mammaires & Nodule suspect",
       "Pour toute patiente présentant un nodule dur et indolore, accueil sans rendez-vous tous les matins au service d'imagerie. Mammographie et échographie sous 48h.",
-      "Ma sœur, rassure-toi : un nodule n'est pas forcément grave, mais ton corps mérite toute notre attention. Viens directement sans rendez-vous au CMA Schiphra ou CHU Bogodogo dès demain matin à 08h. Une sage-femme et un radiologue vont t'examiner avec douceur.",
+      "Ma soeur, rassure-toi : un nodule n'est pas forcément grave, mais ton corps mérite toute notre attention. Viens directement sans rendez-vous au CMA Schiphra ou CHU Bogodogo dès demain matin à 08h. Une sage-femme et un radiologue vont t'examiner avec douceur.",
       "M maaso, da zoe rabeem ye: bõn-kʋdga pa bãag fãa ye, la yaa tɩlae tɩ d ges-a tao-tao. Wa-y zĩigẽ zaabre n mik dɔgɔtɔrã tɩ b ges yãmba ne laafi.",
       "N ma muso, kana siran : fɛn o fɛn bɛ sin na, a bɛɛ tɛ bana juguman ye. Nka taga kɛnɛyaso la jona sɔgɔma fɛ walasa dɔgɔtɔrɔmuso ka lajɛ saniya kɛ.",
       "J'ai senti une boule un peu dure dans mon sein droit qui ne me fait pas mal, est-ce que je dois m'inquiéter ?",
@@ -24,7 +24,7 @@ const PRESETS = [
     args: [
       "Douleurs de règles aiguës & Endométriose",
       "Des règles très douloureuses incapacitantes ne sont pas normales. Exclure l'endométriose par échographie pelvienne dédiée. Éviter l'automédication prolongée aux anti-inflammatoires.",
-      "Chère sœur, souffrir pendant ses règles n'est pas une fatalité. Si la douleur t'empêche de travailler ou dormir, ce n'est pas une faiblesse. Consulte un gynécologue pour rechercher une endométriose. En attendant, privilégie une bouillotte tiède et l'infusion de gingembre doux.",
+      "Chère soeur, souffrir pendant ses règles n'est pas une fatalité. Si la douleur t'empêche de travailler ou dormir, ce n'est pas une faiblesse. Consulte un gynécologue pour rechercher une endométriose. En attendant, privilégie une bouillotte tiède et l'infusion de gingembre doux.",
       "M yaanga, rog-n-mik bãag sã n namsd foo wakat fãa, pa yel-bãanega ye. Taga dɔgɔtɔr n bãng a võore.",
       "N ba den muso, dimi min bɛ kɛ muso kɔnɔ fɛ kalo o kalo, ni a ka bon kosɛbɛ, a tɛ foyi ye fo ka dɔgɔtɔrɔ sɔrɔ.",
       "Mes règles me font tellement mal que je ne peux pas me lever du lit, ma mère me dit que c'est normal pour une femme ?",
@@ -172,7 +172,7 @@ export function EspaceEntrainementDocteur() {
             <Bandeau ton="info">Vérifions comment Rose IA répond à une question posée spontanément par une femme (simulation).</Bandeau>
             <ZoneTexte libelle="Question de la patiente" rows={3} value={doctorTestQuestion} onChange={(e) => setDoctorTestQuestion(e.target.value)} />
             {!doctorTestAnswer ? (
-              <Bouton pleineLargeur icone={<Sparkles size={18} aria-hidden />} onClick={() => setDoctorTestAnswer(r.fr || "Ma sœur, rassure-toi. Suite aux recommandations de nos docteurs référents...")}>
+              <Bouton pleineLargeur icone={<Sparkles size={18} aria-hidden />} onClick={() => setDoctorTestAnswer(r.fr || "Ma soeur, rassure-toi. Suite aux recommandations de nos docteurs référents...")}>
                 Voir la réponse générée par Rose IA
               </Bouton>
             ) : (

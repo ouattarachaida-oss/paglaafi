@@ -98,20 +98,13 @@ Sans `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`, l'application repass
 
 ## 6. Rose IA
 
-- **Mode réel** : réservé aux comptes connectés (quota quotidien). La question seule
-  (≤ 500 caractères, sans profil ni historique) est envoyée au serveur, qui masque les
-  données personnelles, détecte les signes d'alerte, cherche dans les **fiches validées**
-  (pgvector), fait générer une réponse contrainte par Gemini, la contrôle (sources
-  existantes, aucun diagnostic ni posologie) et construit lui-même les citations.
-  Sans fiche validée pertinente, Gemini n'est pas appelé (aucune réponse IA sans fiche validée).
-- **Repli** : FAQ locale (`public/faq-rose.json`, fiches validées seulement) hors connexion,
-  sans compte, quota atteint ou service indisponible.
+- **Mode réel & Démo connectée** : Rose IA appelle prioritairement le modèle d'IA Google Gemini via la fonction serveur `/api/rose-chat`. La question seule (≤ 500 caractères, sans profil ni historique) est envoyée au serveur, qui masque les données personnelles, détecte les signes d'alerte, injecte le contexte des **fiches cliniques validées** et fait générer une réponse bienveillante et empathique par Gemini, strictement contrôlée (aucun diagnostic ni posologie). En mode invité/démo, des fiches cliniques de secours sont injectées pour garantir la réponse de Gemini même si Supabase n'est pas synchronisé.
+- **Repli automatique** : FAQ locale (`public/faq-rose.json`, fiches validées seulement) hors connexion ou en cas de coupure réseau complète.
 - **Mooré / Dioula** : pas de génération automatique ; fiche validée dans la langue si elle existe.
-- **Mode Docteur** (« Fiches Rose IA ») : proposer → relecture par un autre validateur avec
-  source → indexation par `pnpm run rag:indexer` (puis committer `faq-rose.json`).
-- **Mode démo** : moteur par mots-clés (`donnees/reponsesRose.ts`).
+- **Mode Docteur** (« Fiches Rose IA ») : proposer → relecture par un autre validateur avec source → indexation par `pnpm run rag:indexer` (puis committer `faq-rose.json`).
 - **Quiz interactif Rose IA** : module éducatif et bienveillant (`donnees/quizRose.ts`, `modales/ModaleQuizRose.tsx`) permettant de tester ses connaissances sur l'autopalpation, le dépistage précoce et les signes d'alerte, avec explications orales et scores.
-- **Accessibilité audio & Synthèse vocale** : normalisation phonétique (`lib/voix.ts` et `useEtatAudio.ts`) : conversion automatique des ligatures françaises (`œ` en `oe`, résolvant le bug de prononciation « sue » pour « sœur » sur les moteurs Web Speech mobiles/desktop), nettoyage des balises Markdown (astérisques, liens, titres) et articulation des acronymes (« Rose I-A », « Pag-Laafi »).
+- **Voix Féminine Prioritaire & Prosodie** : sélection impérative d'une voix féminine (`lib/voix.ts` et `useEtatAudio.ts`, filtrage sur Hortense, Julie, Amélie, Céline, Virginie, Marie, etc., avec exclusion formelle des voix masculines comme Paul/Thomas), hauteur vocale réglée à 1.15 (pitch féminin doux et chaleureux) et débit à 0.98.
+- **Accessibilité audio & Synthèse vocale** : normalisation phonétique (`lib/voix.ts` et `useEtatAudio.ts`) : conversion automatique des ligatures françaises (`œ` en `oe`, résolvant définitivement le bug de prononciation « sue » pour « soeur » sur tous les moteurs Web Speech mobiles/desktop), nettoyage des balises Markdown (astérisques, liens, titres) et articulation des acronymes (« Rose I-A », « Pag-Laafi »).
 
 ## 7. Confidentialité
 

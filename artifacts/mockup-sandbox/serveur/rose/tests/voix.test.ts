@@ -5,7 +5,7 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { normaliserTextePourVoix } from "../../../src/paglaafi/lib/voix";
+import { normaliserTextePourVoix, trouverVoixFeminine } from "../../../src/paglaafi/lib/voix";
 
 describe("normalisation phonétique pour la voix de Rose IA", () => {
   it("remplace la ligature œ par oe pour que « sœur » ne soit pas prononcé « sue »", () => {
@@ -55,5 +55,36 @@ describe("normalisation phonétique pour la voix de Rose IA", () => {
 
   it("gère correctement une chaîne vide ou blanche", () => {
     assert.equal(normaliserTextePourVoix("", "fr"), "");
+  });
+
+  it("corrige « ma sue » en « ma soeur » pour parer aux anomalies phonétiques", () => {
+    const entree = "Bonjour ma sue, comment vas-tu ?";
+    const sortie = normaliserTextePourVoix(entree, "fr");
+    assert.match(sortie, /ma soeur/);
+    assert.doesNotMatch(sortie, /ma sue/);
+  });
+});
+
+describe("sélection de voix féminine pour Rose IA", () => {
+  it("privilégie Microsoft Hortense ou Julie face à Microsoft Paul", () => {
+    const faussesVoix = [
+      { name: "Microsoft Paul - French (France)", lang: "fr-FR", localService: true, default: true, voiceURI: "" },
+      { name: "Microsoft Hortense - French (France)", lang: "fr-FR", localService: true, default: false, voiceURI: "" },
+      { name: "Microsoft Julie", lang: "fr-FR", localService: true, default: false, voiceURI: "" },
+    ] as unknown as SpeechSynthesisVoice[];
+
+    const choisie = trouverVoixFeminine("fr", faussesVoix);
+    assert.equal(choisie?.name, "Microsoft Hortense - French (France)");
+  });
+
+  it("exclut formellement les voix masculines connues et sélectionne une voix féminine", () => {
+    const faussesVoix = [
+      { name: "Claude (Male)", lang: "fr-FR", localService: true, default: false, voiceURI: "" },
+      { name: "Pierre (Homme)", lang: "fr-FR", localService: true, default: false, voiceURI: "" },
+      { name: "Amélie", lang: "fr-FR", localService: true, default: false, voiceURI: "" },
+    ] as unknown as SpeechSynthesisVoice[];
+
+    const choisie = trouverVoixFeminine("fr", faussesVoix);
+    assert.equal(choisie?.name, "Amélie");
   });
 });

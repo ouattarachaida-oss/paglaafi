@@ -34,7 +34,7 @@ export const reglesReponsesRose: RegleReponseRose[] = [
       "aide moi",
     ],
     reponse: {
-      fr: "Bonjour ma sœur bien-aimée ! Je suis Rose IA, ton assistante intelligente et bienveillante sur PagLaafi. Je suis à ton entière écoute sans tabou ni jugement : autopalpation des seins, hygiène intime, remèdes locaux (moringa, baobab), apaisement des règles ou dépistage dans les centres du Burkina. Comment te sens-tu aujourd'hui ?",
+      fr: "Bonjour ma soeur bien-aimée ! Je suis Rose IA, ton assistante intelligente et bienveillante sur PagLaafi. Je suis à ton entière écoute sans tabou ni jugement : autopalpation des seins, hygiène intime, remèdes locaux (moringa, baobab), apaisement des règles ou dépistage dans les centres du Burkina. Comment te sens-tu aujourd'hui ?",
       en: "Hello my beloved sister! I am Rose AI, your caring and holistic health companion on PagLaafi. I am here to listen and guide you without judgment: breast self-exam, intimate care, local nutrition, period comfort, and screenings in Burkina Faso. How can I assist you today?",
       moore:
         "Ne y beogo m maaso ! Mam yaa Rose IA, fo laafi zoa PagLaafi pʋgẽ. M be ka n na n sõng fõ ne yĩn-sõngr, rɩɩb sõma (moringa, baobab), pʋg-tõor bɩ bãas gɩdgre. Bõe n be fo sũurẽ rũndã ?",
@@ -53,7 +53,7 @@ export const reglesReponsesRose: RegleReponseRose[] = [
       "test",
     ],
     reponse: {
-      fr: "C'est une merveilleuse idée ma sœur ! Tester ses connaissances est le meilleur moyen d'ancrer les réflexes qui sauvent. Touche le bouton « Démarrer le Quiz Rose IA » sous ce message pour commencer notre série de 5 questions bienveillantes !",
+      fr: "C'est une merveilleuse idée ma soeur ! Tester ses connaissances est le meilleur moyen d'ancrer les réflexes qui sauvent. Touche le bouton « Démarrer le Quiz Rose IA » sous ce message pour commencer notre série de 5 questions bienveillantes !",
       en: "That is a wonderful idea my sister! Testing your knowledge is the best way to master life-saving habits. Tap the 'Start Rose AI Quiz' button below to begin our 5 caring questions!",
       moore:
         "Yaa bũmb sõma wʋsgo ! Tõnd sã n bãng bãag gɩdgre bũmb ninsã, d tõe n kogl d yĩng la d zak rãmba. Sok-y maam !",
@@ -105,7 +105,7 @@ export const reglesReponsesRose: RegleReponseRose[] = [
       "creux",
     ],
     reponse: {
-      fr: "Respire calmement ma sœur, ne panique pas : dans plus de 8 cas sur 10, une boule ou un nodule n'est PAS un cancer (il s'agit très souvent d'un simple kyste liquide ou d'un adénofibrome bénin très fréquent). Cependant, la seule façon d'avoir le cœur net et d'être en paix est de la faire examiner rapidement par une sage-femme ou un médecin dans un centre de santé. Tu peux consulter l'onglet 'Centres' pour trouver le plus proche.",
+      fr: "Respire calmement ma soeur, ne panique pas : dans plus de 8 cas sur 10, une boule ou un nodule n'est PAS un cancer (il s'agit très souvent d'un simple kyste liquide ou d'un adénofibrome bénin très fréquent). Cependant, la seule façon d'avoir le coeur net et d'être en paix est de la faire examiner rapidement par une sage-femme ou un médecin dans un centre de santé. Tu peux consulter l'onglet 'Centres' pour trouver le plus proche.",
       en: "Breathe gently my sister, do not panic: in more than 8 out of 10 cases, a lump is NOT cancer (it is often a benign fluid cyst or fibroadenoma). However, having it examined promptly by a midwife or doctor brings complete peace of mind. Check the 'Centres' tab to visit a facility near you.",
       moore:
         "Vʋʋsm sõma m maaso, da zoe rabeem ye: bõn-kʋds a nii (8) piig pʋgẽ pa bã-kãsenga ye (yaa kystes bal). La yaa tɩlae tɩ dɔgɔtɔr ges-a tao-tao tɩ fo sũur gãande kɛnɛyaso pʋgẽ. Mam be ne yãmba.",
@@ -156,7 +156,7 @@ export const reglesReponsesRose: RegleReponseRose[] = [
     theme: "peur, angoisse, détresse, mort & soutien émotionnel",
     motsCles: ["peur", "angoisse", "panique", "mourir", "mort", "stress", "triste", "pleur", "seule", "moral", "choc"],
     reponse: {
-      fr: "Respire profondément ma sœur, pose la main sur ton cœur : tu n'es pas seule, je suis là et les soignants sont à tes côtés. La peur est une réaction tout à fait humaine, mais rappelle-toi ceci avec force : le cancer du sein n'est pas une condamnation ! Détecté tôt, il se guérit dans plus de 9 cas sur 10. Tu as une valeur inestimable pour ta famille et pour nous. Nous allons avancer pas à pas avec tendresse et courage.",
+      fr: "Respire profondément ma soeur, pose la main sur ton coeur : tu n'es pas seule, je suis là et les soignants sont à tes côtés. La peur est une réaction tout à fait humaine, mais rappelle-toi ceci avec force : le cancer du sein n'est pas une condamnation ! Détecté tôt, il se guérit dans plus de 9 cas sur 10. Tu as une valeur inestimable pour ta famille et pour nous. Nous allons avancer pas à pas avec tendresse et courage.",
       en: "Take a deep breath my sister, place your hand on your heart: you are not alone, I am here with you. Fear is entirely normal, but remember this: breast cancer is not a fatality! Detected early, more than 9 out of 10 women are cured completely. You have courage and we are by your side step by step.",
       moore:
         "M maaso, vʋʋsm sõma n ning fo nuga fo sũurẽ : fo ka fo yembr ye, mam be ne fo. Zõeemã yaa bũmb sẽn pa wẽnga ninsaal pʋgẽ, la bãagã sã n bãng tao-tao a vʋʋgda sõma. Bãng tɩ fo tara pãng, la d na n zĩnd ne taab wakat fãa.",
@@ -180,7 +180,7 @@ export const reglesReponsesRose: RegleReponseRose[] = [
     theme: "règles, crampes, cycle menstruel & douleurs du ventre",
     motsCles: ["regle", "menstru", "crampe", "ventre", "cycle", "douleur", "retard"],
     reponse: {
-      fr: "Je te comprends profondément ma sœur, les douleurs de règles peuvent être épuisantes. Pour t'apaiser naturellement : applique un linge tiède sur ton bas-ventre, bois une infusion chaude de gingembre ou de kinkeliba, masse doucement ton ventre avec un peu de beurre de karité et repose-toi. Si la douleur est si forte qu'elle t'empêche de vaquer à tes occupations, parles-en à une sage-femme car cela peut être de l'endométriose.",
+      fr: "Je te comprends profondément ma soeur, les douleurs de règles peuvent être épuisantes. Pour t'apaiser naturellement : applique un linge tiède sur ton bas-ventre, bois une infusion chaude de gingembre ou de kinkeliba, masse doucement ton ventre avec un peu de beurre de karité et repose-toi. Si la douleur est si forte qu'elle t'empêche de vaquer à tes occupations, parles-en à une sage-femme car cela peut être de l'endométriose.",
       en: "I hear you deeply, menstrual pain can be genuinely exhausting. To soothe cramps naturally: apply a warm cloth to your lower belly, drink warm ginger or kinkeliba tea, gently massage with shea butter, and rest. If severe pain prevents your daily activities, consult a midwife to check for endometriosis.",
       moore:
         "Pʋg-tõor namsda pagb wʋsg. Bõn-sõma n tõe n koms-a: ning-y fu-tʋʋlga y pʋgẽ, nyũ-y gingembre koom bɩ kinkeliba ko-tʋʋlga, rɩk karité kam n so y pʋgã bilfu, la y vʋʋse.",
@@ -204,7 +204,7 @@ export const reglesReponsesRose: RegleReponseRose[] = [
       "coton",
     ],
     reponse: {
-      fr: "Ma sœur, ton intimité est délicate et précieuse. La règle d'or des soignants est simple : lave uniquement la partie extérieure (la vulve) à l'eau propre ou avec un savon doux sans parfum. Ne fais JAMAIS de douche vaginale interne ni n'introduis de poudres décapantes : le vagin possède son propre système d'auto-nettoyage. Porte des culottes en coton. Si tu as des démangeaisons ou des pertes inhabituelles, consulte une sage-femme sans aucune honte.",
+      fr: "Ma soeur, ton intimité est délicate et précieuse. La règle d'or des soignants est simple : lave uniquement la partie extérieure (la vulve) à l'eau propre ou avec un savon doux sans parfum. Ne fais JAMAIS de douche vaginale interne ni n'introduis de poudres décapantes : le vagin possède son propre système d'auto-nettoyage. Porte des culottes en coton. Si tu as des démangeaisons ou des pertes inhabituelles, consulte une sage-femme sans aucune honte.",
       en: "My sister, your intimate health is delicate and precious. The golden rule is simple: wash only the outside (the vulva) with clean water or mild unscented soap. NEVER practice internal douching or use harsh powders: the vagina cleanses itself naturally. Wear cotton underwear. If you have itching or unusual discharge, visit a midwife with full confidence.",
       moore:
         "M maaso, fo yĩng sõngr yaa tɩlae wʋsg. Rɩk koom sõma bal n peeg fo meng yĩng zĩ-kẽemã yell bal. Da rɩk tɩɩm dãmb n kẽes fo pʋgẽ ye, bala a sãamda fo yĩnsa laafi. Yeelg fu-kõbdo sẽn yaa koton.",
@@ -231,7 +231,7 @@ export const reglesReponsesRose: RegleReponseRose[] = [
       "boire",
     ],
     reponse: {
-      fr: "Pour préserver ta vitalité et prévenir les maladies au Burkina Faso, la nature nous a offert des trésors : les feuilles de Moringa regorgent de fer contre la fatigue et l'anémie, la pulpe de Baobab (pain de singe) est un concentré d'antioxydants et de vitamine C, et le Soumbala traditionnel protège le cœur et la tension. Évite les bouillons cubes industriels trop salés, et bois au moins 2 à 3 litres d'eau propre par jour.",
+      fr: "Pour préserver ta vitalité et prévenir les maladies au Burkina Faso, la nature nous a offert des trésors : les feuilles de Moringa regorgent de fer contre la fatigue et l'anémie, la pulpe de Baobab (pain de singe) est un concentré d'antioxydants et de vitamine C, et le Soumbala traditionnel protège le coeur et la tension. Évite les bouillons cubes industriels trop salés, et bois au moins 2 à 3 litres d'eau propre par jour.",
       en: "To preserve your vitality in the Sahel, nature has provided wonders: Moringa leaves offer rich iron against fatigue and anemia, Baobab fruit (pain de singe) brings powerful antioxidants and vitamin C, and authentic Soumbala protects the heart. Reduce salty bouillon seasoning cubes, and drink 2 to 3 liters of clean water daily.",
       moore:
         "Burkina Faso ka, Wẽnd kõ-d-la rɩɩb sõma wʋsg: moringa vaadã kẽesda pãng fo zɩlem pʋgẽ n gɩdg zɩ-komlem, tɔɔd bɩ zɩt-yɩla waoogda pãng, la sumbala sõngda sũurã laafi. Gɩdg yaalem wʋsg, la nyũ-y koom sõma dahar fãa.",
@@ -277,7 +277,7 @@ export const reglesReponsesRose: RegleReponseRose[] = [
       "bonne soiree",
     ],
     reponse: {
-      fr: "C'est un véritable honneur et un bonheur d'être à tes côtés, ma sœur ! Prends grand soin de toi et de ton corps. N'hésite jamais à revenir me parler dès que tu as une question ou besoin d'écoute. Que la paix et la santé t'accompagnent !",
+      fr: "C'est un véritable honneur et un bonheur d'être à tes côtés, ma soeur ! Prends grand soin de toi et de ton corps. N'hésite jamais à revenir me parler dès que tu as une question ou besoin d'écoute. Que la paix et la santé t'accompagnent !",
       en: "It is an absolute honor and joy to accompany you, my sister! Take tender care of your body and well-being. Never hesitate to talk to me whenever you need guidance. May peace and radiant health stay with you!",
       moore:
         "Yaa sũ-noogo kãsenga mam yĩnga tɩ m sõng fo maaso ! Ges fo meng laafi sõma. Wakat fãa fo sã n tar sokre, wa n sok maam. Wẽnd kõ-f laafi la sũ-noogo !",
@@ -289,7 +289,7 @@ export const reglesReponsesRose: RegleReponseRose[] = [
     theme: "don & solidarité",
     motsCles: ["don", "aider", "financer", "solidarite", "orange money", "association"],
     reponse: {
-      fr: "Ton cœur est généreux ! L'onglet 'Faire un don' de PagLaafi permet de soutenir directement les femmes vulnérables du Burkina Faso via Orange Money (dès 500 FCFA). Tu peux choisir de faire un don à ton nom ou un don anonyme (ton nom et ton numéro sont alors masqués à l'affichage). Chaque contribution finance des dépistages et des mammographies gratuits.",
+      fr: "Ton coeur est généreux ! L'onglet 'Faire un don' de PagLaafi permet de soutenir directement les femmes vulnérables du Burkina Faso via Orange Money (dès 500 FCFA). Tu peux choisir de faire un don à ton nom ou un don anonyme (ton nom et ton numéro sont alors masqués à l'affichage). Chaque contribution finance des dépistages et des mammographies gratuits.",
       en: "Your generosity warms my heart! PagLaafi's 'Faire un don' tab lets you support vulnerable women across Burkina Faso through Orange Money (from 500 FCFA). You can donate under your name or anonymously (your name and number are then hidden on display). Every contribution funds free screenings and mammograms.",
       moore:
         "Fo sũur yaa sõma wʋsg ! 'Faire un don' pʋgẽ, fo tõe n dɩka Orange Money (sẽn sɩng ne 500 FCFA) n sõng pagb nins sẽn ka tar ligdi tɩ b bãng b laafi zaalem. Barka wʋsg !",
@@ -301,7 +301,7 @@ export const reglesReponsesRose: RegleReponseRose[] = [
 
 /** Réponse générique lorsqu'aucune règle ne correspond (reprend la question). */
 export const reponseParDefaut = (textToSend: string): ContenuMultilingue => ({
-  fr: `J'ai bien reçu ta question avec toute mon attention, ma sœur : « ${textToSend} ». En matière de santé féminine, chaque ressenti et chaque interrogation méritent respect et clarté. Écoute ton corps : pratique l'autopalpation mensuelle (quelques jours après tes règles), veille à une bonne hydratation avec les super-aliments burkinabè (moringa, baobab), et n'hésite pas à consulter une sage-femme dans un centre partenaire si tu ressens un doute ou une gêne. Tu peux aussi me poser d'autres questions précises ou toucher le micro !`,
+  fr: `J'ai bien reçu ta question avec toute mon attention, ma soeur : « ${textToSend} ». En matière de santé féminine, chaque ressenti et chaque interrogation méritent respect et clarté. Écoute ton corps : pratique l'autopalpation mensuelle (quelques jours après tes règles), veille à une bonne hydratation avec les super-aliments burkinabè (moringa, baobab), et n'hésite pas à consulter une sage-femme dans un centre partenaire si tu ressens un doute ou une gêne. Tu peux aussi me poser d'autres questions précises ou toucher le micro !`,
   en: `I received your message with care, my sister: "${textToSend}". In women's health, every concern deserves clear understanding and compassion. Listen to your body: practice monthly breast exams, enjoy wholesome local nutrition, and visit a midwife at a partner clinic whenever in doubt. Feel free to ask more details or speak to me via the microphone!`,
   moore: `M wʋma fo sokrã sõma m maaso : « ${textToSend} ». Fo laafi yaa tɩlae wʋsg : ges fo meng yĩnsã dahar fãa pʋg-peelgã poore, rɩ rɩ-sõma (moringa, baobab), la fo sã n mik bũmb sẽn pa zems fo yĩngẽ, kẽng n ges dɔgɔtɔr-pʋgbo kɛnɛyaso la. Sok-y maam bũmb a taaba !`,
   dioula: `N ye i ka ɲiningali mɛn kosɛbɛ n ma muso : « ${textToSend} ». I ka kɛnɛya kɔrɔtanin lo : i sinw sɛgɛsɛgɛ kalo-sira ban kɔfɛ, dumuni kɛnɛ kɛ (moringa, sira-den), wa ni fɛn dɔ y'i gɛlɛya, taga dɔgɔtɔrɔmuso fɛ jona. I bɛ se ka fɛn wɛrɛ ɲini ne fɛ !`,

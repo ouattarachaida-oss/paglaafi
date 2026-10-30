@@ -11,12 +11,42 @@ export type Langue = "fr" | "en" | "moore" | "dioula";
 
 let arretEnCours: (() => void) | null = null;
 
-const voixPour = (langue: Langue): SpeechSynthesisVoice | undefined => {
+/** Voix masculines à exclure formellement pour Rose IA */
+const REGEX_VOIX_MASCULINE = /(male|homme|paul|claude|pierre|david|nicolas|jean|alain|george|guy|bernard|thomas|daniel|mark|stefan|cosimo|filip|mateo|riccardo)/i;
+
+/** Voix féminines privilégiées sur Windows, iOS, macOS, Android et navigateurs */
+const REGEX_VOIX_FEMININE = /(female|femme|fem|hortense|julie|celine|céline|amelie|amélie|virginie|marie|claire|audrey|aurelie|aurélie|charlotte|denise|samantha|siwis|zira|helena|victoria|karen|moira|fiona)/i;
+
+/**
+ * Sélectionne impérativement une voix FÉMININE pour Rose IA :
+ * 1. Filtre par langue (fr ou en).
+ * 2. Élimine formellement les voix masculines connues (Paul, Claude, Pierre, David, Thomas, etc.).
+ * 3. Priorise les voix féminines reconnues (Hortense, Julie, Amélie, Céline, Virginie, Marie, Claire, etc.).
+ */
+export function trouverVoixFeminine(langue: Langue, voixDisponibles: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined {
+  const codeLangue = langue === "en" ? "en" : "fr";
+  const voixLangue = voixDisponibles.filter((v) => v.lang.toLowerCase().startsWith(codeLangue));
+  if (voixLangue.length === 0) return undefined;
+
+  // Voix installées localement si hors ligne
+  const utilisables = typeof navigator !== "undefined" && !navigator.onLine ? voixLangue.filter((v) => v.localService) : voixLangue;
+  const pool = utilisables.length > 0 ? utilisables : voixLangue;
+
+  // 1. Voix avec nom explicitement féminin (ex: Microsoft Hortense, Julie, Amélie, etc.)
+  const feminine = pool.find((v) => REGEX_VOIX_FEMININE.test(v.name) && !REGEX_VOIX_MASCULINE.test(v.name));
+  if (feminine) return feminine;
+
+  // 2. Première voix qui n'est pas masculine (évite Paul / Thomas)
+  const nonMasculine = pool.find((v) => !REGEX_VOIX_MASCULINE.test(v.name));
+  if (nonMasculine) return nonMasculine;
+
+  // 3. Repli si aucune autre voix n'existe
+  return pool[0];
+}
+
+export const voixPour = (langue: Langue): SpeechSynthesisVoice | undefined => {
   if (typeof window === "undefined" || !("speechSynthesis" in window) || (langue !== "fr" && langue !== "en")) return undefined;
-  const voix = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith(langue));
-  // Hors ligne, seules les voix installées sur l'appareil fonctionnent
-  const utilisables = typeof navigator !== "undefined" && !navigator.onLine ? voix.filter((v) => v.localService) : voix;
-  return utilisables[0];
+  return trouverVoixFeminine(langue, window.speechSynthesis.getVoices());
 };
 
 /** Un audio est-il disponible pour ce texte dans cette langue ? */
@@ -62,7 +92,11 @@ export function normaliserTextePourVoix(texte: string, langue: Langue = "fr"): s
     .replace(/œ/g, "oe")
     .replace(/Œ/g, "Oe")
     .replace(/æ/g, "ae")
-    .replace(/Æ/g, "Ae");
+    .replace(/Æ/g, "Ae")
+    .replace(/\bsoeur\b/gi, "soeur")
+    .replace(/\bcoeur\b/gi, "coeur")
+    .replace(/\bma\s+sue\b/gi, "ma soeur")
+    .replace(/\bma\s+sur\b/gi, "ma soeur");
 
   // 3. Ponctuation orale & pauses naturelles
   // Remplacement des guillemets français « » par des espaces
@@ -113,6 +147,9 @@ export function lire({ texte, langue, url, onFin }: { texte: string; langue: Lan
   const texteNormalise = normaliserTextePourVoix(texte, langue);
   const u = new SpeechSynthesisUtterance(texteNormalise);
   u.lang = langue === "en" ? "en-US" : "fr-FR";
+  // Synthèse vocale de Rose IA : hauteur et débit féminins, doux et posés
+  u.pitch = 1.15;
+  u.rate = 0.98;
   const v = voixPour(langue);
   if (v) u.voice = v;
   let arrete = false;

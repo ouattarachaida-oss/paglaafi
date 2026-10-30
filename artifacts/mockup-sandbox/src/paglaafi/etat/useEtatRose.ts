@@ -45,9 +45,9 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
     }
   }, [roseMessages]);
 
-  // Mode réel : FAQ hors-ligne préchargée dès l'ouverture (repli si le réseau tombe ensuite)
+  // FAQ hors-ligne préchargée dès l'ouverture (repli instantané si le réseau tombe ensuite)
   useEffect(() => {
-    if (MODE_REEL) prechargerFaq();
+    prechargerFaq();
   }, []);
 
   const [roseInput, setRoseInput] = useState("");
@@ -250,10 +250,11 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
     setRoseInput("");
     setRoseEnAttente(true);
 
-    // Mode réel : Rose IA fondée sur les fiches validées (serveur), repli FAQ locale
-    if (MODE_REEL) {
-      const parler = speakAloud || isRecordingVoice;
-      void demanderARose(textToSend, appLanguage).then((r) => {
+    const parler = speakAloud || isRecordingVoice;
+
+    // Rose IA : appel prioritaire à l'IA Gemini (via demanderARose), repli intelligent sur les fiches validées si réseau indisponible
+    void demanderARose(textToSend, appLanguage)
+      .then((r) => {
         setRoseEnAttente(false);
         setRoseMessages((prev) => [
           ...prev,
@@ -280,51 +281,42 @@ export function useEtatRose({ ui, audio }: { ui: EtatUi; audio: EtatAudio }) {
                 : undefined;
           handlePlayAudio(local ?? r.texte, local ? appLanguage : appLanguage === "en" ? "en" : "fr");
         }
+      })
+      .catch(() => {
+        // Repli en cas de coupure de réseau imprévue
+        setRoseEnAttente(false);
+        const {
+          fr: aiFr,
+          en: aiEn,
+          moore: aiMoore,
+          dioula: aiDioula,
+        } = genererReponseRose(textToSend, clinicalKnowledgeList);
+
+        setRoseMessages((prev) => [
+          ...prev,
+          {
+            sender: "rose",
+            text: aiFr,
+            englishText: aiEn,
+            mooreText: aiMoore,
+            dioulaText: aiDioula,
+            time: "Maintenant",
+          },
+        ]);
+
+        window.setTimeout(() => roseChatBottomRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
+        if (parler) {
+          const textToSpeak =
+            appLanguage === "moore" && aiMoore
+              ? aiMoore
+              : appLanguage === "dioula" && aiDioula
+                ? aiDioula
+                : appLanguage === "en" && aiEn
+                  ? aiEn
+                  : aiFr;
+          handlePlayAudio(textToSpeak, appLanguage);
+        }
       });
-      return;
-    }
-
-    // Réponse dans les 4 langues : fiche clinique, règle par mots-clés ou réponse générique (voir lib/moteurRose.ts)
-    const {
-      fr: aiFr,
-      en: aiEn,
-      moore: aiMoore,
-      dioula: aiDioula,
-    } = genererReponseRose(textToSend, clinicalKnowledgeList);
-
-    // Réponse différée pour simulation naturelle d'analyse IA
-    window.setTimeout(() => {
-      setRoseEnAttente(false);
-      setRoseMessages((prev) => [
-        ...prev,
-        {
-          sender: "rose",
-          text: aiFr,
-          englishText: aiEn,
-          mooreText: aiMoore,
-          dioulaText: aiDioula,
-          time: "Maintenant",
-        },
-      ]);
-
-      // Défilement automatique vers le nouveau message
-      window.setTimeout(() => {
-        roseChatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 80);
-
-      // Si le micro a été utilisé, synthèse vocale immédiate dans la langue choisie
-      if (speakAloud || isRecordingVoice) {
-        const textToSpeak =
-          appLanguage === "moore" && aiMoore
-            ? aiMoore
-            : appLanguage === "dioula" && aiDioula
-              ? aiDioula
-              : appLanguage === "en" && aiEn
-                ? aiEn
-                : aiFr;
-        handlePlayAudio(textToSpeak, appLanguage);
-      }
-    }, 450);
   };
 
   useEffect(() => {

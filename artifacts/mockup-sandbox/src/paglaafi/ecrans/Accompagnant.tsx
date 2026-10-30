@@ -16,7 +16,7 @@ export function Accompagnant() {
   // Messages d'invitation (texte français et traduction mooré inchangés)
   const choix = choisirTexte(
     {
-      fr: `Bonjour ma sœur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${appShareUrl}`,
+      fr: `Bonjour ma soeur, je t'invite à faire notre dépistage du sein ensemble sur PagLaafi : ${appShareUrl}`,
       moore: `Ne y beogo m maaso, m boola fo tɩ d kẽng a yiibu n ges d yĩnsa laafi ne PagLaafi : ${appShareUrl}`,
     },
     appLanguage,

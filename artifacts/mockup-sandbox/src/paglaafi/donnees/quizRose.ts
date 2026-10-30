@@ -23,7 +23,7 @@ export const QUESTIONS_QUIZ_ROSE: QuestionQuiz[] = [
     ],
     reponseCorrecte: 0,
     explication:
-      "Absolument ma sœur ! Détecté tôt par l'autopalpation ou la mammographie, le cancer du sein se guérit dans plus de 90 % des cas. C'est pourquoi un dépistage régulier sauve des vies.",
+      "Absolument ma soeur ! Détecté tôt par l'autopalpation ou la mammographie, le cancer du sein se guérit dans plus de 90 % des cas. C'est pourquoi un dépistage régulier sauve des vies.",
   },
   {
     id: 2,
@@ -47,7 +47,7 @@ export const QUESTIONS_QUIZ_ROSE: QuestionQuiz[] = [
     ],
     reponseCorrecte: 0,
     explication:
-      "Très juste ! Plus de 8 boules sur 10 sont de simples kystes bénins d'eau ou des adénofibromes sans gravité. Mais il faut toujours consulter une sage-femme ou un médecin pour en avoir le cœur net.",
+      "Très juste ! Plus de 8 boules sur 10 sont de simples kystes bénins d'eau ou des adénofibromes sans gravité. Mais il faut toujours consulter une sage-femme ou un médecin pour en avoir le coeur net.",
   },
   {
     id: 4,

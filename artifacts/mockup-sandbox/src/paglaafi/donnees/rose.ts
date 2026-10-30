@@ -9,7 +9,7 @@ import type { MessageRose } from "../types";
 export const initialDefaultRoseMessages: MessageRose[] = [
   {
     sender: "rose",
-    text: "Bonjour ma sœur, je suis Rose IA, ta compagne de santé et de bien-être. Je suis à ton écoute avec bienveillance, sans jugement et dans le respect total de ta pudeur : hygiène intime, nutrition sahélienne (moringa, baobab), apaisement des règles, sérénité mentale ou dépistage. Écris-moi en toute confiance ou touche le micro.",
+    text: "Bonjour ma soeur, je suis Rose IA, ta compagne de santé et de bien-être. Je suis à ton écoute avec bienveillance, sans jugement et dans le respect total de ta pudeur : hygiène intime, nutrition sahélienne (moringa, baobab), apaisement des règles, sérénité mentale ou dépistage. Écris-moi en toute confiance ou touche le micro.",
     englishText:
       "Hello my sister, I am Rose AI, your caring health and well-being companion. I am here for your holistic health: intimate care, nutrition, menstrual comfort, mental peace, and screenings.",
     mooreText:
