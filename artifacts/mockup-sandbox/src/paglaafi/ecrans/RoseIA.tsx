@@ -1,4 +1,4 @@
-import { CalendarDays, HelpCircle, Loader2, MapPin, Mic, Play, Send, ShieldCheck, Sparkles } from "lucide-react";
+import { CalendarDays, HelpCircle, Loader2, MapPin, Mic, Play, Send, ShieldCheck, Sparkles, Video } from "lucide-react";
 import { useUi, useAuth, useSante, useRose, useEducation, useCentres } from "../etat/contextes";
 import { MODE_REEL } from "../config";
 import { estInvitee } from "../composants/entreesMenu";
@@ -7,8 +7,9 @@ import { Bandeau, BadgeOrigineRose, BoutonEcouter, MentionTraduction } from "../
 // Suggestions de questions (libellés d'interface ; la question envoyée reste complète)
 const SUGGESTIONS = [
   { libelle: "🎯 Quiz Prévention", q: "Je veux faire un quiz avec toi Rose IA pour tester mes connaissances." },
-  { libelle: "Toilette intime", q: "Comment bien faire ma toilette intime ?" },
+  { libelle: "📹 Vidéo dépistage", q: "Peux-tu me montrer la vidéo sur le dépistage et l'autopalpation ?" },
   { libelle: "Comment se palper ?", q: "Comment bien faire l'autopalpation des seins étape par étape ?" },
+  { libelle: "Toilette intime", q: "Comment bien faire ma toilette intime ?" },
   { libelle: "Petite boule au sein", q: "J'ai senti une petite boule dans mon sein, que faire ?" },
   { libelle: "Douleurs de règles", q: "Comment soulager mes crampes et douleurs de règles naturellement ?" },
   { libelle: "Moringa et baobab", q: "Quels sont les bienfaits du moringa et du baobab pour ma santé ?" },
@@ -34,7 +35,7 @@ export function RoseIA() {
   const { currentUser } = useAuth();
   const { setShowPrivacyModal } = useSante();
   const { handleSendRoseMessage, handleToggleVoiceRecognition, isRecordingVoice, roseChatBottomRef, roseInput, roseMessages, setRoseInput, roseEnAttente } = useRose();
-  const { setShowAutopalpationVideoModal, setShowQuizModal } = useEducation();
+  const { ouvrirGuideGestes, setShowAutopalpationVideoModal, setShowQuizModal } = useEducation();
   const { setViewMode, trouverCentreProche } = useCentres();
 
   const dernierMotif = [...roseMessages].reverse().find((m) => m.sender === "rose")?.motif;
@@ -170,15 +171,22 @@ export function RoseIA() {
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={() => setShowAutopalpationVideoModal(true)}
-                            className="inline-flex min-h-11 items-center gap-2 rounded-bouton bg-action px-3 text-petit font-semibold text-sur-action"
+                            onClick={() => ouvrirGuideGestes("guide")}
+                            className="inline-flex min-h-11 items-center gap-2 rounded-bouton bg-action px-3 text-petit font-semibold text-sur-action shadow-sm transition-transform active:scale-95"
                           >
                             <Play size={16} aria-hidden /> Voir le guide des 4 gestes
                           </button>
                           <button
                             type="button"
+                            onClick={() => ouvrirGuideGestes("video")}
+                            className="inline-flex min-h-11 items-center gap-2 rounded-bouton border-[1.5px] border-action bg-surface px-3 text-petit font-semibold text-action shadow-sm transition-transform active:scale-95 hover:bg-rose-50"
+                          >
+                            <Video size={16} aria-hidden /> Voir la vidéo
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => setSection("Calendrier")}
-                            className="inline-flex min-h-11 items-center gap-2 rounded-bouton border-[1.5px] border-action px-3 text-petit font-semibold text-action"
+                            className="inline-flex min-h-11 items-center gap-2 rounded-bouton border border-bordure bg-surface px-3 text-petit font-semibold text-texte-2 transition-transform active:scale-95"
                           >
                             <CalendarDays size={16} aria-hidden /> Le bon moment
                           </button>
@@ -187,13 +195,22 @@ export function RoseIA() {
                     )}
 
                     {video && (
-                      <button
-                        type="button"
-                        onClick={() => setShowAutopalpationVideoModal(true)}
-                        className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-bouton border-[1.5px] border-action px-3 text-petit font-semibold text-action"
-                      >
-                        <Play size={16} aria-hidden /> Voir le guide des 4 gestes
-                      </button>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => ouvrirGuideGestes("guide")}
+                          className="inline-flex min-h-11 items-center gap-2 rounded-bouton border-[1.5px] border-action px-3 text-petit font-semibold text-action"
+                        >
+                          <Play size={16} aria-hidden /> Voir le guide des 4 gestes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => ouvrirGuideGestes("video")}
+                          className="inline-flex min-h-11 items-center gap-2 rounded-bouton bg-action px-3 text-petit font-semibold text-sur-action shadow-sm transition-transform active:scale-95"
+                        >
+                          <Video size={16} aria-hidden /> Voir la vidéo
+                        </button>
+                      </div>
                     )}
 
                     {demandeQuiz && (

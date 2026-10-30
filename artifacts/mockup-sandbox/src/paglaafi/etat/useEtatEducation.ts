@@ -7,8 +7,14 @@ import { useState } from "react";
 export function useEtatEducation() {
   const [activeLesson, setActiveLesson] = useState<number>(0);
 
-  // Guide des 4 gestes d'autopalpation (ou vraie vidéo validée si donnees/guideGestes.ts en fournit une)
+  // Guide des 4 gestes d'autopalpation et vidéo médicale
   const [showAutopalpationVideoModal, setShowAutopalpationVideoModal] = useState(false);
+  const [guideGestesVue, setGuideGestesVue] = useState<"video" | "guide">("guide");
+
+  const ouvrirGuideGestes = (format: "video" | "guide" = "guide") => {
+    setGuideGestesVue(format);
+    setShowAutopalpationVideoModal(true);
+  };
 
   // Modale interactive du Quiz de Prévention avec Rose IA
   const [showQuizModal, setShowQuizModal] = useState(false);
@@ -18,6 +24,9 @@ export function useEtatEducation() {
     setActiveLesson,
     showAutopalpationVideoModal,
     setShowAutopalpationVideoModal,
+    guideGestesVue,
+    setGuideGestesVue,
+    ouvrirGuideGestes,
     showQuizModal,
     setShowQuizModal,
   };

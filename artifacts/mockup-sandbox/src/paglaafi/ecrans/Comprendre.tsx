@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BookOpen, Check, ChevronLeft, ChevronRight, Circle, Hand, Play } from "lucide-react";
+import { BookOpen, Check, ChevronLeft, ChevronRight, Circle, Hand, Play, Video } from "lucide-react";
 import { lessons } from "../donnees/lecons";
 import { useEducation, useLangue, useUi } from "../etat/contextes";
 import type { Lecon } from "../types";
@@ -29,7 +29,7 @@ const urlAudio = (l: Lecon, langue: Langue) => (langue === "moore" ? l.audioUrlM
 export function Comprendre() {
   const { appLanguage } = useUi();
   const { handleSelectAppLanguage } = useLangue();
-  const { activeLesson, setActiveLesson, setShowAutopalpationVideoModal } = useEducation();
+  const { activeLesson, setActiveLesson, ouvrirGuideGestes } = useEducation();
   const [vues, setVues] = useState<number[]>(lireVues);
   const lecon = lessons[activeLesson];
 
@@ -105,11 +105,16 @@ export function Comprendre() {
             <span className="grid h-12 w-12 place-items-center rounded-full bg-rose-100 text-rose-500" aria-hidden>
               <Hand size={24} />
             </span>
-            <h3 className="text-sous-titre text-prune-900">Guide des 4 gestes d'autopalpation</h3>
-            <p className="text-petit text-texte-2">4 étapes illustrées, à suivre au doigt ou à écouter.</p>
-            <Bouton pleineLargeur icone={<Play size={18} aria-hidden />} onClick={() => setShowAutopalpationVideoModal(true)}>
-              Ouvrir le guide des 4 gestes
-            </Bouton>
+            <h3 className="text-sous-titre text-prune-900">Guide des 4 gestes & Vidéo</h3>
+            <p className="text-petit text-texte-2">4 étapes illustrées à écouter et vidéo médicale complète.</p>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Bouton pleineLargeur icone={<Play size={18} aria-hidden />} onClick={() => ouvrirGuideGestes("guide")}>
+                Les 4 gestes
+              </Bouton>
+              <Bouton variante="secondaire" pleineLargeur icone={<Video size={18} aria-hidden />} onClick={() => ouvrirGuideGestes("video")}>
+                Voir la vidéo
+              </Bouton>
+            </div>
           </Carte>
 
           <section aria-labelledby="titre-lecons">

@@ -14,7 +14,7 @@ const reduit = () => typeof window !== "undefined" && window.matchMedia("(prefer
  * clavier (flèches) et avec les boutons Précédent / Pause-Lecture / Suivant (48 px).
  * Texte et audio dans la langue choisie quand ils existent (sinon français + mention).
  */
-export function GuideGestes() {
+export function GuideGestes({ onVoirVideo }: { onVoirVideo?: () => void } = {}) {
   const { appLanguage } = useUi();
   const [index, setIndex] = useState(0);
   const [enLecture, setEnLecture] = useState(false);
@@ -140,6 +140,27 @@ export function GuideGestes() {
         </button>
       </div>
       {!audioOk && <p className="text-center text-petit text-texte-2">Audio indisponible pour cette langue</p>}
+
+      {/* Après les gestes : Bouton Voir la vidéo demandé par l'utilisatrice */}
+      {onVoirVideo && (
+        <div className="mt-2 rounded-2xl border border-rose-200 bg-rose-50/90 p-3.5 text-center space-y-2">
+          <p className="text-petit font-semibold text-prune-900">
+            {index === GESTES.length - 1
+              ? "Vous avez parcouru les 4 gestes d'autopalpation !"
+              : "Démonstration médicale en vidéo"}
+          </p>
+          <p className="text-tres-petit text-texte-2">
+            Regardez la vidéo explicative pour observer les gestes et le dépistage présentés en images.
+          </p>
+          <button
+            type="button"
+            onClick={onVoirVideo}
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-bouton bg-action px-4 text-petit font-bold text-sur-action shadow-sm transition-transform active:scale-95"
+          >
+            <Play size={18} aria-hidden /> Voir la vidéo
+          </button>
+        </div>
+      )}
 
       {!SCHEMAS_VALIDES && <p className="text-center text-petit font-semibold text-attention">Schémas à valider par un soignant</p>}
     </div>

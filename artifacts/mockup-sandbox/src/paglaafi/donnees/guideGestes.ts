@@ -49,14 +49,16 @@ export const GESTES: GesteGuide[] = [
 ];
 
 /**
- * Vraie vidéo validée (à venir). Tant que `videoUrl` est vide, aucun lecteur vidéo
- * n'est affiché : seul le guide est proposé.
+ * Vidéo médicale validée : sensibilisation, dépistage et démonstration d'autopalpation du sein.
+ * URL fournie : https://www.youtube.com/watch?v=FZvckWXec6w
  */
-export const VIDEO_AUTOPALPATION: {
-  videoUrl: string;
-  affiche?: string;
-  sousTitres?: { src: string; langue: string; libelle: string }[];
-} = { videoUrl: "" };
+export const VIDEO_AUTOPALPATION = {
+  videoUrl: "https://www.youtube.com/watch?v=FZvckWXec6w",
+  youtubeId: "FZvckWXec6w",
+  titre: "Dépistage et autopalpation du sein",
+  description: "Examen radiologique de dépistage, palpation préventive et démonstration des gestes qui sauvent.",
+  affiche: "https://img.youtube.com/vi/FZvckWXec6w/hqdefault.jpg",
+};
 
 /** Les schémas n'ont pas encore été relus par un soignant. */
 export const SCHEMAS_VALIDES = false;

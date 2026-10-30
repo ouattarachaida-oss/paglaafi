@@ -103,6 +103,7 @@ Sans `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`, l'application repass
 - **Mooré / Dioula** : pas de génération automatique ; fiche validée dans la langue si elle existe.
 - **Mode Docteur** (« Fiches Rose IA ») : proposer → relecture par un autre validateur avec source → indexation par `pnpm run rag:indexer` (puis committer `faq-rose.json`).
 - **Quiz interactif Rose IA** : module éducatif et bienveillant (`donnees/quizRose.ts`, `modales/ModaleQuizRose.tsx`) permettant de tester ses connaissances sur l'autopalpation, le dépistage précoce et les signes d'alerte, avec explications orales et scores.
+- **Accès direct Vidéo & Guide des gestes depuis Rose IA** : Rose IA propose la suggestion rapide `📹 Vidéo dépistage` et propose deux actions directes sur les questions d'autopalpation ou de vidéo : `Voir le guide des 4 gestes` et `Voir la vidéo`.
 - **Voix Féminine Prioritaire & Prosodie** : sélection impérative d'une voix féminine (`lib/voix.ts` et `useEtatAudio.ts`, filtrage sur Hortense, Julie, Amélie, Céline, Virginie, Marie, etc., avec exclusion formelle des voix masculines comme Paul/Thomas), hauteur vocale réglée à 1.15 (pitch féminin doux et chaleureux) et débit à 0.98.
 - **Accessibilité audio & Synthèse vocale** : normalisation phonétique (`lib/voix.ts` et `useEtatAudio.ts`) : conversion automatique des ligatures françaises (`œ` en `oe`, résolvant définitivement le bug de prononciation « sue » pour « soeur » sur tous les moteurs Web Speech mobiles/desktop), nettoyage des balises Markdown (astérisques, liens, titres) et articulation des acronymes (« Rose I-A », « Pag-Laafi »).
 
@@ -151,16 +152,18 @@ Secrets : `supabase/.env` (clé secrète, mot de passe et pooler de la base, `GE
 `artifacts/mockup-sandbox/.env` (variables publiques `VITE_…`). Aucun `.env` n'est versionné.
 Déploiement : voir `docs/deploiement-vercel.md`.
 
-## 10. Ce qui reste simulé
+## 10. Vidéo médicale et Guide des 4 gestes
+
+- **Vidéo d'autopalpation et de dépistage** : configurée dans `donnees/guideGestes.ts` (`VIDEO_AUTOPALPATION`). Elle intègre la vidéo officielle (`https://www.youtube.com/watch?v=FZvckWXec6w`) via un lecteur responsive `iframe` YouTube sans cookies tiers (`youtube-nocookie.com/embed/FZvckWXec6w`). Ce format offre un streaming adaptatif automatique (de 240p à 1080p selon le réseau mobile au Burkina Faso) sans nécessiter de compression manuelle ni de stockage lourd sur l'appareil.
+- **Accès direct après les 4 gestes** : dans `composants/GuideGestes.tsx`, un encart avec le bouton `Voir la vidéo` est automatiquement affiché à la suite des étapes pour permettre à l'utilisatrice de visionner immédiatement la démonstration médicale.
+- **Modale unifiée `ModaleGuideGestes.tsx`** : onglets segmentés permettant d'alterner à tout moment entre les illustrations légères des 4 gestes et la vidéo explicative plein écran.
+
+## 11. Ce qui reste simulé
 
 Signalé par un badge « Simulation » en mode réel :
 - paiement Orange Money et tableau de bord des dons ;
 - orientations d'urgence (docteur → centre) ;
 - statistiques du superadmin ;
-
-L'ancienne « vidéo d'autopalpation » (faux lecteur) est remplacée par le **Guide des 4 gestes**
-(`composants/GuideGestes.tsx`, textes existants, schémas SVG « à valider par un soignant »). Un vrai
-lecteur vidéo n'apparaît que si `VIDEO_AUTOPALPATION.videoUrl` (`donnees/guideGestes.ts`) est renseigné.
 
 **Langues des contenus** : le choix (menu, Comprendre, accueil, Accompagnant) est global et mémorisé
 sur l'appareil ; les textes sont inclus dans l'application (aucune traduction réseau). Texte absent :
