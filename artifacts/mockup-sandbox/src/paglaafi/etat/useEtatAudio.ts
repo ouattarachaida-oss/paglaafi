@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { EtatUi } from "./useEtatUi";
+import { normaliserTextePourVoix } from "../lib/voix";
 
 /**
  * Lecture audio par synthèse vocale du navigateur (Web Speech API).
@@ -73,7 +74,9 @@ export function useEtatAudio({ ui }: { ui: EtatUi }) {
     setRoseSpeaking(true);
     setAudioProgress(8);
 
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    // Normalisation phonétique : transforme notamment « œ » en « oe » pour éviter que « sœur » ne soit lu « sue »
+    const texteNormalise = normaliserTextePourVoix(textToSpeak, language);
+    const utterance = new SpeechSynthesisUtterance(texteNormalise);
 
     // Attribution directe d'une voix préchargée pour éviter le délai de recherche de voix
     try {

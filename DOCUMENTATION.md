@@ -110,6 +110,7 @@ Sans `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`, l'application repass
 - **Mode Docteur** (« Fiches Rose IA ») : proposer → relecture par un autre validateur avec
   source → indexation par `pnpm run rag:indexer` (puis committer `faq-rose.json`).
 - **Mode démo** : moteur par mots-clés (`donnees/reponsesRose.ts`).
+- **Accessibilité audio & Synthèse vocale** : normalisation phonétique (`lib/voix.ts` et `useEtatAudio.ts`) : conversion automatique des ligatures françaises (`œ` en `oe`, résolvant le bug de prononciation « sue » pour « sœur » sur les moteurs Web Speech mobiles/desktop), nettoyage des balises Markdown (astérisques, liens, titres) et articulation des acronymes (« Rose I-A », « Pag-Laafi »).
 
 ## 7. Confidentialité
 

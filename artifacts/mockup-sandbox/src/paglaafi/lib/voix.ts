@@ -29,6 +29,60 @@ export function audioDisponible(langue: Langue, url?: string | null): boolean {
   return Boolean(voixPour(langue));
 }
 
+/**
+ * Normalisation phonétique et textuelle pour la synthèse vocale :
+ * - Résout les erreurs de lecture fréquentes des moteurs TTS (ex. Web Speech API sur Android, Windows, iOS) :
+ *   notamment la ligature « œ » dans « sœur » ou « cœur » qui est souvent tronquée ou lue « sue » / « cue »
+ *   si elle n'est pas transcrite en digramme « oe » (« soeur », « coeur »).
+ * - Nettoie le balisage Markdown (astérisques de gras/italique, liens, titres, listes à puces) pour éviter
+ *   que la voix ne prononce « astérisque », « hashtag », etc.
+ * - Améliore la diction des acronymes (« IA » -> « I-A », « PagLaafi » -> « Pag-Laafi »).
+ */
+export function normaliserTextePourVoix(texte: string, langue: Langue = "fr"): string {
+  if (!texte) return "";
+
+  let propre = texte;
+
+  // 1. Suppression du balisage Markdown
+  // Liens Markdown : [texte affiché](url) -> texte affiché
+  propre = propre.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+  // Gras / Italique : **texte** ou *texte* -> texte
+  propre = propre.replace(/\*\*([^*]+)\*\*/g, "$1");
+  propre = propre.replace(/\*([^*]+)\*/g, "$1");
+  propre = propre.replace(/__([^_]+)__/g, "$1");
+  propre = propre.replace(/_([^_]+)_/g, "$1");
+  // Titres Markdown (### Titre)
+  propre = propre.replace(/^#{1,6}\s+/gm, "");
+  // Puces de listes (- item ou * item)
+  propre = propre.replace(/^[-*•]\s+/gm, "");
+
+  // 2. Correction indispensable des ligatures pour le français
+  // La ligature œ (U+0153) fait prononcer "sue" au lieu de "soeur" sur la plupart des synthétiseurs vocaux
+  propre = propre
+    .replace(/œ/g, "oe")
+    .replace(/Œ/g, "Oe")
+    .replace(/æ/g, "ae")
+    .replace(/Æ/g, "Ae");
+
+  // 3. Ponctuation orale & pauses naturelles
+  // Remplacement des guillemets français « » par des espaces
+  propre = propre.replace(/[«»"]/g, " ");
+  // Tirets cadratins ou demi-cadratins -> virgule pour marquer une pause orale naturelle
+  propre = propre.replace(/\s*[—–]\s*/g, ", ");
+
+  // 4. Phonétique des termes clés PagLaafi & IA pour une diction fluide
+  if (langue === "fr") {
+    // "Rose IA" ou "IA" isolée -> "I-A" pour que la voix ne prononce pas "ya"
+    propre = propre.replace(/\bRose IA\b/gi, "Rose I-A");
+    propre = propre.replace(/\bIA\b/g, "I-A");
+    // "PagLaafi" -> "Pag-Laafi" pour une articulation nette
+    propre = propre.replace(/\bPagLaafi\b/gi, "Pag-Laafi");
+  }
+
+  // Nettoyage des espaces multiples
+  return propre.replace(/\s+/g, " ").trim();
+}
+
 /** Arrête la lecture en cours (s'il y en a une). */
 export function arreterLecture() {
   arretEnCours?.();
@@ -56,7 +110,8 @@ export function lire({ texte, langue, url, onFin }: { texte: string; langue: Lan
   if (!audioDisponible(langue)) return false;
   const synthese = window.speechSynthesis;
   synthese.cancel();
-  const u = new SpeechSynthesisUtterance(texte);
+  const texteNormalise = normaliserTextePourVoix(texte, langue);
+  const u = new SpeechSynthesisUtterance(texteNormalise);
   u.lang = langue === "en" ? "en-US" : "fr-FR";
   const v = voixPour(langue);
   if (v) u.voice = v;
@@ -69,3 +124,4 @@ export function lire({ texte, langue, url, onFin }: { texte: string; langue: Lan
   };
   return true;
 }
+
