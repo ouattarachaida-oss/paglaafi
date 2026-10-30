@@ -1,4 +1,4 @@
-import { CalendarDays, Loader2, MapPin, Mic, Play, Send, ShieldCheck, Sparkles } from "lucide-react";
+import { CalendarDays, HelpCircle, Loader2, MapPin, Mic, Play, Send, ShieldCheck, Sparkles } from "lucide-react";
 import { useUi, useAuth, useSante, useRose, useEducation, useCentres } from "../etat/contextes";
 import { MODE_REEL } from "../config";
 import { estInvitee } from "../composants/entreesMenu";
@@ -6,6 +6,7 @@ import { Bandeau, BadgeOrigineRose, BoutonEcouter, MentionTraduction } from "../
 
 // Suggestions de questions (libellés d'interface ; la question envoyée reste complète)
 const SUGGESTIONS = [
+  { libelle: "🎯 Quiz Prévention", q: "Je veux faire un quiz avec toi Rose IA pour tester mes connaissances." },
   { libelle: "Toilette intime", q: "Comment bien faire ma toilette intime ?" },
   { libelle: "Comment se palper ?", q: "Comment bien faire l'autopalpation des seins étape par étape ?" },
   { libelle: "Petite boule au sein", q: "J'ai senti une petite boule dans mon sein, que faire ?" },
@@ -33,7 +34,7 @@ export function RoseIA() {
   const { currentUser } = useAuth();
   const { setShowPrivacyModal } = useSante();
   const { handleSendRoseMessage, handleToggleVoiceRecognition, isRecordingVoice, roseChatBottomRef, roseInput, roseMessages, setRoseInput, roseEnAttente } = useRose();
-  const { setShowAutopalpationVideoModal } = useEducation();
+  const { setShowAutopalpationVideoModal, setShowQuizModal } = useEducation();
   const { setViewMode, trouverCentreProche } = useCentres();
 
   const dernierMotif = [...roseMessages].reverse().find((m) => m.sender === "rose")?.motif;
@@ -64,9 +65,18 @@ export function RoseIA() {
             </span>
             Rose IA
           </h1>
-          <button type="button" onClick={() => setShowPrivacyModal(true)} className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-petit font-semibold text-texte-2">
-            <ShieldCheck size={18} aria-hidden /> {MODE_REEL ? "Questions anonymisées" : "Confidentialité"}
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setShowQuizModal(true)}
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 text-petit font-bold text-action transition-all hover:bg-rose-100"
+            >
+              <HelpCircle size={16} aria-hidden /> Quiz Rose IA
+            </button>
+            <button type="button" onClick={() => setShowPrivacyModal(true)} className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-petit font-semibold text-texte-2">
+              <ShieldCheck size={18} aria-hidden /> {MODE_REEL ? "Questions anonymisées" : "Confidentialité"}
+            </button>
+          </div>
         </div>
 
         {/* Rappel permanent, visible à chaque ouverture de Rose IA */}
@@ -91,6 +101,7 @@ export function RoseIA() {
             const question = !utilisatrice && roseMessages[i - 1]?.sender === "user" ? roseMessages[i - 1].text : "";
             const autopalpation = /palp|examiner (mes|les|ses) seins|v[ée]rifier (mes|les|ses) seins|self.?exam|check (my|your) breasts/i.test(question);
             const video = !utilisatrice && !autopalpation && /palpation|geste|boule|sein|nodule/i.test(msg.text);
+            const demandeQuiz = !utilisatrice && /quiz|qcm|tester mes connaissances|jouer/i.test(question || msg.text);
 
             return (
               <li key={i} className={`flex gap-2 ${utilisatrice ? "justify-end" : "justify-start"}`}>
@@ -183,6 +194,21 @@ export function RoseIA() {
                       >
                         <Play size={16} aria-hidden /> Voir le guide des 4 gestes
                       </button>
+                    )}
+
+                    {demandeQuiz && (
+                      <div className="mt-3 space-y-2 rounded-bouton border border-rose-200 bg-rose-50/90 p-3">
+                        <p className="text-petit font-medium text-prune-900">
+                          Prête à tester tes connaissances avec moi ? 5 questions rapides et bienveillantes pour maîtriser les gestes qui sauvent.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setShowQuizModal(true)}
+                          className="inline-flex min-h-11 items-center gap-2 rounded-bouton bg-action px-3.5 text-petit font-semibold text-sur-action shadow-sm transition-transform active:scale-95"
+                        >
+                          <HelpCircle size={16} aria-hidden /> Démarrer le Quiz Rose IA
+                        </button>
+                      </div>
                     )}
                   </div>
                   {!utilisatrice && (

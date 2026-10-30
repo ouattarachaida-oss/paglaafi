@@ -43,6 +43,25 @@ export const reglesReponsesRose: RegleReponseRose[] = [
     },
   },
   {
+    theme: "quiz interactif de prévention",
+    motsCles: [
+      "quiz",
+      "qcm",
+      "tester mes connaissances",
+      "jouer",
+      "evaluation",
+      "test",
+    ],
+    reponse: {
+      fr: "C'est une merveilleuse idée ma sœur ! Tester ses connaissances est le meilleur moyen d'ancrer les réflexes qui sauvent. Touche le bouton « Démarrer le Quiz Rose IA » sous ce message pour commencer notre série de 5 questions bienveillantes !",
+      en: "That is a wonderful idea my sister! Testing your knowledge is the best way to master life-saving habits. Tap the 'Start Rose AI Quiz' button below to begin our 5 caring questions!",
+      moore:
+        "Yaa bũmb sõma wʋsgo ! Tõnd sã n bãng bãag gɩdgre bũmb ninsã, d tõe n kogl d yĩng la d zak rãmba. Sok-y maam !",
+      dioula:
+        "O ye kuma ɲumanba ye ! K'i hakili lajɛ banna gɛlɛnba kɔnɔ, o bɛ ka dɛmɛ kɛ kosɛbɛ.",
+    },
+  },
+  {
     theme: "autopalpation, gestes pratiques & technique d'examen",
     motsCles: [
       "autopalpation",

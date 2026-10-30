@@ -31,6 +31,7 @@ import { ModaleNouvelleAnnonce } from "../modales/ModaleNouvelleAnnonce";
 import { ModaleOrientation } from "../modales/ModaleOrientation";
 import { ModalePosition } from "../modales/ModalePosition";
 import { ModaleGuideGestes } from "../modales/ModaleGuideGestes";
+import { ModaleQuizRose } from "../modales/ModaleQuizRose";
 import { TableauDeBordAdmin } from "../modales/TableauDeBordAdmin";
 import { MODE_REEL } from "../config";
 
@@ -104,6 +105,7 @@ export function Coquille() {
       {/* Mode réel : fiches de connaissance réelles ; démo : parcours d'entraînement simulé */}
       {MODE_REEL ? <EspaceFichesDocteur /> : <EspaceEntrainementDocteur />}
       <ModaleGuideGestes />
+      <ModaleQuizRose />
       <ModaleAffiche />
       <ModalePosition />
 

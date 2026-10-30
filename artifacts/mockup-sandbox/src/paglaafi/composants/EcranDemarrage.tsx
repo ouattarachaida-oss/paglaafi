@@ -38,24 +38,26 @@ export function EcranDemarrage() {
         </button>
       </div>
 
-      {/* Carte centrale élégante et unifiée */}
-      <div className="relative mx-auto my-auto flex w-full max-w-[360px] flex-col overflow-hidden rounded-[32px] bg-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.65)] ring-1 ring-black/5 sm:max-w-[400px]">
-        {/* Partie haute : Photo des héroïnes avec fondu soyeux vers le blanc */}
-        <div className="relative aspect-[16/11] w-full overflow-hidden bg-[#faeef2] sm:aspect-[16/11.5]">
-          <img
-            src="/images/splash-paglaafi-heroines.webp"
-            alt="Des femmes et une soignante réunies autour du ruban rose"
-            className="h-full w-full object-cover object-top"
-            width={576}
-            height={420}
-          />
-          {/* Dégradé doux assurant une transition harmonieuse vers le blanc */}
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent via-white/60 to-white" />
-        </div>
+      {/* Carte centrale élégante et unifiée en format mobile vertical complet */}
+      <div className="relative mx-auto my-auto flex aspect-[9/16] max-h-[calc(100dvh-95px)] w-full max-w-[380px] flex-col justify-end overflow-hidden rounded-[32px] bg-[#1a0a14] shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] ring-1 ring-white/10 sm:max-w-[420px]">
+        {/* Image complète et majestueuse des héroïnes en fond pleine hauteur */}
+        <img
+          src="/images/splash-paglaafi-heroines.webp"
+          alt="Des femmes et une soignante réunies autour du ruban rose"
+          className="absolute inset-0 h-full w-full object-cover object-top"
+          width={576}
+          height={1024}
+        />
 
-        {/* Partie basse : Contenu textuel sur fond blanc pur avec couleurs ultra-lisibles */}
-        <div className="relative -mt-8 flex flex-col items-center px-5 pb-6 text-center text-[#4a0e2e] sm:px-6 sm:pb-7">
-          {/* Logo officiel PagLaafi dans un écrin blanc élégant et surélevé */}
+        {/* Dégradé doux et lumineux assurant la transition entre l'illustration et la zone de lecture */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[56%] bg-gradient-to-t from-white via-white/95 to-transparent"
+          aria-hidden
+        />
+
+        {/* Contenu textuel et indicateurs sur fond lumineux ultra-lisible */}
+        <div className="relative z-10 flex flex-col items-center px-5 pb-5 pt-2 text-center text-[#4a0e2e] sm:px-6 sm:pb-6">
+          {/* Logo officiel PagLaafi dans un cartouche blanc surélevé et soigné */}
           <div className="grid h-16 w-16 place-items-center rounded-2xl border border-[#fae1ea] bg-white p-2 shadow-[0_6px_20px_rgba(88,14,54,0.12)] sm:h-20 sm:w-20">
             <img
               src="/images/pinkhub-mvp-paglaafi.webp"
@@ -71,8 +73,8 @@ export function EcranDemarrage() {
             Mieux informée · Mieux orientée · Jamais seule
           </h1>
 
-          {/* Séparateur décoratif discret */}
-          <div className="my-2.5 flex items-center justify-center gap-2" aria-hidden>
+          {/* Séparateur décoratif discret avec perle ruban rose */}
+          <div className="my-2 flex items-center justify-center gap-2" aria-hidden>
             <span className="h-[1px] w-8 bg-gradient-to-r from-transparent to-[#e87a9f]" />
             <span className="h-1.5 w-1.5 rounded-full bg-[#d41e5c]" />
             <span className="h-[1px] w-8 bg-gradient-to-l from-transparent to-[#e87a9f]" />
@@ -85,7 +87,7 @@ export function EcranDemarrage() {
 
           {/* Barre de progression fluide de 5 secondes */}
           <div
-            className="mt-4 flex w-full max-w-[200px] flex-col items-center gap-1.5"
+            className="mt-3.5 flex w-full max-w-[200px] flex-col items-center gap-1.5"
             role="progressbar"
             aria-label="Chargement de l'application"
             aria-valuemin={0}
